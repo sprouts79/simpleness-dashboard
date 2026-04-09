@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simpleness Dashboard — Kravspec v1</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap');
+
+  :root {
+    --black: #0D0D0D;
+    --white: #F7F5F0;
+    --accent: #FF4D00;
+    --mid: #6B6B6B;
+    --border: #E0DDD8;
+    --section-bg: #F0EDE8;
+    --tag-bg: #E8E4DD;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--white);
+    color: var(--black);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.65;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 60px 40px 120px;
+  }
+
+  /* HEADER */
+  .doc-header {
+    border-bottom: 2px solid var(--black);
+    padding-bottom: 32px;
+    margin-bottom: 56px;
+  }
+  .doc-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin-bottom: 12px;
+  }
+  .doc-title {
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 16px;
+  }
+  .doc-title span { color: var(--accent); }
+  .doc-meta {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .meta-item {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--mid);
+  }
+  .meta-item strong {
+    color: var(--black);
+    font-weight: 500;
+  }
+
+  /* SECTION */
+  section {
+    margin-bottom: 64px;
+  }
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-number {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    min-width: 32px;
+  }
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin-bottom: 12px;
+    margin-top: 28px;
+    font-family: var(--mono);
+  }
+  p {
+    color: #2A2A2A;
+    margin-bottom: 12px;
+    max-width: 680px;
+  }
+
+  /* CARDS */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+  }
+  .card {
+    background: var(--section-bg);
+    border: 1px solid var(--border);
+    padding: 20px 22px;
+    border-radius: 2px;
+  }
+  .card-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .card-desc {
+    font-size: 13px;
+    color: var(--mid);
+    line-height: 1.55;
+    max-width: 100%;
+  }
+
+  /* USER PERSONAS */
+  .persona {
+    border: 1px solid var(--border);
+    padding: 24px;
+    margin-bottom: 16px;
+    border-radius: 2px;
+    background: var(--white);
+  }
+  .persona-role {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .persona-name {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .persona-jobs {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .job {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 13px;
+    color: #2A2A2A;
+  }
+  .job-icon {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--mid);
+    min-width: 20px;
+    padding-top: 2px;
+  }
+
+  /* SCREEN SPECS */
+  .screen {
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .screen-header {
+    background: var(--black);
+    color: var(--white);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .screen-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+  }
+  .screen-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: #888;
+    letter-spacing: 0.06em;
+  }
+  .screen-body {
+    padding: 20px 24px;
+    background: var(--white);
+  }
+  .screen-desc {
+    font-size: 13px;
+    color: #2A2A2A;
+    margin-bottom: 16px;
+    max-width: 100%;
+    font-style: italic;
+  }
+
+  /* METRICS TABLE */
+  .metrics-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 16px;
+  }
+  .metrics-table th {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--mid);
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    background: var(--section-bg);
+  }
+  .metrics-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    color: #2A2A2A;
+  }
+  .metrics-table tr:last-child td { border-bottom: none; }
+  .metrics-table td:first-child {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--black);
+    white-space: nowrap;
+  }
+
+  /* FEATURE LIST */
+  .feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .feature-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    font-size: 13.5px;
+    color: #2A2A2A;
+    padding: 10px 14px;
+    background: var(--section-bg);
+    border-radius: 2px;
+  }
+  .feature-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+
+  /* FLOW */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 16px;
+  }
+  .flow-step {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .flow-step:last-child { border-bottom: none; }
+  .flow-num {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--border);
+    min-width: 32px;
+    line-height: 1.3;
+  }
+  .flow-content {}
+  .flow-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .flow-desc {
+    font-size: 13px;
+    color: var(--mid);
+    max-width: 100%;
+  }
+
+  /* INTEGRATION ROADMAP */
+  .roadmap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .roadmap-phase {
+    border: 1px solid var(--border);
+    padding: 18px 20px;
+    border-radius: 2px;
+  }
+  .phase-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+  .phase-v1 { color: var(--accent); }
+  .phase-v2 { color: var(--mid); }
+  .phase-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .phase-items {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .phase-item {
+    font-size: 13px;
+    color: #2A2A2A;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .phase-item::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--mid);
+    flex-shrink: 0;
+  }
+
+  /* TAGS */
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    background: var(--tag-bg);
+    border-radius: 2px;
+    margin-right: 6px;
+    margin-bottom: 4px;
+    color: var(--mid);
+  }
+  .tag.primary { background: var(--black); color: var(--white); }
+  .tag.alert { background: #FFE8E0; color: var(--accent); }
+
+  /* PRINCIPLE BOX */
+  .principle {
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px;
+    margin: 20px 0;
+    background: var(--section-bg);
+  }
+  .principle p {
+    font-size: 14px;
+    font-style: italic;
+    max-width: 100%;
+    margin: 0;
+    color: var(--black);
+  }
+
+  /* DIVIDER */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 32px 20px 80px; }
+    .roadmap { grid-template-columns: 1fr; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <div class="doc-label">Kravspesifikasjon · Intern</div>
+  <h1 class="doc-title">Simpleness<br><span>Agency Dashboard</span></h1>
+  <div class="doc-meta">
+    <div class="meta-item"><strong>Versjon</strong> · v1.0 Draft</div>
+    <div class="meta-item"><strong>Dato</strong> · April 2026</div>
+    <div class="meta-item"><strong>Scope</strong> · Meta Ads · v1</div>
+    <div class="meta-item"><strong>Plattform</strong> · Web (Next.js / Vercel)</div>
+  </div>
+</header>
+
+<!-- 01 FORMÅL -->
+<section>
+  <div class="section-header">
+    <span class="section-number">01</span>
+    <h2>Formål og designprinsipper</h2>
+  </div>
+
+  <p>Simpleness leverer i dag for dårlig på rapportering. Rådgivere ser på for mange tall, ser på forskjellige ting, og bruker Excel til å sy sammen innsikt som burde ligge ett klikk unna. Resultatet er at kunder ikke alltid får de samtalene de fortjener — og at interne diskusjoner tar utgangspunkt i ulike datasett.</p>
+
+  <p>Dette dashboardet skal løse det med én felles sannhet: færrest mulige metrics, alltid oppdatert, likt for alle kunder og alle rådgivere.</p>
+
+  <div class="principle">
+    <p>Designprinsipp #1: Hvis det ikke driver en beslutning, er det ikke en metric vi viser. Dashboardet er ikke et databibliotek — det er et beslutningsverktøy.</p>
+  </div>
+  <div class="principle">
+    <p>Designprinsipp #2: Alle på Simpleness ser de samme tallene på alle kunder. Ingen rådgiver skal trenge å spørre "hva ser du på?" i et møte.</p>
+  </div>
+  <div class="principle">
+    <p>Designprinsipp #3: Appen bygges for å skalere til flere datakilder (Shopify, GA4, Centra, Snap, Google Ads) — men starter med kun Meta. Arkitekturen skal reflektere dette fra dag én.</p>
+  </div>
+</section>
+
+<!-- 02 BRUKERE -->
+<section>
+  <div class="section-header">
+    <span class="section-number">02</span>
+    <h2>Brukere og behov</h2>
+  </div>
+
+  <div class="persona">
+    <div class="persona-role">Intern bruker</div>
+    <div class="persona-name">Mediekjøper / Rådgiver</div>
+    <p style="font-size:13px; color: var(--mid); max-width:100%;">Bruker appen daglig og ukentlig. Trenger raskt svar på hva som skjer i kontoene sine, og dypere analyse når noe er galt eller godt.</p>
+    <div class="persona-jobs">
+      <div class="job"><span class="job-icon">→</span> Forstå om spend og performance er på rett spor — uten å åpne Ads Manager</div>
+      <div class="job"><span class="job-icon">→</span> Se om vi treffer nye mennesker eller om vi er i ferd med å mette målgruppen</div>
+      <div class="job"><span class="job-icon">→</span> Forstå hvilke annonser som driver resultater og hvorfor — for å ta beslutninger om å stoppe, skalere eller lage nytt creative</div>
+      <div class="job"><span class="job-icon">→</span> Dele creative-innsikt med produksjonsteamet uten å eksportere CSV-er</div>
+      <div class="job"><span class="job-icon">→</span> Gå inn i et kundemøte forberedt på 5 minutter</div>
+    </div>
+  </div>
+
+  <div class="persona">
+    <div class="persona-role">Intern bruker</div>
+    <div class="persona-name">Kreativt / Produksjonsteam</div>
+    <p style="font-size:13px; color: var(--mid); max-width:100%;">Bruker appen primært for å forstå hva som fungerer og lage bedre annonser. Trenger visuell oversikt over creatives med ytelsesdata.</p>
+    <div class="persona-jobs">
+      <div class="job"><span class="job-icon">→</span> Se hvilke konsepter, formater og hooks som konverterer</div>
+      <div class="job"><span class="job-icon">→</span> Forstå om en ny batch med annonser gjør det bedre eller dårligere enn forrige kohort</div>
+      <div class="job"><span class="job-icon">→</span> Få konkrete tall å jobbe ut fra — ikke subjektive vurderinger fra rådgiver</div>
+    </div>
+  </div>
+
+  <div class="persona">
+    <div class="persona-role">Ekstern bruker</div>
+    <div class="persona-name">Kunde</div>
+    <p style="font-size:13px; color: var(--mid); max-width:100%;">Mottar faste rapporter (ukentlig / månedlig). Er ikke i appen selv — rapporten sendes som PDF eller en read-only visning.</p>
+    <div class="persona-jobs">
+      <div class="job"><span class="job-icon">→</span> Forstå om pengene brukes riktig — spend, ROAS, CPA</div>
+      <div class="job"><span class="job-icon">→</span> Se om vi når nye mennesker eller om vi brenner ut målgruppen</div>
+      <div class="job"><span class="job-icon">→</span> Forstå hvilke annonser som jobber for dem</div>
+      <div class="job"><span class="job-icon">→</span> Ha tillit til at Simpleness vet hva de gjør</div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 METRICS -->
+<section>
+  <div class="section-header">
+    <span class="section-number">03</span>
+    <h2>Metrics — hva vi viser og hvorfor</h2>
+  </div>
+
+  <p>Vi viser færrest mulige metrics. Alle metrics som er i appen skal svare direkte på ett av tre spørsmål: <strong>Bruker vi penger riktig? Når vi nye mennesker? Funker innholdet?</strong></p>
+
+  <h3>Performance — mediekjøp</h3>
+  <table class="metrics-table">
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th>Hvorfor den er der</th>
+        <th>Beslutning den driver</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Spend</td>
+        <td>Grunnlag for alt annet</td>
+        <td>Budsjettavvik, daglig pacing</td>
+      </tr>
+      <tr>
+        <td>ROAS</td>
+        <td>Effektivitet på pengene</td>
+        <td>Skalere opp / ned / pause</td>
+      </tr>
+      <tr>
+        <td>CPA / Cost per Result</td>
+        <td>Kostnad per ønsket handling</td>
+        <td>Budstrategijustering</td>
+      </tr>
+      <tr>
+        <td>CPM</td>
+        <td>Auksjonskostnad — tidlig advarsel</td>
+        <td>Identifisere creative fatigue før ROAS synker</td>
+      </tr>
+      <tr>
+        <td>Frequency</td>
+        <td>Metningsindikator</td>
+        <td>Avgjøre om vi trenger nytt creative eller ny målgruppe</td>
+      </tr>
+      <tr>
+        <td>CTR (link)</td>
+        <td>Relevans av annonsen</td>
+        <td>Creative-avgjørelser, hook-evaluering</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Reach — målgruppedekning</h3>
+  <table class="metrics-table">
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th>Hvorfor den er der</th>
+        <th>Beslutning den driver</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Rolling Reach</td>
+        <td>Akkumulert unik dekning over tid</td>
+        <td>Forstå om vi nærmer oss tak i målgruppen</td>
+      </tr>
+      <tr>
+        <td>Net New Reach %</td>
+        <td>Andel nye mennesker vi treffer</td>
+        <td>Avgjøre om vi trenger creative diversitet eller budsjettøkning</td>
+      </tr>
+      <tr>
+        <td>Cost per 1k Net New Reach</td>
+        <td>Effektivitet på nye øyne</td>
+        <td>Sammenligne perioder og kampanjer</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Creative — annonseytelse</h3>
+  <table class="metrics-table">
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th>Hvorfor den er der</th>
+        <th>Beslutning den driver</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Hook Rate (3s video view %)</td>
+        <td>Stopper innholdet feeden?</td>
+        <td>Vurdere hook-konsept og åpningsbilde</td>
+      </tr>
+      <tr>
+        <td>Hold Rate (ThruPlay %)</td>
+        <td>Holder innholdet oppmerksomheten?</td>
+        <td>Vurdere om budskapet resonerer</td>
+      </tr>
+      <tr>
+        <td>CTR (link)</td>
+        <td>Konverterer annonsen til klikk?</td>
+        <td>Vurdere CTA og tilbud</td>
+      </tr>
+      <tr>
+        <td>Spend</td>
+        <td>Hvor mye har Meta distribuert den?</td>
+        <td>Kontekstualisere andre metrics</td>
+      </tr>
+      <tr>
+        <td>ROAS / CPA</td>
+        <td>Leverer den faktiske resultater?</td>
+        <td>Skille mellom "god hook, dårlig konvertering" og ekte winner</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="principle">
+    <p>Metrics vi bevisst IKKE viser by default: Impressions (vi har CPM og Reach), Clicks (vi har CTR), Relevance Score (ustabilt), Reach uten kontekst (vi viser alltid Net New + Rolling). Alt dette kan finnes i Ads Manager — ikke her.</p>
+  </div>
+</section>
+
+<!-- 04 SKJERMBILDER / VIEWS -->
+<section>
+  <div class="section-header">
+    <span class="section-number">04</span>
+    <h2>Appstruktur og skjermspesifikasjoner</h2>
+  </div>
+
+  <p>Appen har én URL. Sidebar til venstre inneholder kundeliste + navigasjon. Velger du en kunde, ser du alle moduler for den kunden.</p>
+
+  <!-- SCREEN 1 -->
+  <div class="screen">
+    <div class="screen-header">
+      <span class="screen-name">SCREEN 01 · Pulse — Alle kunder</span>
+      <span class="screen-tag">Startside · Ingen kunde valgt</span>
+    </div>
+    <div class="screen-body">
+      <p class="screen-desc">"Jeg åpner appen om morgenen og ser umiddelbart om noe er galt — uten å klikke meg inn på hver enkelt kunde."</p>
+
+      <h3>Innhold</h3>
+      <div class="feature-list">
+        <div class="feature-item"><div class="feature-dot"></div>Én rad per kunde: Kundenavn · Spend WoW · ROAS WoW · CPM WoW · Net New Reach % siste 30 dager · Statusindikator (grønn / gul / rød)</div>
+        <div class="feature-item"><div class="feature-dot"></div>Statusindikator settes automatisk basert på definerte terskelverdier per kunde (konfigurerbar). Default: rød hvis ROAS under mål, gul hvis spend avviker >15% fra budsjett.</div>
+        <div class="feature-item"><div class="feature-dot"></div>Klikk på kunde → går direkte til den kundens Performance-view</div>
+        <div class="feature-item"><div class="feature-dot"></div>Øverst: Aggregert spend for hele byrået denne uken (kun intern bruk)</div>
+      </div>
+
+      <h3>Beslutning denne skjermen driver</h3>
+      <p style="font-size:13px; max-width:100%;">Hvilke kunder trenger oppmerksomhet i dag?</p>
+    </div>
+  </div>
+
+  <!-- SCREEN 2 -->
+  <div class="screen">
+    <div class="screen-header">
+      <span class="screen-name">SCREEN 02 · Performance — Kunde</span>
+      <span class="screen-tag">Modul 1 · Per kunde</span>
+    </div>
+    <div class="screen-body">
+      <p class="screen-desc">"Jeg skal i kundemøte om 10 minutter. Jeg åpner Performance-tabben og vet alt jeg trenger på 30 sekunder."</p>
+
+      <h3>Innhold</h3>
+      <div class="feature-list">
+        <div class="feature-item"><div class="feature-dot"></div>KPI-kort øverst (large): Spend, ROAS, CPA — med delta vs. forrige periode (WoW og MoM, valgbart)</div>
+        <div class="feature-item"><div class="feature-dot"></div>Sekundære KPI-kort: CPM, Frequency, CTR — samme delta-format</div>
+        <div class="feature-item"><div class="feature-dot"></div>Spend-kurve over tid (7d / 30d / 90d) med daglig oppdatering</div>
+        <div class="feature-item"><div class="feature-dot"></div>ROAS-trend over samme periode — som linje over spend-søylene</div>
+        <div class="feature-item"><div class="feature-dot"></div>Breakdowns: Kampanje-tabell med spend/ROAS/CPA sortert etter spend (default). Klikk kampanje → ad set-nivå → ad-nivå.</div>
+        <div class="feature-item"><div class="feature-dot"></div>Datovelger: Forhåndsdefinerte perioder (I dag / Siste 7d / Siste 30d / Denne måneden / Siste måned) + egendefinert range</div>
+        <div class="feature-item"><div class="feature-dot"></div>Sammenlign-toggle: Slå på/av sammenligning med forrige periode</div>
+      </div>
+
+      <h3>Beslutning denne skjermen driver</h3>
+      <p style="font-size:13px; max-width:100%;">Er vi på rett spor? Hvilke kampanjer drar eller drar ned?</p>
+    </div>
+  </div>
+
+  <!-- SCREEN 3 -->
+  <div class="screen">
+    <div class="screen-header">
+      <span class="screen-name">SCREEN 03 · Rolling Reach — Kunde</span>
+      <span class="screen-tag">Modul 2 · Per kunde</span>
+    </div>
+    <div class="screen-body">
+      <p class="screen-desc">"Spend er bra, ROAS ser greit ut. Men treffer vi faktisk nye mennesker? Eller snakker vi til den samme 50 000 gjentagende ganger?"</p>
+
+      <h3>Innhold</h3>
+      <div class="feature-list">
+        <div class="feature-item"><div class="feature-dot"></div>KPI-kort: Rolling Reach (akkumulert) · Gjennomsnittlig Net New Reach % per måned · Cost per 1k Net New Reach · Frequency</div>
+        <div class="feature-item"><div class="feature-dot"></div>Reach Composition Chart: Stacked bar (Net New Reach i turkis / Reached Previously i blå) per måned/uke, med % Net New Reach som linje på sekundærakse — identisk logikk som withadinsights</div>
+        <div class="feature-item"><div class="feature-dot"></div>Cost per 1k Net New Reach over tid (linjekart)</div>
+        <div class="feature-item"><div class="feature-dot"></div>Monthly Breakdown-tabell: Rolling Reach · Monthly Reach · Net New Reach · Spend · CPM · Frequency · Cost/1k Account Reach · Cost/1k Net New Reach · % Net New Reach. Export CSV.</div>
+        <div class="feature-item"><div class="feature-dot"></div>Drilldown: Konto → Kampanje → Ad Set (velg nivå i dropdown)</div>
+        <div class="feature-item"><div class="feature-dot"></div>Lookback-vindu: Velg 30 / 60 / 90 / 180 dager for "Reached Previously"-definisjonen</div>
+        <div class="feature-item"><div class="feature-dot"></div>Datorange: Siste 3 / 6 / 12 / 24 måneder + egendefinert</div>
+      </div>
+
+      <h3>Beslutning denne skjermen driver</h3>
+      <p style="font-size:13px; max-width:100%;">Er målgruppen i ferd med å mettes? Trenger vi nytt creative, bredere targeting, eller ekspansjon til nytt marked?</p>
+    </div>
+  </div>
+
+  <!-- SCREEN 4 -->
+  <div class="screen">
+    <div class="screen-header">
+      <span class="screen-name">SCREEN 04 · Creative — Kohort-tabell</span>
+      <span class="screen-tag">Modul 3a · Per kunde</span>
+    </div>
+    <div class="screen-body">
+      <p class="screen-desc">"Annonser lansert samme uke — gjør de det bedre eller dårligere enn forrige batch? Hva er trenden over levetiden?"</p>
+
+      <h3>Innhold</h3>
+      <div class="feature-list">
+        <div class="feature-item"><div class="feature-dot"></div>Kohort = annonser med samme created_date (kalenderdag). Rader = kohorter (datoperiode + antall annonser). Kolonner = W0, W1, W2 … Wn siden lansering.</div>
+        <div class="feature-item"><div class="feature-dot"></div>Heatmap-farging: Grønn = over median for den metriken. Rød = under. Beregnet per kolonne (ikke globalt) slik at tidlige og sene uker er sammenlignbare.</div>
+        <div class="feature-item"><div class="feature-dot"></div>Valgbar metric: Hook Rate · Hold Rate · CTR · CPM · CPC · CPA · ROAS · Spend. Én om gangen.</div>
+        <div class="feature-item"><div class="feature-dot"></div>Siste rad: "ALL COHORTS" — aggregert gjennomsnitt per uke på tvers av alle kohorter</div>
+        <div class="feature-item"><div class="feature-dot"></div>Klikk på kohort-rad → åpner Creative Gallery (Screen 04b)</div>
+        <div class="feature-item"><div class="feature-dot"></div>Grupperingsfilter: Meta native format (video/image/carousel) + navnekonvensjon-tag (basert på filnavn-hierarki)</div>
+        <div class="feature-item"><div class="feature-dot"></div>Tabellvisning + Heatmap-visning (toggle)</div>
+      </div>
+
+      <h3>Beslutning denne skjermen driver</h3>
+      <p style="font-size:13px; max-width:100%;">Hvilken kohort gjør det best over tid? Er det en nedgang etter W3 på tvers av alle kohorter? Bør vi lansere hyppigere?</p>
+    </div>
+  </div>
+
+  <!-- SCREEN 4b -->
+  <div class="screen">
+    <div class="screen-header">
+      <span class="screen-name">SCREEN 04b · Creative — Gallery (modal)</span>
+      <span class="screen-tag">Modul 3b · Slide-out fra kohort-tabell</span>
+    </div>
+    <div class="screen-body">
+      <p class="screen-desc">"Jeg klikker på en kohort og ser umiddelbart hvilke enkeltannonser som er vinnere og tapere — med thumbnail og tall."</p>
+
+      <h3>Innhold</h3>
+      <div class="feature-list">
+        <div class="feature-item"><div class="feature-dot"></div>Thumbnail-grid: 4 kolonner. Sortert etter valgt metric (default: Hook Rate). Høyest øverst til venstre.</div>
+        <div class="feature-item"><div class="feature-dot"></div>Per kort: Thumbnail (bilde/video-preview) · Ad navn · Status (aktiv / pauset) · Hook Rate · Hold Rate · CTR · Spend · ROAS</div>
+        <div class="feature-item"><div class="feature-dot"></div>Klikk på thumbnail → Åpner full ad-preview med alle metrics + lenke til Meta Ads Manager</div>
+        <div class="feature-item"><div class="feature-dot"></div>Sorter og filtrer: Sorter etter hvilken som helst metric. Filter på status (aktiv/pauset/alle).</div>
+        <div class="feature-item"><div class="feature-dot"></div>"Del med team"-knapp: Genererer en read-only lenke til denne gallerivisningen med låst kohort og dato. Lenken kan sendes til produksjonsteamet uten innlogging.</div>
+        <div class="feature-item"><div class="feature-dot"></div>Eksport: Last ned galleriet som PNG/PDF for bruk i presentasjoner eller kunderapporter</div>
+      </div>
+
+      <h3>Beslutning denne skjermen driver</h3>
+      <p style="font-size:13px; max-width:100%;">Hvilke annonser skalerer vi? Hvilke pauser vi? Hva skal vi lage mer av?</p>
+    </div>
+  </div>
+
+  <!-- SCREEN 5 -->
+  <div class="screen">
+    <div class="screen-header">
+      <span class="screen-name">SCREEN 05 · Kunderapport</span>
+      <span class="screen-tag">Ekstern · PDF eller read-only URL</span>
+    </div>
+    <div class="screen-body">
+      <p class="screen-desc">"Kunden åpner en lenke (eller PDF) og ser en pen, forståelig oppsummering av måneden — uten å måtte forholde seg til dashboardet."</p>
+
+      <h3>Innhold</h3>
+      <div class="feature-list">
+        <div class="feature-item"><div class="feature-dot"></div>Header: Kundenavn · Periode · Logoen til Simpleness</div>
+        <div class="feature-item"><div class="feature-dot"></div>Seksjon 1 — Performance: Spend · ROAS · CPA · delta vs. forrige periode. Enkel trend-grafik.</div>
+        <div class="feature-item"><div class="feature-dot"></div>Seksjon 2 — Reach: Reach Composition-chart (stacked bar) · Net New Reach % · Frequency. Kort tekst fra rådgiver (redigerbart felt).</div>
+        <div class="feature-item"><div class="feature-dot"></div>Seksjon 3 — Creative: Top 3 annonser denne perioden (thumbnail + metrics). Bottom 3 (pauset/svak ytelse). Kort kommentar fra rådgiver.</div>
+        <div class="feature-item"><div class="feature-dot"></div>Seksjon 4 — Neste steg: Fritekstfelt som rådgiver fyller ut. Vises som "Anbefalinger" i rapporten.</div>
+        <div class="feature-item"><div class="feature-dot"></div>Generer rapport: Velg periode → forhåndsvis → send som lenke eller eksporter PDF</div>
+        <div class="feature-item"><div class="feature-dot"></div>Automatisk ukentlig / månedlig rapport: Settes opp per kunde med e-postliste</div>
+      </div>
+
+      <h3>Beslutning denne skjermen driver</h3>
+      <p style="font-size:13px; max-width:100%;">Kunden forstår hva pengene gjør, har tillit til Simpleness og er klar for neste møte.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 05 NAVIGASJON OG UX-FLOW -->
+<section>
+  <div class="section-header">
+    <span class="section-number">05</span>
+    <h2>Navigasjon og brukerflyt</h2>
+  </div>
+
+  <h3>Appstruktur</h3>
+  <p>Venstre sidebar (kollapsbar): Simpleness-logo øverst → Kundeliste (alfabetisk, med statusdot) → Innstillinger nederst. Valgt kunde highlightes. Kunden huskes mellom sesjoner (localStorage).</p>
+  <p>Topbar: Kundenavn + plattform-tag (Meta / Shopify osv.) · Datovelger · Eksport-knapp · Bruker-avatar</p>
+  <p>Innhold: Fire tabs per kunde — <strong>Pulse · Performance · Reach · Creative</strong>. Tab-state huskes per kunde.</p>
+
+  <h3>Kritiske UX-krav</h3>
+  <div class="feature-list">
+    <div class="feature-item"><div class="feature-dot"></div><strong>Speed:</strong> Siden skal være fullt lastet (data inkl.) innen 3 sekunder. Data caches i Supabase med 6-timers refresh — ikke live-pull ved hvert sidebesøk.</div>
+    <div class="feature-item"><div class="feature-dot"></div><strong>Skeleton-loading:</strong> Aldri blank skjerm. KPI-kort og tabeller viser skeleton-state mens data hentes.</div>
+    <div class="feature-item"><div class="feature-dot"></div><strong>Mobile:</strong> Pulse-oversikten og enkelt-kunde KPI-kort skal fungere på mobil. Tabeller kollapseres til card-view på small breakpoint.</div>
+    <div class="feature-item"><div class="feature-dot"></div><strong>Feilhåndtering:</strong> Hvis API-henting feiler, vises sist cachede data med "Sist oppdatert: [tidspunkt]"-indikator. Aldri tom skjerm uten forklaring.</div>
+    <div class="feature-item"><div class="feature-dot"></div><strong>Delbare lenker:</strong> Alle views skal ha delbare URLer (f.eks. /kunder/myyk/creative?kohort=2026-03-15). Lenken skal gi eksakt samme visning til en annen rådgiver.</div>
+    <div class="feature-item"><div class="feature-dot"></div><strong>Notater:</strong> Rådgiver kan legge til en intern kommentar på en kohort eller metric (vises kun internt, ikke i kunderapport med mindre kopiert). Lagres i Supabase per kunde per dato.</div>
+  </div>
+
+  <h3>Brukerflyt — fra data til beslutning</h3>
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div class="flow-content">
+        <div class="flow-title">Morgensjekk (2 min)</div>
+        <div class="flow-desc">Åpner Pulse-siden. Ser statusdots. Identifiserer om noen kunder er røde. Klikker inn på dem.</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div class="flow-content">
+        <div class="flow-title">Dypdykk Performance (5 min)</div>
+        <div class="flow-desc">Ser KPI-delta. Driller ned i kampanjer. Identifiserer hva som er oppe/nede. Noterer eventuelt internt.</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div class="flow-content">
+        <div class="flow-title">Reach-sjekk (3 min)</div>
+        <div class="flow-desc">Er Net New Reach % fallende? Er Frequency høy? Vurderer om det er et reach-problem (trenger nytt creative / ekspansjon) eller et performance-problem.</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">4</div>
+      <div class="flow-content">
+        <div class="flow-title">Creative-beslutning (5–10 min)</div>
+        <div class="flow-desc">Ser kohort-tabellen. Identifiserer hvilken kohort som underpresterer. Åpner galleriet. Finner svake annonser → pauser dem i Ads Manager. Finner sterke → noterer for skalering. Deler galleriet med produksjonsteam via lenke.</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">5</div>
+      <div class="flow-content">
+        <div class="flow-title">Kunderapport (10 min, ukentlig / månedlig)</div>
+        <div class="flow-desc">Går til Rapport-tab. Perioden er allerede satt. Skriver kommentar til Reach og Creative. Skriver Neste steg. Forhåndsviser. Sender lenke til kunde eller eksporterer PDF.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 INTEGRASJONER OG SKALERING -->
+<section>
+  <div class="section-header">
+    <span class="section-number">06</span>
+    <h2>Datakilder og veikart</h2>
+  </div>
+
+  <p>Appen bygges med et datakilde-abstraksjonslag fra dag én. Alle metrics i UI-et hentes fra et normalisert datalag i Supabase — ikke direkte fra Meta API. Dette gjør det mulig å koble på nye kilder uten å endre frontend.</p>
+
+  <div class="roadmap">
+    <div class="roadmap-phase">
+      <div class="phase-label phase-v1">V1 — Nå</div>
+      <div class="phase-title">Meta Ads Only</div>
+      <div class="phase-items">
+        <div class="phase-item">Meta Marketing API (Insights)</div>
+        <div class="phase-item">System User Token (Simpleness BM)</div>
+        <div class="phase-item">Performance + Reach + Creative</div>
+        <div class="phase-item">Kunderapport (PDF / lenke)</div>
+      </div>
+    </div>
+    <div class="roadmap-phase">
+      <div class="phase-label phase-v2">V2 — Neste</div>
+      <div class="phase-title">Blended ROAS</div>
+      <div class="phase-items">
+        <div class="phase-item">Shopify (orders, revenue, new vs returning)</div>
+        <div class="phase-item">GA4 (sessions, conversion rate)</div>
+        <div class="phase-item">Centra (for kunder på Centra)</div>
+        <div class="phase-item">MER (Marketing Efficiency Ratio)</div>
+      </div>
+    </div>
+    <div class="roadmap-phase">
+      <div class="phase-label phase-v2">V3 — Fremtid</div>
+      <div class="phase-title">Full kanaldekning</div>
+      <div class="phase-items">
+        <div class="phase-item">Google Ads</div>
+        <div class="phase-item">Snap Ads</div>
+        <div class="phase-item">Tiktok Ads</div>
+        <div class="phase-item">Cross-channel attribution</div>
+      </div>
+    </div>
+    <div class="roadmap-phase">
+      <div class="phase-label phase-v2">V4 — Ambisjonen</div>
+      <div class="phase-title">Automatisering</div>
+      <div class="phase-items">
+        <div class="phase-item">AI-genererte rapport-kommentarer</div>
+        <div class="phase-item">Anomali-varsler (Slack / e-post)</div>
+        <div class="phase-item">Regelbasert budsjettjustering</div>
+        <div class="phase-item">Automatisk creative-scoring</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Datamodell (forenklet)</h3>
+  <div class="feature-list">
+    <div class="feature-item"><div class="feature-dot"></div><strong>clients</strong> — id, name, meta_account_id, shopify_domain, status, config (terskelverdier for statusindikator)</div>
+    <div class="feature-item"><div class="feature-dot"></div><strong>meta_performance_daily</strong> — client_id, date, campaign_id, adset_id, ad_id, spend, impressions, reach, frequency, clicks, purchases, purchase_value, cpm, ctr, cpa, roas</div>
+    <div class="feature-item"><div class="feature-dot"></div><strong>meta_reach_monthly</strong> — client_id, month, rolling_reach, monthly_reach, net_new_reach, spend, cpm, frequency, cost_per_1k_account_reach, cost_per_1k_net_new_reach, pct_net_new_reach</div>
+    <div class="feature-item"><div class="feature-dot"></div><strong>meta_ads</strong> — ad_id, client_id, name, created_date, cohort_date, format, thumbnail_url, status, naming_convention_tags</div>
+    <div class="feature-item"><div class="feature-dot"></div><strong>notes</strong> — client_id, user_id, date, entity_type, entity_id, content (interne notater)</div>
+    <div class="feature-item"><div class="feature-dot"></div><strong>report_snapshots</strong> — client_id, period, generated_at, content_json, share_token (for delbare kunderapporter)</div>
+  </div>
+</section>
+
+<!-- 07 AUTH OG TILGANGER -->
+<section>
+  <div class="section-header">
+    <span class="section-number">07</span>
+    <h2>Auth og tilgangstyring</h2>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Rolle</div>
+      <div class="card-title">Admin (Jonas)</div>
+      <div class="card-desc">Full tilgang. Kan legge til / fjerne kunder og brukere. Kan sette terskelverdier for statusindikator per kunde. Tilgang til API-nøkkelkonfigurasjon.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Rolle</div>
+      <div class="card-title">Rådgiver</div>
+      <div class="card-desc">Se alle kunder. Kan skrive interne notater. Kan generere og sende kunderapporter. Kan ikke endre kontoinnstillinger.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Rolle</div>
+      <div class="card-title">Kreativt team</div>
+      <div class="card-desc">Se Creative-modulen for alle kunder. Read-only på Performance og Reach. Kan ikke generere kunderapporter.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Rolle</div>
+      <div class="card-title">Ekstern (kunde)</div>
+      <div class="card-desc">Kun tilgang via share-token i kunderapport. Ser kun eget brand. Ingen innlogging nødvendig — token-basert tilgang med utløpsdato.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 08 SUKSESSKRITERIER -->
+<section>
+  <div class="section-header">
+    <span class="section-number">08</span>
+    <h2>Suksesskriterier</h2>
+  </div>
+
+  <h3>Kortsiktig (3 måneder etter lansering)</h3>
+  <div class="feature-list">
+    <div class="feature-item"><div class="feature-dot"></div>Alle rådgivere bruker dashboardet som primær kilde i kundemøter — ikke Ads Manager</div>
+    <div class="feature-item"><div class="feature-dot"></div>Kunderapporter sendes fra appen (ikke manuelt i PowerPoint/Excel)</div>
+    <div class="feature-item"><div class="feature-dot"></div>Produksjonsteamet mottar creative-innsikt via dashboard-lenke, ikke via Slack-screenshots</div>
+  </div>
+
+  <h3>Mellomlang sikt (6 måneder)</h3>
+  <div class="feature-list">
+    <div class="feature-item"><div class="feature-dot"></div>Alle kunder er onboardet — ett system for hele porteføljen</div>
+    <div class="feature-item"><div class="feature-dot"></div>Rådgivere bruker Rolling Reach-data aktivt i anbefalinger om creative diversitet og budsjettjustering</div>
+    <div class="feature-item"><div class="feature-dot"></div>Minst én kunde har eksplisitt kommentert positivt på rapportkvaliteten</div>
+  </div>
+
+  <h3>Det vi måler internt</h3>
+  <table class="metrics-table">
+    <thead>
+      <tr><th>KPI</th><th>Mål</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Tid brukt på manuell rapportering per uke</td><td>-80% vs. i dag</td></tr>
+      <tr><td>Rådgivere som bruker appen ukentlig</td><td>100% av teamet</td></tr>
+      <tr><td>Kunderapporter sendt fra appen</td><td>100% av aktive kunder</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<hr class="divider">
+
+<section>
+  <div class="section-header">
+    <span class="section-number">—</span>
+    <h2>Hva vi ikke bygger i v1</h2>
+  </div>
+  <p>For å sikre at v1 faktisk lanseres og brukes, er følgende eksplisitt utenfor scope:</p>
+  <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
+    <span class="tag">Google Ads-data</span>
+    <span class="tag">Snap Ads-data</span>
+    <span class="tag">Shopify-integrasjon</span>
+    <span class="tag">GA4-integrasjon</span>
+    <span class="tag">Anomali-varsler</span>
+    <span class="tag">AI-genererte kommentarer</span>
+    <span class="tag">Budsjettoptimering</span>
+    <span class="tag">Kundeinnlogging</span>
+    <span class="tag">Multi-currency</span>
+    <span class="tag">Custom metric-builder</span>
+  </div>
+  <p style="margin-top: 16px; font-size: 13px; color: var(--mid);">Alt dette er planlagt i v2+. Arkitekturen skal støtte det — men vi shipper ikke før kjernen er riktig.</p>
+</section>
+
+</body>
+</html>
