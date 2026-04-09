@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simpleness Dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+:root { --bg: #F7F5F0; --black: #0D0D0D; --accent: #FF4D00; --mid: #6B6B6B; --border: #E0DDD8; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background: var(--bg); color: var(--black); font-family: 'IBM Plex Sans', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+.container { max-width: 560px; width: 100%; }
+.label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mid); margin-bottom: 12px; }
+h1 { font-size: 32px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 8px; }
+h1 span { color: var(--accent); }
+.sub { color: var(--mid); font-size: 14px; margin-bottom: 40px; }
+.links { display: flex; flex-direction: column; gap: 12px; }
+a.doc-link { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; background: white; border: 1px solid var(--border); border-radius: 6px; text-decoration: none; color: var(--black); transition: border-color 0.15s; }
+a.doc-link:hover { border-color: var(--black); }
+.link-title { font-size: 15px; font-weight: 600; }
+.link-desc { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--mid); margin-top: 3px; }
+.arrow { color: var(--mid); font-size: 18px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="label">Simpleness · Internt</div>
+  <h1>Agency<br><span>Dashboard</span></h1>
+  <p class="sub">Dokumentasjon og spesifikasjoner</p>
+  <div class="links">
+    <a class="doc-link" href="kravspec.html">
+      <div><div class="link-title">Kravspesifikasjon</div><div class="link-desc">Fullstendig spec — brukere, metrics, skjermer, datamodell</div></div>
+      <span class="arrow">→</span>
+    </a>
+    <a class="doc-link" href="tilgangsguide.html">
+      <div><div class="link-title">Tilgangsguide</div><div class="link-desc">Hva som trengs av tilganger og hvem gjør hva</div></div>
+      <span class="arrow">→</span>
+    </a>
+    <a class="doc-link" href="mockup.html">
+      <div><div class="link-title">Interaktiv mockup</div><div class="link-desc">Klikk-bar prototype — Reach, Creative, Kohort</div></div>
+      <span class="arrow">→</span>
+    </a>
+  </div>
+</div>
+</body>
+</html>
