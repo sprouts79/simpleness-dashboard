@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tilgangsguide — Simpleness Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap');
+
+  :root {
+    --black: #0D0D0D;
+    --white: #F7F5F0;
+    --accent: #FF4D00;
+    --mid: #6B6B6B;
+    --border: #E0DDD8;
+    --section-bg: #F0EDE8;
+    --tag-bg: #E8E4DD;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--white);
+    color: var(--black);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.65;
+    max-width: 740px;
+    margin: 0 auto;
+    padding: 60px 40px 120px;
+  }
+
+  .doc-header {
+    border-bottom: 2px solid var(--black);
+    padding-bottom: 32px;
+    margin-bottom: 48px;
+  }
+  .doc-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin-bottom: 12px;
+  }
+  .doc-title {
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 14px;
+  }
+  .doc-title span { color: var(--accent); }
+  .doc-intro {
+    font-size: 15px;
+    color: var(--mid);
+    max-width: 560px;
+    line-height: 1.7;
+    margin-top: 16px;
+  }
+
+  /* SERVICE BLOCK */
+  .service {
+    margin-bottom: 52px;
+  }
+  .service-header {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .service-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    min-width: 28px;
+  }
+  .service-title {
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .service-url {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--mid);
+    margin-left: auto;
+  }
+  .service-url a {
+    color: var(--mid);
+    text-decoration: none;
+  }
+  .service-url a:hover { color: var(--accent); }
+
+  /* STEPS */
+  .steps { display: flex; flex-direction: column; gap: 0; }
+  .step {
+    display: flex;
+    gap: 20px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--mid);
+    min-width: 24px;
+    padding-top: 2px;
+  }
+  .step-body { flex: 1; }
+  .step-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+  .step-desc {
+    font-size: 13px;
+    color: #444;
+    line-height: 1.65;
+    max-width: 100%;
+  }
+  .step-desc a {
+    color: var(--accent);
+    text-decoration: none;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .step-desc a:hover { text-decoration: underline; }
+
+  /* DELIVER BOX */
+  .deliver {
+    margin-top: 10px;
+    background: var(--black);
+    color: #E8E8E8;
+    border-radius: 4px;
+    padding: 14px 16px;
+  }
+  .deliver-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .deliver-item {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #CCC;
+    padding: 3px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #1E1E1E;
+  }
+  .deliver-item:last-child { border-bottom: none; }
+  .deliver-item::before {
+    content: '→';
+    color: var(--accent);
+    font-size: 10px;
+  }
+
+  /* NOTE */
+  .note {
+    margin-top: 8px;
+    padding: 10px 14px;
+    background: var(--section-bg);
+    border-left: 3px solid var(--border);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--mid);
+    line-height: 1.6;
+  }
+  .note strong { color: var(--black); }
+
+  /* SUMMARY */
+  .summary {
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 2px solid var(--black);
+  }
+  .summary-title {
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    color: var(--mid);
+  }
+  .summary-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-service { font-weight: 500; flex: 1; }
+  .summary-who {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--mid);
+  }
+  .badge {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 3px;
+  }
+  .badge-you { background: #FFE8E0; color: var(--accent); }
+  .badge-me { background: #E6F9F0; color: #065F46; }
+
+  @media (max-width: 600px) {
+    body { padding: 32px 20px 80px; }
+    .doc-title { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <div class="doc-label">Simpleness Dashboard · Oppsett</div>
+  <h1 class="doc-title">Tilganger vi<br><span>trenger</span></h1>
+  <p class="doc-intro">Fire tjenester. Du setter opp tilganger og sender meg det som er markert med "send til Jonas". Jeg tar meg av resten.</p>
+</header>
+
+<!-- 01 META -->
+<div class="service">
+  <div class="service-header">
+    <span class="service-num">01</span>
+    <span class="service-title">Meta Business Manager</span>
+    <span class="service-url"><a href="https://business.facebook.com" target="_blank">business.facebook.com</a></span>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">a</div>
+      <div class="step-body">
+        <div class="step-title">Opprett en ny Meta App</div>
+        <div class="step-desc">
+          Gå til <a href="https://developers.facebook.com/apps/create" target="_blank">developers.facebook.com/apps/create</a><br>
+          Velg type: <strong>Business</strong> → Koble til Simpleness sin Business Manager → Fullfør.
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">b</div>
+      <div class="step-body">
+        <div class="step-title">Opprett en System User</div>
+        <div class="step-desc">
+          Business Settings → Users → System Users → Add<br>
+          Navn: <strong>Simpleness Dashboard</strong> · Rolle: <strong>Admin</strong>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">c</div>
+      <div class="step-body">
+        <div class="step-title">Gi System User tilgang til alle kundekontoer</div>
+        <div class="step-desc">
+          Business Settings → Accounts → Ad Accounts<br>
+          For <em>hver kundekonto</em>: Assign People → legg til "Simpleness Dashboard" → Rolle: <strong>Advertiser</strong>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">d</div>
+      <div class="step-body">
+        <div class="step-title">Generer Access Token</div>
+        <div class="step-desc">
+          System Users → Simpleness Dashboard → Generate New Token<br>
+          Velg appen du opprettet → Huk av: <strong>ads_read, ads_management, business_management, read_insights</strong><br>
+          Kopier tokenet — det vises kun én gang.
+        </div>
+        <div class="deliver">
+          <div class="deliver-label">Send til Jonas</div>
+          <div class="deliver-item">Access Token (langt token som starter med EAA...)</div>
+          <div class="deliver-item">App ID og App Secret (under App Settings → Basic)</div>
+          <div class="deliver-item">Ad Account ID for hver kunde (format: act_1234567890)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 02 GITHUB -->
+<div class="service">
+  <div class="service-header">
+    <span class="service-num">02</span>
+    <span class="service-title">GitHub</span>
+    <span class="service-url"><a href="https://github.com/new" target="_blank">github.com/new</a></span>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">a</div>
+      <div class="step-body">
+        <div class="step-title">Opprett et nytt repository</div>
+        <div class="step-desc">
+          Gå til <a href="https://github.com/new" target="_blank">github.com/new</a><br>
+          Navn: <strong>simpleness-dashboard</strong> · Sett til <strong>Private</strong> · Create repository.
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">b</div>
+      <div class="step-body">
+        <div class="step-title">Lag en Personal Access Token</div>
+        <div class="step-desc">
+          <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a><br>
+          Navn: <strong>Claude Dashboard</strong> · Expiration: <strong>No expiration</strong><br>
+          Huk av: <strong>repo</strong> og <strong>workflow</strong> → Generate token.
+        </div>
+        <div class="deliver">
+          <div class="deliver-label">Send til Jonas</div>
+          <div class="deliver-item">Personal Access Token (starter med ghp_...)</div>
+          <div class="deliver-item">Full repo-URL (github.com/brukernavn/simpleness-dashboard)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 03 VERCEL -->
+<div class="service">
+  <div class="service-header">
+    <span class="service-num">03</span>
+    <span class="service-title">Vercel</span>
+    <span class="service-url"><a href="https://vercel.com/new" target="_blank">vercel.com/new</a></span>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">a</div>
+      <div class="step-body">
+        <div class="step-title">Opprett et nytt prosjekt</div>
+        <div class="step-desc">
+          Gå til <a href="https://vercel.com/new" target="_blank">vercel.com/new</a><br>
+          Import GitHub-repoet du nettopp opprettet → Framework: <strong>Next.js</strong> → Deploy.<br>
+          (Første deploy feiler — det er ok, vi setter opp resten etterpå.)
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">b</div>
+      <div class="step-body">
+        <div class="step-title">Lag en API Token</div>
+        <div class="step-desc">
+          <a href="https://vercel.com/account/tokens" target="_blank">vercel.com/account/tokens</a><br>
+          Create Token → Navn: <strong>Claude Dashboard Deploy</strong> · Scope: <strong>Full Account</strong> · No Expiration.
+        </div>
+        <div class="deliver">
+          <div class="deliver-label">Send til Jonas</div>
+          <div class="deliver-item">Vercel API Token</div>
+          <div class="deliver-item">Team ID (Vercel → Settings → General → Team ID)</div>
+          <div class="deliver-item">Project ID (Vercel → Prosjektet → Settings → General → Project ID)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 04 SUPABASE -->
+<div class="service">
+  <div class="service-header">
+    <span class="service-num">04</span>
+    <span class="service-title">Supabase</span>
+    <span class="service-url"><a href="https://supabase.com/dashboard/new" target="_blank">supabase.com</a></span>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">a</div>
+      <div class="step-body">
+        <div class="step-title">Opprett et nytt prosjekt</div>
+        <div class="step-desc">
+          Gå til <a href="https://supabase.com/dashboard/new/_" target="_blank">supabase.com/dashboard/new</a><br>
+          Navn: <strong>simpleness-dashboard</strong> · Region: <strong>eu-central-1 (Frankfurt)</strong><br>
+          Sett et sterkt passord og noter det.
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">b</div>
+      <div class="step-body">
+        <div class="step-title">Hent API-nøkler</div>
+        <div class="step-desc">
+          Project → Settings → API<br>
+          Du trenger to ting herfra:
+        </div>
+        <div class="deliver">
+          <div class="deliver-label">Send til Jonas</div>
+          <div class="deliver-item">Project URL (ser ut som https://abcdef.supabase.co)</div>
+          <div class="deliver-item">service_role key (den lange nøkkelen — ikke anon key)</div>
+          <div class="deliver-item">Database-passordet du satte ved opprettelse</div>
+        </div>
+        <div class="note">
+          <strong>service_role</strong> gir full database-tilgang — send det kun til Jonas, ikke del videre.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY -->
+<div class="summary">
+  <div class="summary-title">Oppsummert</div>
+
+  <div class="summary-row">
+    <span class="summary-service">Meta — App + System User + Token</span>
+    <span class="badge badge-you">Du setter opp</span>
+  </div>
+  <div class="summary-row">
+    <span class="summary-service">GitHub — Repo + Access Token</span>
+    <span class="badge badge-you">Du setter opp</span>
+  </div>
+  <div class="summary-row">
+    <span class="summary-service">Vercel — Prosjekt + API Token</span>
+    <span class="badge badge-you">Du setter opp</span>
+  </div>
+  <div class="summary-row">
+    <span class="summary-service">Supabase — Prosjekt + API Keys</span>
+    <span class="badge badge-you">Du setter opp</span>
+  </div>
+  <div class="summary-row">
+    <span class="summary-service">Kode, database, deploy — alt annet</span>
+    <span class="badge badge-me">Jonas / Claude</span>
+  </div>
+</div>
+
+</body>
+</html>
