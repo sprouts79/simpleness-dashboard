@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simpleness Dashboard — Mockup</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg: #F4F1EC;
+  --surface: #FFFFFF;
+  --surface2: #EDE9E3;
+  --border: #D8D3CB;
+  --black: #0E0E0E;
+  --mid: #8A8480;
+  --mono: 'DM Mono', monospace;
+  --syne: 'Syne', sans-serif;
+
+  --green: #00C46A;
+  --green-bg: #E6F9F0;
+  --red: #E8392A;
+  --red-bg: #FEF0EE;
+  --amber: #F59E0B;
+  --amber-bg: #FEF3C7;
+  --blue: #2563EB;
+  --blue-light: #DBEAFE;
+
+  --reach-new: #0D9488;
+  --reach-old: #CBD5E1;
+  --cohort-high: #DCFCE7;
+  --cohort-low: #FEE2E2;
+  --cohort-mid: #F1F5F9;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--black);
+  font-family: var(--syne);
+  font-size: 13px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* LAYOUT */
+.app { display: flex; height: 100vh; overflow: hidden; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  background: var(--black);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+.sidebar-logo {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid #1E1E1E;
+  font-family: var(--syne);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #FFF;
+}
+.sidebar-logo span { color: #00C46A; }
+.sidebar-section-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #444;
+  padding: 16px 20px 8px;
+}
+.client-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-radius: 0;
+}
+.client-item:hover { background: #1A1A1A; }
+.client-item.active { background: #1E1E1E; }
+.client-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.dot-green { background: var(--green); }
+.dot-amber { background: var(--amber); }
+.dot-red { background: var(--red); }
+.client-name { font-size: 13px; color: #DDD; font-family: var(--syne); font-weight: 500; }
+.client-spend { font-family: var(--mono); font-size: 10px; color: #555; margin-left: auto; }
+
+.sidebar-nav { margin-top: auto; padding: 16px 12px; border-top: 1px solid #1E1E1E; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 6px; color: #666; font-size: 12px; cursor: pointer; }
+.nav-item:hover { color: #AAA; }
+
+/* MAIN */
+.main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+
+/* TOPBAR */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.topbar-client { font-size: 16px; font-weight: 700; }
+.topbar-tag { font-family: var(--mono); font-size: 10px; color: var(--mid); background: var(--surface2); padding: 3px 8px; border-radius: 3px; letter-spacing: 0.06em; }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.date-chip { font-family: var(--mono); font-size: 11px; color: var(--mid); background: var(--surface2); padding: 5px 10px; border-radius: 4px; cursor: pointer; border: 1px solid var(--border); }
+.date-chip:hover { background: var(--border); }
+
+/* TABS */
+.tabs {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  display: flex;
+  gap: 0;
+  flex-shrink: 0;
+}
+.tab {
+  font-family: var(--syne);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 12px 16px;
+  color: var(--mid);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s;
+}
+.tab:hover { color: var(--black); }
+.tab.active { color: var(--black); border-bottom-color: var(--black); }
+
+/* CONTENT */
+.content { padding: 28px; flex: 1; }
+
+/* VIEW */
+.view { display: none; }
+.view.active { display: block; }
+
+/* KPI ROW */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+.kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; }
+.kpi-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mid); margin-bottom: 8px; }
+.kpi-value { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+.kpi-delta { font-family: var(--mono); font-size: 11px; display: flex; align-items: center; gap: 4px; }
+.delta-up { color: var(--green); }
+.delta-down { color: var(--red); }
+.delta-mid { color: var(--mid); }
+
+/* SECTION */
+.section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 22px 24px; margin-bottom: 18px; }
+.section-title { font-size: 13px; font-weight: 700; letter-spacing: 0.02em; margin-bottom: 4px; }
+.section-sub { font-family: var(--mono); font-size: 10px; color: var(--mid); margin-bottom: 18px; }
+.section-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
+.section-header-left {}
+
+/* REACH CHART */
+.reach-chart { width: 100%; }
+.chart-bars { display: flex; align-items: flex-end; gap: 6px; height: 160px; margin-bottom: 8px; }
+.bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0; height: 100%; justify-content: flex-end; position: relative; }
+.bar-stack { width: 100%; border-radius: 3px 3px 0 0; position: relative; cursor: pointer; transition: opacity 0.15s; }
+.bar-stack:hover { opacity: 0.85; }
+.bar-new { background: var(--reach-new); }
+.bar-old { background: var(--reach-old); border-radius: 0; }
+.bar-old:first-child { border-radius: 3px 3px 0 0; }
+.bar-label { font-family: var(--mono); font-size: 9px; color: var(--mid); margin-top: 6px; text-align: center; }
+.chart-legend { display: flex; gap: 16px; margin-top: 8px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; color: var(--mid); }
+.legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+/* REACH LINE OVERLAY */
+.pct-dots { display: flex; justify-content: space-around; align-items: center; height: 24px; margin-bottom: 4px; }
+.pct-val { font-family: var(--mono); font-size: 9px; font-weight: 500; text-align: center; flex: 1; }
+
+/* SATURATION */
+.saturation-meter { background: var(--surface2); border-radius: 6px; padding: 16px 20px; margin-top: 0; border: 1px solid var(--border); }
+.sat-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+.sat-title { font-size: 12px; font-weight: 600; }
+.sat-pct { font-family: var(--mono); font-size: 18px; font-weight: 500; color: var(--reach-new); }
+.sat-bar-bg { background: var(--border); height: 6px; border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+.sat-bar-fill { height: 100%; background: linear-gradient(90deg, var(--green) 0%, var(--amber) 60%, var(--red) 85%); border-radius: 3px; }
+.sat-insight { font-family: var(--mono); font-size: 10px; color: var(--mid); line-height: 1.6; }
+.sat-insight strong { color: var(--black); }
+
+/* COHORT TABLE */
+.cohort-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.cohort-table th {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mid);
+  padding: 8px 10px;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.cohort-table th:first-child { text-align: left; }
+.cohort-table th:nth-child(2) { text-align: center; }
+.cohort-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #F0EDE8;
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.cohort-table td:first-child { text-align: left; font-family: var(--syne); font-weight: 500; font-size: 12px; }
+.cohort-table td:nth-child(2) { text-align: center; font-size: 10px; color: var(--mid); }
+.cohort-table tr:last-child td { border-bottom: none; font-weight: 600; color: var(--black); }
+.cohort-table tr.total-row td { background: var(--surface2); }
+.cohort-table tr:not(.total-row):hover td { background: #FAF8F5; cursor: pointer; }
+
+.cell-high { background: #D1FAE5 !important; color: #065F46 !important; border-radius: 3px; }
+.cell-mid-high { background: #ECFDF5 !important; color: #047857 !important; border-radius: 3px; }
+.cell-mid { background: #F8FAFC !important; color: #475569 !important; }
+.cell-low { background: #FEE2E2 !important; color: #991B1B !important; border-radius: 3px; }
+.cell-empty { color: #D0CCC6 !important; }
+
+.metric-select { font-family: var(--mono); font-size: 11px; padding: 4px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; color: var(--black); cursor: pointer; }
+
+/* CREATIVE GALLERY */
+.gallery-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.creative-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; cursor: pointer; transition: box-shadow 0.15s, transform 0.15s; }
+.creative-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); transform: translateY(-1px); }
+.creative-thumb { height: 140px; position: relative; overflow: hidden; }
+.thumb-img { width: 100%; height: 100%; object-fit: cover; display: flex; align-items: center; justify-content: center; font-size: 32px; }
+.thumb-gradient { position: absolute; bottom: 0; left: 0; right: 0; height: 60px; background: linear-gradient(transparent, rgba(0,0,0,0.6)); }
+.thumb-hook { position: absolute; bottom: 8px; left: 8px; font-family: var(--mono); font-size: 10px; font-weight: 500; color: white; background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 3px; }
+.thumb-status { position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid white; }
+.creative-meta { padding: 10px 12px; }
+.creative-name { font-size: 11px; font-weight: 600; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.creative-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.stat-item { }
+.stat-label { font-family: var(--mono); font-size: 8px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mid); }
+.stat-value { font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--black); }
+.stat-value.good { color: var(--green); }
+.stat-value.bad { color: var(--red); }
+
+/* INSIGHT CARDS */
+.insight-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+.insight-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; }
+.insight-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mid); margin-bottom: 8px; }
+.insight-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.insight-body { font-family: var(--mono); font-size: 11px; color: #555; line-height: 1.7; }
+.insight-body strong { color: var(--black); }
+
+/* AUDIENCE BREAKDOWN */
+.audience-bars { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+.aud-row { display: flex; align-items: center; gap: 10px; }
+.aud-label { font-family: var(--mono); font-size: 10px; color: var(--mid); min-width: 80px; }
+.aud-bar-bg { flex: 1; background: var(--surface2); height: 18px; border-radius: 3px; overflow: hidden; position: relative; }
+.aud-bar-fill { height: 100%; border-radius: 3px; display: flex; align-items: center; padding-left: 8px; }
+.aud-bar-text { font-family: var(--mono); font-size: 10px; font-weight: 500; color: white; }
+.aud-roas { font-family: var(--mono); font-size: 11px; font-weight: 500; min-width: 40px; text-align: right; }
+
+/* FORMAT BREAKDOWN */
+.format-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 4px; }
+.format-card { background: var(--surface2); border-radius: 6px; padding: 12px 14px; border: 1px solid var(--border); }
+.format-icon { font-size: 20px; margin-bottom: 6px; }
+.format-name { font-size: 11px; font-weight: 600; margin-bottom: 4px; }
+.format-stats { font-family: var(--mono); font-size: 10px; color: var(--mid); line-height: 1.8; }
+
+/* REACH TABLE */
+.reach-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.reach-table th { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mid); padding: 8px 12px; text-align: right; border-bottom: 1px solid var(--border); }
+.reach-table th:first-child { text-align: left; }
+.reach-table td { padding: 9px 12px; border-bottom: 1px solid #F0EDE8; text-align: right; font-family: var(--mono); font-size: 11px; }
+.reach-table td:first-child { text-align: left; font-family: var(--syne); font-size: 12px; font-weight: 500; }
+.reach-table tr:hover td { background: #FAF8F5; }
+
+.pct-pill { display: inline-block; padding: 2px 7px; border-radius: 10px; font-family: var(--mono); font-size: 10px; font-weight: 500; }
+.pct-high { background: var(--green-bg); color: #065F46; }
+.pct-mid { background: var(--amber-bg); color: #92400E; }
+.pct-low { background: var(--red-bg); color: #991B1B; }
+
+/* SCROLL FADE */
+.scroll-hint { text-align: center; font-family: var(--mono); font-size: 10px; color: var(--mid); padding: 8px; }
+
+@media (max-width: 900px) {
+  .sidebar { width: 180px; }
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+  .insight-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">SIMPLE<span>NESS</span></div>
+    <div class="sidebar-section-label">Kunder</div>
+
+    <div class="client-item active" onclick="selectClient(this,'MYYK')">
+      <div class="client-dot dot-green"></div>
+      <span class="client-name">MYYK</span>
+      <span class="client-spend">82k</span>
+    </div>
+    <div class="client-item" onclick="selectClient(this,'Kokkeløren')">
+      <div class="client-dot dot-amber"></div>
+      <span class="client-name">Kokkeløren</span>
+      <span class="client-spend">45k</span>
+    </div>
+    <div class="client-item" onclick="selectClient(this,'Alfa Sko')">
+      <div class="client-dot dot-green"></div>
+      <span class="client-name">Alfa Sko</span>
+      <span class="client-spend">61k</span>
+    </div>
+    <div class="client-item" onclick="selectClient(this,'Klient D')">
+      <div class="client-dot dot-red"></div>
+      <span class="client-name">Klient D</span>
+      <span class="client-spend">29k</span>
+    </div>
+    <div class="client-item" onclick="selectClient(this,'Klient E')">
+      <div class="client-dot dot-green"></div>
+      <span class="client-name">Klient E</span>
+      <span class="client-spend">118k</span>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <span class="topbar-client" id="client-name">MYYK</span>
+      <span class="topbar-tag">META ADS</span>
+      <div class="topbar-right">
+        <div class="date-chip">Apr 2026 ▾</div>
+        <div class="date-chip">↗ Eksport</div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('performance',this)">Performance</div>
+      <div class="tab" onclick="switchTab('reach',this)">Reach</div>
+      <div class="tab" onclick="switchTab('creative',this)">Creative</div>
+      <div class="tab" onclick="switchTab('rapport',this)">Rapport</div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- ===== PERFORMANCE VIEW ===== -->
+      <div class="view active" id="view-performance">
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <div class="kpi-label">Spend</div>
+            <div class="kpi-value">82 400</div>
+            <div class="kpi-delta delta-up">↑ 12% vs. forrige mnd</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">ROAS</div>
+            <div class="kpi-value">3.8×</div>
+            <div class="kpi-delta delta-down">↓ 0.4× vs. forrige mnd</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">CPA</div>
+            <div class="kpi-value">214 kr</div>
+            <div class="kpi-delta delta-up">↑ Bedre — 248 kr forrige</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">CPM</div>
+            <div class="kpi-value">112 kr</div>
+            <div class="kpi-delta delta-down">↑ 18 kr vs. forrige mnd</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <div class="section-header-left">
+              <div class="section-title">Kampanjer</div>
+              <div class="section-sub">Siste 30 dager · Sortert etter spend</div>
+            </div>
+          </div>
+          <table style="width:100%; border-collapse:collapse; font-size:12px;">
+            <thead>
+              <tr>
+                <th style="text-align:left; font-family:var(--mono); font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:var(--mid); padding:8px 12px; border-bottom:1px solid var(--border);">Kampanje</th>
+                <th style="text-align:right; font-family:var(--mono); font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:var(--mid); padding:8px 12px; border-bottom:1px solid var(--border);">Spend</th>
+                <th style="text-align:right; font-family:var(--mono); font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:var(--mid); padding:8px 12px; border-bottom:1px solid var(--border);">ROAS</th>
+                <th style="text-align:right; font-family:var(--mono); font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:var(--mid); padding:8px 12px; border-bottom:1px solid var(--border);">CPA</th>
+                <th style="text-align:right; font-family:var(--mono); font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:var(--mid); padding:8px 12px; border-bottom:1px solid var(--border);">CPM</th>
+                <th style="text-align:right; font-family:var(--mono); font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:var(--mid); padding:8px 12px; border-bottom:1px solid var(--border);">Freq</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="cursor:pointer;" onmouseover="this.style.background='#FAF8F5'" onmouseout="this.style.background=''">
+                <td style="padding:10px 12px; border-bottom:1px solid #F0EDE8; font-weight:600;">Prospecting — Broad</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #F0EDE8; text-align:right; font-family:var(--mono);">42 200</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #F0EDE8; text-align:right; font-family:var(--mono); color:var(--green);">4.2×</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #F0EDE8; text-align:right; font-family:var(--mono);">198 kr</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #F0EDE8; text-align:right; font-family:var(--mono);">98 kr</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #F0EDE8; text-align:right; font-family:var(--mono);">2.1</td>
+              </tr>
+              <tr style="cursor:pointer;" onmouseover="this.style.background='#FAF8F5'" onmouseout="this.style.background=''">
+                <td style="padding:10px 12px; border-bottom:1px solid #F0EDE8; font-weight:600;">Retargeting — 30d</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #F0EDE8; text-align:right; font-family:var(--mono);">24 800</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #F0EDE8; text-align:right; font-family:var(--mono); color:var(--green);">5.8×</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #F0EDE8; text-align:right; font-family:var(--mono);">162 kr</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #F0EDE8; text-align:right; font-family:var(--mono); color:var(--amber);">178 kr</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #F0EDE8; text-align:right; font-family:var(--mono); color:var(--red);">7.4</td>
+              </tr>
+              <tr style="cursor:pointer;" onmouseover="this.style.background='#FAF8F5'" onmouseout="this.style.background=''">
+                <td style="padding:10px 12px; border-bottom:1px solid #F0EDE8; font-weight:600;">Lookalike — Kjøpere</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #F0EDE8; text-align:right; font-family:var(--mono);">15 400</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #F0EDE8; text-align:right; font-family:var(--mono); color:var(--amber);">2.9×</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #F0EDE8; text-align:right; font-family:var(--mono); color:var(--red);">291 kr</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #F0EDE8; text-align:right; font-family:var(--mono);">104 kr</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #F0EDE8; text-align:right; font-family:var(--mono);">3.8</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== REACH VIEW ===== -->
+      <div class="view" id="view-reach">
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <div class="kpi-label">Rolling Reach</div>
+            <div class="kpi-value">959K</div>
+            <div class="kpi-delta delta-mid">Akkumulert 12 mnd</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Net New % (snitt)</div>
+            <div class="kpi-value">28%</div>
+            <div class="kpi-delta delta-down">↓ Fra 62% i april 2025</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Cost / 1k new</div>
+            <div class="kpi-value">3 994</div>
+            <div class="kpi-delta delta-up">↓ Bedre — 6 728 des.</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Frequency</div>
+            <div class="kpi-value">7.8</div>
+            <div class="kpi-delta delta-down">↑ Høy — vurder nytt creative</div>
+          </div>
+        </div>
+
+        <!-- SATURATION SIGNAL -->
+        <div class="section" style="margin-bottom:18px;">
+          <div class="section-title">Målgruppe-metning</div>
+          <div class="section-sub">Basert på rolling reach vs. estimert adresserbar målgruppe i Norge</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:4px;">
+            <div class="saturation-meter">
+              <div class="sat-header">
+                <span class="sat-title">Metningsgrad</span>
+                <span class="sat-pct">64%</span>
+              </div>
+              <div class="sat-bar-bg"><div class="sat-bar-fill" style="width:64%;"></div></div>
+              <div class="sat-insight">
+                Vi har nådd ca. <strong>959K unike</strong> av estimert <strong>1.5M relevante</strong> profiler i Norge.<br>
+                Med nåværende Net New Reach på 28% trenger vi <strong>~3.5 måneder</strong> for å ha nådd alle.<br><br>
+                <strong>Anbefaling:</strong> Vurder Sverige-ekspansjon og creative diversifisering nå.
+              </div>
+            </div>
+            <div class="saturation-meter">
+              <div class="sat-header">
+                <span class="sat-title">Reach-trend</span>
+                <span style="font-family:var(--mono); font-size:14px; font-weight:500; color:var(--red);">↓ Synkende</span>
+              </div>
+              <div class="sat-insight" style="margin-top:0;">
+                Net New Reach % har falt fra <strong>62% → 28%</strong> over 12 måneder.<br><br>
+                Det betyr at Meta i stor grad serverer annonsene til de <strong>samme menneskene gjentatte ganger</strong> — ikke fordi budsjettet er lavt, men fordi kreativt innhold er for likt.<br><br>
+                <strong>Andromeda-algoritmen</strong> grupperer visuelt like creatives og tildeler dem samme audience-pool.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- REACH COMPOSITION CHART -->
+        <div class="section">
+          <div class="section-header">
+            <div>
+              <div class="section-title">Reach Composition</div>
+              <div class="section-sub">Net New (turkis) vs. Reached Previously (grå) · % Net New over søylene</div>
+            </div>
+          </div>
+          <div class="reach-chart">
+            <div class="pct-dots" id="pct-row"></div>
+            <div class="chart-bars" id="chart-bars"></div>
+            <div style="display:flex; gap:0; justify-content:space-around;" id="chart-labels"></div>
+            <div class="chart-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:var(--reach-new);"></div>Net New Reach</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--reach-old);"></div>Reached Previously</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--amber); border-radius:50%;"></div>% Net New (linje)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CAMPAIGN REACH TABLE -->
+        <div class="section">
+          <div class="section-header">
+            <div>
+              <div class="section-title">Reach per kampanje</div>
+              <div class="section-sub">Siste 30 dager · Klikk kampanje for Ad Set-drilldown</div>
+            </div>
+          </div>
+          <table class="reach-table">
+            <thead>
+              <tr>
+                <th style="text-align:left;">Kampanje</th>
+                <th>Reach</th>
+                <th>Net New</th>
+                <th>% Net New</th>
+                <th>Freq</th>
+                <th>Cost/1k New</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr onmouseover="this.style.background='#FAF8F5'" onmouseout="this.style.background=''">
+                <td>Prospecting — Broad</td>
+                <td>246 100</td>
+                <td>82 400</td>
+                <td><span class="pct-pill pct-high">33%</span></td>
+                <td>2.1</td>
+                <td>1 240 kr</td>
+              </tr>
+              <tr onmouseover="this.style.background='#FAF8F5'" onmouseout="this.style.background=''">
+                <td>Lookalike — Kjøpere</td>
+                <td>68 200</td>
+                <td>9 100</td>
+                <td><span class="pct-pill pct-mid">13%</span></td>
+                <td>3.8</td>
+                <td>4 810 kr</td>
+              </tr>
+              <tr onmouseover="this.style.background='#FAF8F5'" onmouseout="this.style.background=''">
+                <td>Retargeting — 30d</td>
+                <td>24 400</td>
+                <td>620</td>
+                <td><span class="pct-pill pct-low">3%</span></td>
+                <td>7.4</td>
+                <td>12 200 kr</td>
+              </tr>
+            </tbody>
+          </table>
+          <div style="margin-top:12px; padding:12px 14px; background:#FEF3C7; border-radius:6px; font-family:var(--mono); font-size:11px; color:#92400E; border:1px solid #FDE68A;">
+            ⚠ Retargeting har <strong>3% Net New og freq 7.4</strong>. Du betaler for å nå de samme kjøpsklare personene gjentatte ganger. Vurder å redusere budsjett her og flytte til Prospecting.
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== CREATIVE VIEW ===== -->
+      <div class="view" id="view-creative">
+
+        <!-- INSIGHT CARDS -->
+        <div class="insight-row">
+          <div class="insight-card">
+            <div class="insight-label">Signal · Hook</div>
+            <div class="insight-title">UGC-format dominerer</div>
+            <div class="insight-body">
+              Annonser med <strong>personlig åpning</strong> (ansikt mot kamera, ingen tekst-overlay i første 2s) har <strong>Hook Rate 41–67%</strong> vs. 18–28% for produkt-centric creatives.<br><br>
+              Kohort mars 2026 er eneste unntak — bør undersøkes.
+            </div>
+          </div>
+          <div class="insight-card">
+            <div class="insight-label">Signal · Fatigue</div>
+            <div class="insight-title">Konsept A er mettet</div>
+            <div class="insight-body">
+              "Scandinavian Sleep"-konseptet (K2025-11) viser <strong>CTR-fall fra 1.8% → 0.4%</strong> over 8 uker. Hook holder, men folk klikker ikke lengre.<br><br>
+              Anbefaling: Pause varianter av dette konseptet. Ny vinkel trengs.
+            </div>
+          </div>
+        </div>
+
+        <!-- FORMAT BREAKDOWN -->
+        <div class="section" style="margin-bottom:18px;">
+          <div class="section-header">
+            <div>
+              <div class="section-title">Format-analyse</div>
+              <div class="section-sub">Gjennomsnittlig ytelse per ad-format · Siste 90 dager</div>
+            </div>
+          </div>
+          <div class="format-grid">
+            <div class="format-card">
+              <div class="format-icon">🎬</div>
+              <div class="format-name">Video (Reel-format)</div>
+              <div class="format-stats">
+                Hook Rate: <strong>38%</strong><br>
+                CTR: <strong>1.4%</strong><br>
+                CPA: <strong>198 kr</strong><br>
+                Spend-andel: <strong>62%</strong>
+              </div>
+            </div>
+            <div class="format-card">
+              <div class="format-icon">🖼</div>
+              <div class="format-name">Static Image</div>
+              <div class="format-stats">
+                Hook Rate: —<br>
+                CTR: <strong>0.8%</strong><br>
+                CPA: <strong>262 kr</strong><br>
+                Spend-andel: <strong>24%</strong>
+              </div>
+            </div>
+            <div class="format-card">
+              <div class="format-icon">🎠</div>
+              <div class="format-name">Carousel</div>
+              <div class="format-stats">
+                Hook Rate: —<br>
+                CTR: <strong>1.1%</strong><br>
+                CPA: <strong>238 kr</strong><br>
+                Spend-andel: <strong>14%</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AUDIENCE DIMENSION -->
+        <div class="section" style="margin-bottom:18px;">
+          <div class="section-header">
+            <div>
+              <div class="section-title">Ytelse per målgruppe</div>
+              <div class="section-sub">ROAS per audience-segment · Siste 30 dager</div>
+            </div>
+          </div>
+          <div class="audience-bars">
+            <div class="aud-row">
+              <div class="aud-label">F 25–34</div>
+              <div class="aud-bar-bg"><div class="aud-bar-fill" style="width:88%; background:var(--reach-new);"><span class="aud-bar-text">ROAS 5.2×</span></div></div>
+              <div class="aud-roas" style="color:var(--green);">5.2×</div>
+            </div>
+            <div class="aud-row">
+              <div class="aud-label">F 35–44</div>
+              <div class="aud-bar-bg"><div class="aud-bar-fill" style="width:72%; background:var(--reach-new);"><span class="aud-bar-text">ROAS 4.3×</span></div></div>
+              <div class="aud-roas" style="color:var(--green);">4.3×</div>
+            </div>
+            <div class="aud-row">
+              <div class="aud-label">M 25–34</div>
+              <div class="aud-bar-bg"><div class="aud-bar-fill" style="width:48%; background:var(--amber);"><span class="aud-bar-text">ROAS 2.9×</span></div></div>
+              <div class="aud-roas" style="color:var(--amber);">2.9×</div>
+            </div>
+            <div class="aud-row">
+              <div class="aud-label">F 45–54</div>
+              <div class="aud-bar-bg"><div class="aud-bar-fill" style="width:40%; background:var(--amber);"><span class="aud-bar-text">ROAS 2.4×</span></div></div>
+              <div class="aud-roas" style="color:var(--amber);">2.4×</div>
+            </div>
+            <div class="aud-row">
+              <div class="aud-label">M 35–44</div>
+              <div class="aud-bar-bg"><div class="aud-bar-fill" style="width:24%; background:var(--red);"><span class="aud-bar-text">ROAS 1.4×</span></div></div>
+              <div class="aud-roas" style="color:var(--red);">1.4×</div>
+            </div>
+          </div>
+          <div style="margin-top:12px; padding:12px 14px; background:var(--green-bg); border-radius:6px; font-family:var(--mono); font-size:11px; color:#065F46; border:1px solid #A7F3D0;">
+            💡 F 25–34 er klart sterkest på ROAS. Vurder å lage UGC-creatives spesifikt rettet mot denne gruppen med persona-spesifikt budskap: "sove som et profesjonelt menneske."
+          </div>
+        </div>
+
+        <!-- COHORT TABLE -->
+        <div class="section">
+          <div class="section-header">
+            <div>
+              <div class="section-title">Kohort-tabell</div>
+              <div class="section-sub">Ytelse per uke siden lansering · Klikk på rad for ad-galleri</div>
+            </div>
+            <select class="metric-select" onchange="updateCohortMetric(this.value)">
+              <option value="hook">Hook Rate</option>
+              <option value="ctr">CTR %</option>
+              <option value="cpm">CPM</option>
+              <option value="cpa">CPA</option>
+            </select>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="cohort-table" id="cohort-table">
+              <thead>
+                <tr>
+                  <th>Kohort</th>
+                  <th>Annonser</th>
+                  <th>W0</th>
+                  <th>W1</th>
+                  <th>W2</th>
+                  <th>W3</th>
+                  <th>W4</th>
+                  <th>W5</th>
+                  <th>W6</th>
+                  <th>W7</th>
+                </tr>
+              </thead>
+              <tbody id="cohort-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- CREATIVE GALLERY -->
+        <div class="section">
+          <div class="section-header">
+            <div>
+              <div class="section-title">Creative Gallery — Kohort 1–7 mars</div>
+              <div class="section-sub">37 annonser · Sortert etter Hook Rate</div>
+            </div>
+            <div style="font-family:var(--mono); font-size:11px; color:var(--mid); background:var(--surface2); padding:5px 10px; border-radius:4px; cursor:pointer; border:1px solid var(--border);">↗ Del med team</div>
+          </div>
+          <div class="gallery-grid" id="gallery-grid"></div>
+        </div>
+      </div>
+
+      <!-- ===== RAPPORT VIEW ===== -->
+      <div class="view" id="view-rapport">
+        <div class="section" style="max-width:640px;">
+          <div class="section-title">Generer kunderapport</div>
+          <div class="section-sub">Periode: April 2026 · MYYK</div>
+          <div style="margin-top:16px; display:flex; flex-direction:column; gap:14px;">
+            <div>
+              <div style="font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--mid); margin-bottom:6px;">Kommentar til Reach</div>
+              <textarea style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:6px; font-family:var(--mono); font-size:12px; resize:vertical; min-height:80px; color:var(--black); outline:none;">Vi har nådd 64% av den norske målgruppen vår. Net New Reach på 28% er sunn, men vi anbefaler å starte testing mot Sverige i mai for å opprettholde effektiviteten.</textarea>
+            </div>
+            <div>
+              <div style="font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--mid); margin-bottom:6px;">Neste steg for kunden</div>
+              <textarea style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:6px; font-family:var(--mono); font-size:12px; resize:vertical; min-height:80px; color:var(--black); outline:none;">1. Produser 6 nye UGC-creatives med fokus på F25-34 persona (sover smart, ikke dyrt)
+2. Test Sverige-marked med 10% av budsjett fra 1. mai
+3. Pause Konsept A (alle varianter)</textarea>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <div style="flex:1; padding:12px 16px; background:var(--black); color:white; border-radius:6px; text-align:center; font-size:13px; font-weight:600; cursor:pointer;">Forhåndsvis rapport</div>
+              <div style="padding:12px 16px; background:var(--surface2); border:1px solid var(--border); border-radius:6px; font-size:13px; font-weight:600; cursor:pointer;">Send som lenke</div>
+              <div style="padding:12px 16px; background:var(--surface2); border:1px solid var(--border); border-radius:6px; font-size:13px; font-weight:600; cursor:pointer;">Last ned PDF</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// TAB SWITCHING
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('view-' + name).classList.add('active');
+}
+
+// CLIENT SELECT
+function selectClient(el, name) {
+  document.querySelectorAll('.client-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('client-name').textContent = name;
+}
+
+// REACH CHART DATA
+const reachData = [
+  { month: 'Mar', newR: 20700, oldR: 230700, pct: 8 },
+  { month: 'Apr', newR: 137200, oldR: 32800, pct: 81 },
+  { month: 'Mai', newR: 202400, oldR: 125900, pct: 62 },
+  { month: 'Jun', newR: 64800, oldR: 181300, pct: 26 },
+  { month: 'Jul', newR: 58600, oldR: 184900, pct: 24 },
+  { month: 'Aug', newR: 124800, oldR: 270100, pct: 32 },
+  { month: 'Sep', newR: 28800, oldR: 164600, pct: 15 },
+  { month: 'Okt', newR: 56100, oldR: 217900, pct: 20 },
+  { month: 'Nov', newR: 94300, oldR: 281200, pct: 25 },
+  { month: 'Des', newR: 19100, oldR: 174500, pct: 10 },
+  { month: 'Jan', newR: 30300, oldR: 193400, pct: 14 },
+  { month: 'Feb', newR: 52000, oldR: 275500, pct: 16 },
+  { month: 'Mar', newR: 70600, oldR: 269300, pct: 21 },
+];
+
+function buildReachChart() {
+  const bars = document.getElementById('chart-bars');
+  const labels = document.getElementById('chart-labels');
+  const pcts = document.getElementById('pct-row');
+  const maxTotal = Math.max(...reachData.map(d => d.newR + d.oldR));
+  bars.innerHTML = '';
+  labels.innerHTML = '';
+  pcts.innerHTML = '';
+
+  reachData.forEach(d => {
+    const total = d.newR + d.oldR;
+    const newH = Math.round((d.newR / maxTotal) * 145);
+    const oldH = Math.round((d.oldR / maxTotal) * 145);
+
+    const group = document.createElement('div');
+    group.className = 'bar-group';
+
+    const oldBar = document.createElement('div');
+    oldBar.className = 'bar-stack bar-old';
+    oldBar.style.height = oldH + 'px';
+
+    const newBar = document.createElement('div');
+    newBar.className = 'bar-stack bar-new';
+    newBar.style.height = newH + 'px';
+
+    group.appendChild(oldBar);
+    group.appendChild(newBar);
+    bars.appendChild(group);
+
+    const lbl = document.createElement('div');
+    lbl.style.cssText = 'font-family:var(--mono);font-size:9px;color:var(--mid);text-align:center;flex:1;';
+    lbl.textContent = d.month;
+    labels.appendChild(lbl);
+
+    const pct = document.createElement('div');
+    pct.className = 'pct-val';
+    const color = d.pct >= 40 ? 'var(--green)' : d.pct >= 20 ? 'var(--amber)' : 'var(--red)';
+    pct.style.color = color;
+    pct.style.fontWeight = '500';
+    pct.textContent = d.pct + '%';
+    pcts.appendChild(pct);
+  });
+}
+
+// COHORT DATA
+const cohortDataHook = [
+  { name: '1–7 jan', ads: 37, vals: [41, 38, 35, 29, 24, 18, 14, 11] },
+  { name: '8–14 jan', ads: 24, vals: [28, 31, 27, 22, 19, null, null, null] },
+  { name: '15–21 jan', ads: 41, vals: [52, 49, 44, 38, 31, 26, null, null] },
+  { name: '22–28 jan', ads: 18, vals: [34, 29, 24, null, null, null, null, null] },
+  { name: '1–7 feb', ads: 29, vals: [67, 61, 55, 48, 40, 33, 28, null] },
+  { name: '8–14 feb', ads: 33, vals: [45, 43, 38, 34, null, null, null, null] },
+  { name: '1–7 mar', ads: 37, vals: [38, 35, null, null, null, null, null, null] },
+];
+const cohortDataCTR = [
+  { name: '1–7 jan', ads: 37, vals: [1.8, 1.6, 1.2, 0.9, 0.7, 0.5, 0.4, 0.4] },
+  { name: '8–14 jan', ads: 24, vals: [1.1, 1.3, 1.0, 0.8, 0.6, null, null, null] },
+  { name: '15–21 jan', ads: 41, vals: [2.1, 1.9, 1.7, 1.4, 1.1, 0.9, null, null] },
+  { name: '22–28 jan', ads: 18, vals: [0.8, 0.7, 0.6, null, null, null, null, null] },
+  { name: '1–7 feb', ads: 29, vals: [1.6, 1.5, 1.3, 1.1, 0.9, 0.7, 0.6, null] },
+  { name: '8–14 feb', ads: 33, vals: [1.4, 1.3, 1.1, 0.9, null, null, null, null] },
+  { name: '1–7 mar', ads: 37, vals: [1.9, 1.7, null, null, null, null, null, null] },
+];
+
+let currentCohortData = cohortDataHook;
+
+function getHeatClass(val, col, data) {
+  const colVals = data.map(r => r.vals[col]).filter(v => v !== null);
+  if (!colVals.length) return 'cell-empty';
+  const sorted = [...colVals].sort((a,b) => a-b);
+  const p25 = sorted[Math.floor(sorted.length*0.25)];
+  const p75 = sorted[Math.floor(sorted.length*0.75)];
+  if (val >= p75) return 'cell-high';
+  if (val >= (p25+p75)/2) return 'cell-mid-high';
+  if (val >= p25) return 'cell-mid';
+  return 'cell-low';
+}
+
+function buildCohortTable(data, suffix) {
+  const tbody = document.getElementById('cohort-tbody');
+  tbody.innerHTML = '';
+
+  data.forEach((row, ri) => {
+    const tr = document.createElement('tr');
+    tr.style.cursor = 'pointer';
+    tr.onclick = () => alert('Åpner Creative Gallery for kohort: ' + row.name);
+
+    const nameTd = document.createElement('td');
+    nameTd.textContent = row.name;
+    tr.appendChild(nameTd);
+
+    const adsTd = document.createElement('td');
+    adsTd.textContent = row.ads;
+    tr.appendChild(adsTd);
+
+    row.vals.forEach((val, ci) => {
+      const td = document.createElement('td');
+      if (val === null) {
+        td.textContent = '—';
+        td.className = 'cell-empty';
+      } else {
+        td.textContent = val + suffix;
+        td.className = getHeatClass(val, ci, data);
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+
+  // Total row
+  const totalTr = document.createElement('tr');
+  totalTr.className = 'total-row';
+  const totalName = document.createElement('td');
+  totalName.textContent = 'ALL COHORTS';
+  totalName.style.color = 'var(--blue)';
+  totalTr.appendChild(totalName);
+  const totalAds = document.createElement('td');
+  totalAds.textContent = data.reduce((s,r)=>s+r.ads,0);
+  totalTr.appendChild(totalAds);
+  for (let ci=0; ci<8; ci++) {
+    const colVals = data.map(r=>r.vals[ci]).filter(v=>v!==null);
+    const td = document.createElement('td');
+    if (!colVals.length) { td.textContent='—'; td.className='cell-empty'; }
+    else {
+      const avg = (colVals.reduce((s,v)=>s+v,0)/colVals.length);
+      td.textContent = Math.round(avg*10)/10 + suffix;
+    }
+    totalTr.appendChild(td);
+  }
+  tbody.appendChild(totalTr);
+}
+
+function updateCohortMetric(val) {
+  if (val === 'hook') buildCohortTable(cohortDataHook, '%');
+  else if (val === 'ctr') buildCohortTable(cohortDataCTR, '%');
+  else buildCohortTable(cohortDataHook, '%');
+}
+
+// GALLERY
+const creatives = [
+  { emoji:'👩‍💻', name:'UGC-seng-morgen-v1', hook:'67%', ctr:'2.1%', spend:'4 200', roas:'5.8×', status:'green', good:true },
+  { emoji:'🌅', name:'Soloppgang-flatlay-v2', hook:'61%', ctr:'1.8%', spend:'3 800', roas:'4.9×', status:'green', good:true },
+  { emoji:'🛏️', name:'Produktvideo-hvit-v3', hook:'55%', ctr:'1.4%', spend:'2 100', roas:'3.8×', status:'green', good:true },
+  { emoji:'✨', name:'UGC-soverom-partner', hook:'49%', ctr:'1.2%', spend:'1 600', roas:'3.2×', status:'orange', good:true },
+  { emoji:'📱', name:'Tekstoverlay-sitat-v1', hook:'28%', ctr:'0.6%', spend:'980', roas:'1.8×', status:'red', good:false },
+  { emoji:'🖼️', name:'Static-produkt-front', hook:'—', ctr:'0.5%', spend:'740', roas:'1.4×', status:'red', good:false },
+  { emoji:'🎬', name:'Intro-logo-reveal-v2', hook:'18%', ctr:'0.4%', spend:'420', roas:'0.9×', status:'red', good:false },
+  { emoji:'🌿', name:'Lifestyle-natur-v1', hook:'34%', ctr:'0.9%', spend:'660', roas:'2.1×', status:'orange', good:false },
+];
+
+function buildGallery() {
+  const grid = document.getElementById('gallery-grid');
+  grid.innerHTML = '';
+  creatives.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'creative-card';
+    const statusColor = c.status === 'green' ? 'var(--green)' : c.status === 'orange' ? 'var(--amber)' : 'var(--red)';
+    card.innerHTML = `
+      <div class="creative-thumb">
+        <div class="thumb-img" style="background:${c.good ? '#E6F9F0' : '#FEF0EE'}; font-size:40px;">${c.emoji}</div>
+        <div class="thumb-gradient"></div>
+        ${c.hook !== '—' ? `<div class="thumb-hook">Hook ${c.hook}</div>` : ''}
+        <div class="thumb-status" style="background:${statusColor};"></div>
+      </div>
+      <div class="creative-meta">
+        <div class="creative-name">${c.name}</div>
+        <div class="creative-stats">
+          <div class="stat-item">
+            <div class="stat-label">CTR</div>
+            <div class="stat-value ${c.good ? 'good' : 'bad'}">${c.ctr}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">ROAS</div>
+            <div class="stat-value ${c.good ? 'good' : 'bad'}">${c.roas}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Spend</div>
+            <div class="stat-value">${c.spend}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Hook</div>
+            <div class="stat-value">${c.hook}</div>
+          </div>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// INIT
+buildReachChart();
+buildCohortTable(cohortDataHook, '%');
+buildGallery();
+</script>
+</body>
+</html>
