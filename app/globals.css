@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Simpleness Design Tokens */
+:root {
+  --color-white: #ffffff;
+  --color-black: #090a08;
+  --color-accent: #89ff58;
+  --color-link: #515b12;
+  --color-green-moss: #515b12;
+  --color-green-deep: #41bd0e;
+  --color-green-clear: #89ff58;
+  --color-green-mint: #dff7cc;
+  --color-green-pale: #f6ffee;
+
+  /* Status */
+  --color-status-green: #16a34a;
+  --color-status-yellow: #d97706;
+  --color-status-red: #dc2626;
+
+  /* Surfaces */
+  --color-surface: #f8f8f7;
+  --color-border: #e8e8e6;
+  --color-sidebar: #090a08;
+
+  /* Typography */
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  background: var(--color-white);
+  color: var(--color-black);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Number / data values always mono */
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Delta badges */
+.delta-up {
+  color: var(--color-status-green);
+}
+.delta-down {
+  color: var(--color-status-red);
+}
+.delta-neutral {
+  color: rgba(9,10,8,0.4);
+}
+
+/* Sidebar link active state */
+.sidebar-link-active {
+  background: rgba(137, 255, 88, 0.15);
+  color: var(--color-accent);
+}

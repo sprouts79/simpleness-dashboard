@@ -1,0 +1,97 @@
+"use client";
+
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
+import { CreativeChurnPoint } from "@/lib/types";
+
+interface Props {
+  data: CreativeChurnPoint[];
+  cohortLabels: string[];
+}
+
+// Cohort colors — cycling through a palette inspired by the withadinsights screenshots
+const COHORT_COLORS = [
+  "#89FF58", // accent green
+  "#515B12", // moss green
+  "#41BD0E", // deep green
+  "#DFF7CC", // mint
+  "#d97706", // amber
+  "#7c3aed", // purple
+  "#0ea5e9", // sky blue
+  "#ec4899", // pink
+];
+
+function formatNok(v: number) {
+  if (v >= 1000) return `${Math.round(v / 1000)}k`;
+  return `${v}`;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  const total = payload.reduce((s: number, p: any) => s + (p.value || 0), 0);
+  return (
+    <div className="bg-white border border-[var(--color-border)] rounded-lg px-3 py-2.5 shadow-sm text-xs min-w-[180px]">
+      <p className="font-semibold mb-2">{label}</p>
+      <div className="space-y-0.5">
+        {[...payload].reverse().map((p: any) => (
+          <div key={p.dataKey} className="flex items-center justify-between gap-4">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full inline-block flex-shrink-0" style={{ background: p.fill }} />
+              <span className="text-[rgba(9,10,8,0.6)]">{p.dataKey}</span>
+            </span>
+            <span style={{ fontFamily: "var(--font-mono)" }}>NOK {formatNok(p.value)}</span>
+          </div>
+        ))}
+        <div className="flex justify-between gap-4 pt-1 border-t border-[var(--color-border)]">
+          <span className="font-medium">Total</span>
+          <span className="font-medium" style={{ fontFamily: "var(--font-mono)" }}>NOK {formatNok(total)}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default function CreativeChurnChart({ data, cohortLabels }: Props) {
+  return (
+    <ResponsiveContainer width="100%" height={260}>
+      <AreaChart data={data} margin={{ top: 4, right: 12, bottom: 0, left: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#e8e8e6" vertical={false} />
+        <XAxis
+          dataKey="month"
+          tick={{ fontSize: 11, fill: "rgba(9,10,8,0.4)", fontFamily: "var(--font-mono)" }}
+          tickLine={false}
+          axisLine={false}
+        />
+        <YAxis
+          tick={{ fontSize: 11, fill: "rgba(9,10,8,0.4)", fontFamily: "var(--font-mono)" }}
+          tickLine={false}
+          axisLine={false}
+          tickFormatter={formatNok}
+          width={44}
+        />
+        <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(9,10,8,0.03)" }} />
+        {cohortLabels.map((label, i) => (
+          <Area
+            key={label}
+            type="monotone"
+            dataKey={label}
+            stackId="spend"
+            stroke={COHORT_COLORS[i % COHORT_COLORS.length]}
+            fill={COHORT_COLORS[i % COHORT_COLORS.length]}
+            fillOpacity={0.85}
+            strokeWidth={0}
+          />
+        ))}
+      </AreaChart>
+    </ResponsiveContainer>
+  );
+}
