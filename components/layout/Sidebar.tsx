@@ -17,10 +17,6 @@ function StatusDot({ status }: { status: ClientStatus }) {
   );
 }
 
-function formatSpend(n: number) {
-  if (n >= 1000) return `${Math.round(n / 1000)}k`;
-  return `${n}`;
-}
 
 export default function Sidebar({ clients }: { clients: Client[] }) {
   const pathname = usePathname();
@@ -78,15 +74,6 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
                 <StatusDot status={client.status} />
                 <span className="truncate">{client.name}</span>
               </div>
-              <span
-                className="text-[11px] ml-2 flex-shrink-0 tabular-nums"
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  color: isActive ? "var(--color-link)" : "rgba(9,10,8,0.25)",
-                }}
-              >
-                {formatSpend(client.weeklySpend)}
-              </span>
             </Link>
           );
         })}
