@@ -16,12 +16,29 @@ const STATUS_STYLES: Record<Ad["status"], string> = {
 
 function AdCard({ ad }: { ad: Ad }) {
   const [imgError, setImgError] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
   const hasThumbnail = !!ad.thumbnailUrl && !imgError;
 
+  async function openPreview() {
+    setPreviewLoading(true);
+    try {
+      const res = await fetch(`/api/preview?adId=${ad.id}`);
+      const data = await res.json();
+      if (data.url) {
+        window.open(data.url, "_blank", "noopener");
+      }
+    } finally {
+      setPreviewLoading(false);
+    }
+  }
+
   return (
-    <div className="rounded-xl border border-[var(--color-border)] overflow-hidden hover:border-[var(--color-link)] transition-colors cursor-pointer">
-      {/* Thumbnail */}
-      <div className="aspect-square bg-[var(--color-surface)] relative overflow-hidden">
+    <div
+      className="rounded-xl border border-[var(--color-border)] overflow-hidden hover:border-[var(--color-link)] transition-colors cursor-pointer group"
+      onClick={openPreview}
+    >
+      {/* Thumbnail — 9:16 portrait */}
+      <div className="aspect-[9/16] bg-[var(--color-surface)] relative overflow-hidden">
         {hasThumbnail ? (
           <img
             src={ad.thumbnailUrl}
@@ -39,6 +56,8 @@ function AdCard({ ad }: { ad: Ad }) {
             </div>
           </div>
         )}
+
+        {/* Status badge */}
         <span
           className={clsx(
             "absolute top-2 right-2 text-2xs font-semibold px-1.5 py-0.5 rounded-full",
@@ -47,6 +66,26 @@ function AdCard({ ad }: { ad: Ad }) {
         >
           {ad.status === "active" ? "Aktiv" : ad.status === "paused" ? "Pauset" : "Læring"}
         </span>
+
+        {/* Video play button overlay */}
+        {ad.format === "video" && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
+            <div className="w-10 h-10 rounded-full bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow">
+              {previewLoading ? (
+                <span className="text-xs">...</span>
+              ) : (
+                <span className="text-sm ml-0.5">▶</span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Loading spinner for non-video clicks */}
+        {previewLoading && ad.format !== "video" && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+            <span className="text-xs text-white">...</span>
+          </div>
+        )}
       </div>
 
       {/* Metrics */}
