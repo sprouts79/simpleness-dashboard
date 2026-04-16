@@ -31,11 +31,11 @@ import {
   COHORTS,
 } from "./mock-data";
 
-// Formats "2026-04-09" → "apr. '26"  — avoids toLocaleDateString inconsistencies in Node.js
+// Formats "2026-04-09" → "9. apr"  — avoids toLocaleDateString inconsistencies in Node.js
 function formatWeekLabel(dateStr: string): string {
-  const [year, month] = dateStr.split("-");
+  const [, month, day] = dateStr.split("-");
   const months = ["jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "des"];
-  return `${months[parseInt(month) - 1]}. '${year.slice(-2)}`;
+  return `${parseInt(day)}. ${months[parseInt(month) - 1]}`;
 }
 
 function daysAgo(n: number): string {

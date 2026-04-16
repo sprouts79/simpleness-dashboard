@@ -71,7 +71,7 @@ export default function ReachClient({
           <KpiCard
             label="Total Rolling Reach"
             value={formatReach(kpis.totalRollingReach)}
-            note={`${lookback}d lookback`}
+            note="90d rullerende vindu"
             size="large"
           />
           <KpiCard
@@ -125,23 +125,23 @@ export default function ReachClient({
         </div>
       </div>
 
-      {/* Monthly breakdown table */}
+      {/* Weekly breakdown table */}
       {filteredTable.length > 0 && (
         <div>
-          <SectionHeader title="Månedlig breakdown" />
+          <SectionHeader title="Ukentlig breakdown" />
           <div className="rounded-xl border border-[var(--color-border)] overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
                   {[
-                    "Måned", "Rolling Reach", "Ukentlig Reach", "Net New",
+                    "Uke", "Rolling Reach", "Ukentlig Reach", "Net New",
                     "Net New %", "Spend", "CPM", "CPM Net New", "Freq."
                   ].map((h) => (
                     <th
                       key={h}
                       className={clsx(
                         "py-3 text-xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.45)]",
-                        h === "Måned" ? "text-left px-5" : "text-right px-4"
+                        h === "Uke" ? "text-left px-5" : "text-right px-4"
                       )}
                     >
                       {h}
@@ -155,7 +155,7 @@ export default function ReachClient({
                     key={row.month}
                     className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface)] transition-colors"
                   >
-                    <td className="px-5 py-2.5 font-medium text-sm">{row.month}</td>
+                    <td className="px-5 py-2.5 font-medium text-sm whitespace-nowrap">{row.month}</td>
                     <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
                       {formatReach(row.rollingReach)}
                     </td>
