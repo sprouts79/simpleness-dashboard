@@ -86,8 +86,8 @@ export default function CreativeClient({
 
   return (
     <div className="space-y-8">
-      {/* Creative Churn chart — only show if cohort data exists */}
-      {cohorts.length > 0 && (
+      {/* Creative Churn chart — only show if computed churn data exists */}
+      {churnData.length > 0 && (
         <div>
           <SectionHeader
             title="Creative Churn"

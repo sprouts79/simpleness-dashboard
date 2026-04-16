@@ -12,6 +12,7 @@ import {
   fetchDailyInsights,
   fetchAdInsights,
   fetchAdMeta,
+  fetchWeeklyReachRows,
   fetchAccountTimezone,
   daysAgoInTz,
   dateInTz,
@@ -155,10 +156,52 @@ export async function POST(req: NextRequest) {
     errors.push(`ads fetch: ${e.message}`);
   }
 
+  // ── 3. Weekly rolling reach ──────────────────────────────────────────────────
+  let reachSynced = 0;
+  try {
+    const reachSince = daysAgoInTz(91, tz); // 13 weeks
+    const weeklyRows = await fetchWeeklyReachRows(accountId, reachSince, until, 90);
+    weeklyRows.sort((a, b) => a.weekStart.localeCompare(b.weekStart));
+
+    let prevCumulative = 0;
+    const upsertRows = weeklyRows.map((r) => {
+      const netNew = Math.max(0, r.cumulativeReach - prevCumulative);
+      prevCumulative = r.cumulativeReach;
+
+      const cpm = r.impressions > 0 ? (r.spend / r.impressions) * 1000 : 0;
+      const cpmNetNew = netNew > 0 ? r.spend / (netNew / 1000) : 0;
+      const pctNetNew = r.weeklyReach > 0 ? (netNew / r.weeklyReach) * 100 : 0;
+
+      return {
+        client_id: clientId,
+        week_start: r.weekStart,
+        weekly_reach: r.weeklyReach,
+        cumulative_reach: r.cumulativeReach,
+        net_new_reach: netNew,
+        pct_net_new: pctNetNew,
+        spend: r.spend,
+        cpm,
+        cpm_net_new: cpmNetNew,
+        frequency: r.frequency,
+        lookback_days: 90,
+      };
+    });
+
+    const { error } = await supabase
+      .from("meta_reach_weekly")
+      .upsert(upsertRows, { onConflict: "client_id,week_start" });
+
+    if (error) errors.push(`reach: ${error.message}`);
+    else reachSynced = upsertRows.length;
+  } catch (e: any) {
+    errors.push(`reach fetch: ${e.message}`);
+  }
+
   return NextResponse.json({
     ok: errors.length === 0,
     performanceSynced,
     adsSynced,
+    reachSynced,
     since,
     until,
     errors,

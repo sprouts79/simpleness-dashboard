@@ -29,7 +29,6 @@ import {
   REACH_COMPOSITION,
   REACH_TABLE,
   COHORTS,
-  getCreativeChurnData,
 } from "./mock-data";
 
 function daysAgo(n: number): string {
@@ -405,11 +404,76 @@ export async function getAds(clientId: string): Promise<Ad[]> {
 }
 
 export async function getCohorts(clientId: string): Promise<AdCohort[]> {
-  return COHORTS[clientId] ?? [];
+  const { data } = await supabase
+    .from("meta_ads")
+    .select(
+      "cohort_date,created_date,spend,impressions,clicks,purchases,purchase_value,hook_rate,hold_rate,video_views_3s,video_views_thruplays"
+    )
+    .eq("client_id", clientId)
+    .gt("spend", 0);
+
+  if (!data?.length) return COHORTS[clientId] ?? [];
+
+  // Group by cohort month (YYYY-MM)
+  const groups = new Map<string, typeof data>();
+  for (const ad of data) {
+    const key = (ad.cohort_date ?? ad.created_date ?? "").substring(0, 7);
+    if (!key || key.length < 7) continue;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(ad);
+  }
+
+  if (!groups.size) return COHORTS[clientId] ?? [];
+
+  return Array.from(groups.entries())
+    .sort((a, b) => b[0].localeCompare(a[0])) // newest first
+    .map(([key, ads]) => {
+      const totalSpend = ads.reduce((s, a) => s + (a.spend ?? 0), 0);
+      const totalImpressions = ads.reduce((s, a) => s + (a.impressions ?? 0), 0);
+      const totalClicks = ads.reduce((s, a) => s + (a.clicks ?? 0), 0);
+      const totalPurchases = ads.reduce((s, a) => s + (a.purchases ?? 0), 0);
+      const totalPurchaseValue = ads.reduce((s, a) => s + (a.purchase_value ?? 0), 0);
+      const totalV3s = ads.reduce((s, a) => s + (a.video_views_3s ?? 0), 0);
+      const totalThruplays = ads.reduce((s, a) => s + (a.video_views_thruplays ?? 0), 0);
+
+      const hookRate = totalImpressions > 0 ? (totalV3s / totalImpressions) * 100 : 0;
+      const holdRate = totalImpressions > 0 ? (totalThruplays / totalImpressions) * 100 : 0;
+      const ctr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
+      const cpm = totalImpressions > 0 ? (totalSpend / totalImpressions) * 1000 : 0;
+      const cpa = totalPurchases > 0 ? totalSpend / totalPurchases : 0;
+      const roas = totalSpend > 0 ? totalPurchaseValue / totalSpend : 0;
+
+      const [year, month] = key.split("-");
+      const label = new Date(parseInt(year), parseInt(month) - 1).toLocaleDateString("no-NO", {
+        month: "short",
+        year: "numeric",
+      });
+
+      return {
+        cohortDate: key + "-01",
+        label,
+        adCount: ads.length,
+        weeks: [
+          {
+            week: 0, // W0 = lifetime aggregate (weekly breakdown requires ad-level daily data)
+            spend: totalSpend,
+            impressions: totalImpressions,
+            hookRate,
+            holdRate,
+            ctr,
+            cpm,
+            cpa,
+            roas,
+          },
+        ],
+      };
+    });
 }
 
 export async function getCreativeChurn(
   clientId: string
 ): Promise<CreativeChurnPoint[]> {
-  return getCreativeChurnData(clientId);
+  // Creative churn requires ad-level daily spend data which isn't synced yet.
+  // Return empty — the chart is hidden when churnData is empty.
+  return [];
 }

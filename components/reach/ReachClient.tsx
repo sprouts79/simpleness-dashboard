@@ -30,6 +30,11 @@ export default function ReachClient({
 }) {
   const [lookback, setLookback] = useState<Lookback>(180);
 
+  // Filter composition and table to the selected lookback window
+  const weeksToShow = Math.ceil(lookback / 7);
+  const filteredComposition = composition.slice(-weeksToShow);
+  const filteredTable = table.slice(0, weeksToShow);
+
   const netNewStatus =
     kpis.avgNetNewPct >= 30 ? "Frisk målgruppe" :
     kpis.avgNetNewPct >= 18 ? "Moderat metning" : "Høy metning — vurder nye kreative eller budsjettreduksjon";
@@ -102,7 +107,7 @@ export default function ReachClient({
           subtitle="Mørk = previously reached · Grønn = net new · Linje = Net New %"
         />
         <div className="rounded-xl border border-[var(--color-border)] p-5 bg-white">
-          <ReachCompositionChart data={composition} />
+          <ReachCompositionChart data={filteredComposition} />
           <div className="flex gap-6 mt-4 text-xs text-[rgba(9,10,8,0.4)]">
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-sm bg-[#d4d4d0] inline-block" />
@@ -121,7 +126,7 @@ export default function ReachClient({
       </div>
 
       {/* Monthly breakdown table */}
-      {table.length > 0 && (
+      {filteredTable.length > 0 && (
         <div>
           <SectionHeader title="Månedlig breakdown" />
           <div className="rounded-xl border border-[var(--color-border)] overflow-x-auto">
@@ -145,7 +150,7 @@ export default function ReachClient({
                 </tr>
               </thead>
               <tbody>
-                {table.map((row) => (
+                {filteredTable.map((row) => (
                   <tr
                     key={row.month}
                     className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface)] transition-colors"

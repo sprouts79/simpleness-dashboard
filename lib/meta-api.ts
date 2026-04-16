@@ -255,6 +255,63 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
 
 // ─── Reach: weekly rolling reach ─────────────────────────────────────────────
 
+function subtractDays(dateStr: string, n: number): string {
+  const d = new Date(dateStr + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() - n);
+  return d.toISOString().split("T")[0];
+}
+
+export interface WeeklyReachRow {
+  weekStart: string;
+  weekEnd: string;
+  weeklyReach: number;
+  impressions: number;
+  spend: number;
+  frequency: number;
+  cumulativeReach: number; // unique reach over lookbackDays window ending at weekEnd
+}
+
+/**
+ * Fetches weekly reach data for the given period.
+ * Uses time_increment=7 for one bulk call to get per-week metrics,
+ * then N individual calls to compute rolling cumulative reach per week.
+ */
+export async function fetchWeeklyReachRows(
+  accountId: string,
+  since: string,
+  until: string,
+  lookbackDays = 90
+): Promise<WeeklyReachRow[]> {
+  // One call: weekly breakdown
+  const fields = "reach,impressions,spend,frequency";
+  const timeRange = encodeURIComponent(JSON.stringify({ since, until }));
+  const url = `${BASE}/${accountId}/insights?fields=${fields}&time_range=${timeRange}&time_increment=7&level=account&limit=52&access_token=${token()}`;
+  const rows = await paginate<any>(url);
+
+  const result: WeeklyReachRow[] = [];
+
+  for (const r of rows) {
+    const weekStart: string = r.date_start;
+    const weekEnd: string = r.date_stop;
+
+    // Cumulative: unique reach over the rolling lookback window ending at weekEnd
+    const lookbackStart = subtractDays(weekEnd, lookbackDays - 1);
+    const cumData = await fetchReach(accountId, lookbackStart, weekEnd);
+
+    result.push({
+      weekStart,
+      weekEnd,
+      weeklyReach: parseInt(r.reach ?? "0"),
+      impressions: parseInt(r.impressions ?? "0"),
+      spend: parseFloat(r.spend ?? "0"),
+      frequency: parseFloat(r.frequency ?? "0"),
+      cumulativeReach: cumData.reach,
+    });
+  }
+
+  return result;
+}
+
 export interface ReachResult {
   reach: number;
   impressions: number;
