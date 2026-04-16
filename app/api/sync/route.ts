@@ -1,9 +1,11 @@
 /**
  * POST /api/sync
- * Body: { clientId: string, syncType?: "all" | "reach", months?: number, lookbackDays?: number }
+ * Body: { clientId: string, syncType?: "all" | "performance" | "ads" | "reach", months?: number, lookbackDays?: number }
  *
- * syncType="reach": only syncs reach data (faster — use from reach page)
- * syncType="all":   syncs performance + ads + reach (default)
+ * syncType="all":         performance + ads + reach (default)
+ * syncType="performance": only daily campaign insights
+ * syncType="ads":         only ad insights + creatives
+ * syncType="reach":       only weekly reach rows
  *
  * Safe to call repeatedly — idempotent.
  */
@@ -20,7 +22,7 @@ import {
   dateInTz,
 } from "@/lib/meta-api";
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
   const { clientId, months, lookbackDays = 0, syncType = "all" } = await req.json();
@@ -56,8 +58,8 @@ export async function POST(req: NextRequest) {
   let performanceSynced = 0;
   let adsSynced = 0;
 
-  // ── 1 + 2. Performance + ads (skipped for reach-only syncs) ─────────────────
-  if (syncType === "all") {
+  // ── 1. Performance ───────────────────────────────────────────────────────────
+  if (syncType === "all" || syncType === "performance") {
     try {
       const rows = await fetchDailyInsights(accountId, since, until, "campaign");
       const upsertRows = rows.map((r) => ({
@@ -87,7 +89,10 @@ export async function POST(req: NextRequest) {
     } catch (e: any) {
       errors.push(`performance fetch: ${e.message}`);
     }
+  }
 
+  // ── 2. Ads + creatives ───────────────────────────────────────────────────────
+  if (syncType === "all" || syncType === "ads") {
     try {
       const [insights, meta] = await Promise.all([
         fetchAdInsights(accountId, since, until),
@@ -137,9 +142,8 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── 3. Weekly rolling reach ──────────────────────────────────────────────────
   let reachSynced = 0;
-  try {
+  if (syncType === "all" || syncType === "reach") try {
     const reachDays = months ? Math.ceil(months * 30.44) + 14 : 91;
     const reachSince = daysAgoInTz(reachDays, tz);
     // windowStart: fixed for all weeks. lookbackDays = extension BEFORE the display period.
