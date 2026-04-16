@@ -41,13 +41,24 @@ function getMetric(
   return parseFloat(arr?.find((a) => a.action_type === type)?.value ?? "0");
 }
 
-// Paginate through all cursor pages and return every item
+// Paginate through all cursor pages and return every item.
+// Retries up to 2 times on rate-limit errors (code 4) with 30s back-off.
 async function paginate<T>(initialUrl: string): Promise<T[]> {
   const results: T[] = [];
   let next: string | null = initialUrl;
   while (next) {
-    const res = await fetch(next, { cache: "no-store" });
-    const json: any = await res.json();
+    let json: any;
+    let attempts = 0;
+    while (true) {
+      const res = await fetch(next, { cache: "no-store" });
+      json = await res.json();
+      if (json.error?.code === 4 && attempts < 2) {
+        attempts++;
+        await new Promise((r) => setTimeout(r, 30_000 * attempts));
+        continue;
+      }
+      break;
+    }
     if (json.error) {
       throw new Error(`Meta API error: ${json.error.message} (code ${json.error.code})`);
     }
@@ -309,34 +320,40 @@ export async function fetchWeeklyReachRows(
   const url = `${BASE}/${accountId}/insights?fields=${fields}&time_range=${timeRange}&time_increment=7&level=account&limit=52&access_token=${token()}`;
   const rows = await paginate<any>(url);
 
-  // Fan out all R_full + R_prev calls in parallel — avoids sequential await per week
-  return Promise.all(
-    rows.map(async (r) => {
-      const weekStart: string = r.date_start;
-      const weekEnd: string = r.date_stop;
-      const prevWindowEnd = subtractDays(weekStart, 1);
+  // Process weeks in batches of 4 to avoid hitting Meta's rate limit
+  // (each week needs 2 API calls; all-parallel on 12+ weeks = 24+ concurrent requests)
+  const results: WeeklyReachRow[] = [];
+  for (let i = 0; i < rows.length; i += 4) {
+    const batch = rows.slice(i, i + 4);
+    const batchResults = await Promise.all(
+      batch.map(async (r) => {
+        const weekStart: string = r.date_start;
+        const weekEnd: string = r.date_stop;
+        const prevWindowEnd = subtractDays(weekStart, 1);
 
-      // R_prev is invalid if prevWindowEnd < windowStart (first week — no one reached yet)
-      const hasPrevWindow = prevWindowEnd >= windowStart;
-      const [fullData, prevData] = await Promise.all([
-        fetchReach(accountId, windowStart, weekEnd),
-        hasPrevWindow
-          ? fetchReach(accountId, windowStart, prevWindowEnd)
-          : Promise.resolve({ reach: 0, impressions: 0, spend: 0, frequency: 0 }),
-      ]);
+        const hasPrevWindow = prevWindowEnd >= windowStart;
+        const [fullData, prevData] = await Promise.all([
+          fetchReach(accountId, windowStart, weekEnd),
+          hasPrevWindow
+            ? fetchReach(accountId, windowStart, prevWindowEnd)
+            : Promise.resolve({ reach: 0, impressions: 0, spend: 0, frequency: 0 }),
+        ]);
 
-      return {
-        weekStart,
-        weekEnd,
-        weeklyReach: parseInt(r.reach ?? "0"),
-        impressions: parseInt(r.impressions ?? "0"),
-        spend: parseFloat(r.spend ?? "0"),
-        frequency: parseFloat(r.frequency ?? "0"),
-        cumulativeReach: fullData.reach,
-        prevWindowReach: prevData.reach,
-      };
-    })
-  );
+        return {
+          weekStart,
+          weekEnd,
+          weeklyReach: parseInt(r.reach ?? "0"),
+          impressions: parseInt(r.impressions ?? "0"),
+          spend: parseFloat(r.spend ?? "0"),
+          frequency: parseFloat(r.frequency ?? "0"),
+          cumulativeReach: fullData.reach,
+          prevWindowReach: prevData.reach,
+        };
+      })
+    );
+    results.push(...batchResults);
+  }
+  return results;
 }
 
 // ─── Creative: weekly ad-level insights for cohort analysis ──────────────────
