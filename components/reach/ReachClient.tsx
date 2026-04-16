@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import KpiCard from "@/components/ui/KpiCard";
 import SectionHeader from "@/components/ui/SectionHeader";
 import ReachCompositionChart from "@/components/charts/ReachCompositionChart";
-import { ReachKpis, ReachCompositionPoint, ReachMonthRow } from "@/lib/types";
+import { ReachCompositionPoint, ReachMonthRow } from "@/lib/types";
 import clsx from "clsx";
 
-type Lookback = 30 | 60 | 90 | 180 | 360;
+type Period = 1 | 3 | 6 | 12 | 18 | 24;
 
 function formatNok(n: number) {
   return `NOK ${n.toLocaleString("no-NO", { maximumFractionDigits: 0 })}`;
@@ -19,111 +19,176 @@ function formatReach(n: number) {
   return `${n}`;
 }
 
+function avg(arr: number[]) {
+  if (!arr.length) return 0;
+  return arr.reduce((s, v) => s + v, 0) / arr.length;
+}
+
 export default function ReachClient({
-  kpis,
+  clientId,
   composition,
   table,
 }: {
-  kpis: ReachKpis;
+  clientId: string;
   composition: ReachCompositionPoint[];
   table: ReachMonthRow[];
 }) {
-  const [lookback, setLookback] = useState<Lookback>(180);
+  const [period, setPeriod] = useState<Period>(6);
+  const [syncing, setSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
-  // Filter composition and table to the selected lookback window
-  const weeksToShow = Math.ceil(lookback / 7);
-  const filteredComposition = composition.slice(-weeksToShow);
+  // Filter to selected period (table is newest-first, composition is oldest-first)
+  const weeksToShow = Math.round(period * 4.33);
   const filteredTable = table.slice(0, weeksToShow);
+  const filteredComposition = composition.slice(-weeksToShow);
 
-  const netNewStatus =
+  // KPIs computed client-side from the filtered window
+  const kpis = useMemo(() => {
+    if (!filteredTable.length) return null;
+    return {
+      totalRollingReach: filteredTable[0].rollingReach,
+      avgNetNewReach: Math.round(avg(filteredTable.map((r) => r.netNew))),
+      avgNetNewPct: parseFloat(avg(filteredTable.map((r) => r.netNewPct)).toFixed(1)),
+      avgCpmNetNew: parseFloat(avg(filteredTable.map((r) => r.cpmNetNew)).toFixed(0)),
+      frequency: parseFloat(avg(filteredTable.map((r) => r.frequency)).toFixed(1)),
+    };
+  }, [filteredTable]);
+
+  const netNewStatus = !kpis ? "" :
     kpis.avgNetNewPct >= 30 ? "Frisk målgruppe" :
-    kpis.avgNetNewPct >= 18 ? "Moderat metning" : "Høy metning — vurder nye kreative eller budsjettreduksjon";
+    kpis.avgNetNewPct >= 18 ? "Moderat metning" :
+    "Høy metning — vurder nye kreative eller budsjettreduksjon";
+
+  async function handleSync() {
+    setSyncing(true);
+    setSyncStatus(null);
+    try {
+      const res = await fetch("/api/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clientId, months: period }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setSyncStatus(`Synkronisert — ${data.reachSynced} uker hentet`);
+        setTimeout(() => window.location.reload(), 800);
+      } else {
+        setSyncStatus(`Feil: ${data.errors?.join(", ") || "Ukjent feil"}`);
+      }
+    } catch (e: any) {
+      setSyncStatus(`Feil: ${e.message}`);
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   return (
     <div className="space-y-8">
-      {/* Lookback selector */}
+      {/* Period selector + Hent data */}
       <div className="flex items-center justify-between">
-        <div className="text-sm text-[rgba(9,10,8,0.45)]">
-          Lookback-vindu for "Previously Reached":
-        </div>
         <div className="flex bg-[var(--color-surface)] rounded-lg p-1 gap-1">
-          {([30, 60, 90, 180, 360] as Lookback[]).map((d) => (
+          {([1, 3, 6, 12, 18, 24] as Period[]).map((p) => (
             <button
-              key={d}
-              onClick={() => setLookback(d)}
+              key={p}
+              onClick={() => setPeriod(p)}
               className={clsx(
-                "text-xs font-semibold px-2.5 py-1.5 rounded-md transition-colors",
-                lookback === d
+                "text-xs font-semibold px-3 py-1.5 rounded-md transition-colors",
+                period === p
                   ? "bg-white text-[var(--color-black)] shadow-sm"
                   : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)]"
               )}
             >
-              {d}d
+              {p}M
             </button>
           ))}
+        </div>
+        <div className="flex items-center gap-3">
+          {syncStatus && (
+            <span className="text-xs text-[rgba(9,10,8,0.45)]">{syncStatus}</span>
+          )}
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className={clsx(
+              "text-xs font-semibold px-4 py-2 rounded-lg transition-colors",
+              syncing
+                ? "bg-[var(--color-surface)] text-[rgba(9,10,8,0.35)] cursor-not-allowed border border-[var(--color-border)]"
+                : "bg-[var(--color-accent)] text-[var(--color-black)] hover:opacity-90"
+            )}
+          >
+            {syncing ? "Henter..." : "Hent data"}
+          </button>
         </div>
       </div>
 
       {/* KPI cards */}
-      <div>
-        <SectionHeader title="Reach-nøkkeltall" subtitle="Siste 12 måneder" />
-        <div className="grid grid-cols-4 gap-3">
-          <KpiCard
-            label="Total Rolling Reach"
-            value={formatReach(kpis.totalRollingReach)}
-            note="90d rullerende vindu"
-            size="large"
+      {kpis && (
+        <div>
+          <SectionHeader
+            title="Reach-nøkkeltall"
+            subtitle={`Siste ${period} mnd · ${filteredTable.length} uker · 90d lookback`}
           />
-          <KpiCard
-            label="Avg Net New Reach"
-            value={formatReach(kpis.avgNetNewReach)}
-            note="per uke"
-          />
-          <KpiCard
-            label="Avg % Net New"
-            value={`${kpis.avgNetNewPct.toFixed(1)}%`}
-            note={netNewStatus}
-            highlight={kpis.avgNetNewPct < 18}
-          />
-          <KpiCard
-            label="Avg CPM Net New"
-            value={formatNok(kpis.avgCpmNetNew)}
-            note="per 1000 nye nådd"
-          />
-        </div>
-
-        {kpis.avgNetNewPct < 20 && (
-          <div className="mt-3 px-4 py-3 rounded-lg border border-yellow-200 bg-yellow-50 text-xs text-yellow-800">
-            <strong>Advarsel:</strong> Net New Reach er {kpis.avgNetNewPct}% — godt under 30%-terskelen. Audience er i ferd med å mettes. Frekvens er {kpis.frequency}×.{" "}
-            Vurder kreativ refresh, utvidelse av målgruppe, eller budsjettreduksjon.
+          <div className="grid grid-cols-4 gap-3">
+            <KpiCard
+              label="Total Rolling Reach"
+              value={formatReach(kpis.totalRollingReach)}
+              note="90d rullerende vindu"
+              size="large"
+            />
+            <KpiCard
+              label="Avg Net New Reach"
+              value={formatReach(kpis.avgNetNewReach)}
+              note="per uke"
+            />
+            <KpiCard
+              label="Avg % Net New"
+              value={`${kpis.avgNetNewPct.toFixed(1)}%`}
+              note={netNewStatus}
+              highlight={kpis.avgNetNewPct < 18}
+            />
+            <KpiCard
+              label="Avg CPM Net New"
+              value={formatNok(kpis.avgCpmNetNew)}
+              note="per 1000 nye nådd"
+            />
           </div>
-        )}
-      </div>
+
+          {kpis.avgNetNewPct < 20 && (
+            <div className="mt-3 px-4 py-3 rounded-lg border border-yellow-200 bg-yellow-50 text-xs text-yellow-800">
+              <strong>Advarsel:</strong> Net New Reach er {kpis.avgNetNewPct}% — under 30%-terskelen.
+              Frekvens er {kpis.frequency}×.{" "}
+              Vurder kreativ refresh, utvidelse av målgruppe, eller budsjettreduksjon.
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Reach Composition chart */}
-      <div>
-        <SectionHeader
-          title="Reach Composition"
-          subtitle="Mørk = previously reached · Grønn = net new · Linje = Net New %"
-        />
-        <div className="rounded-xl border border-[var(--color-border)] p-5 bg-white">
-          <ReachCompositionChart data={filteredComposition} />
-          <div className="flex gap-6 mt-4 text-xs text-[rgba(9,10,8,0.4)]">
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-sm bg-[#d4d4d0] inline-block" />
-              Previously reached
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-sm bg-[var(--color-green-mint)] inline-block" />
-              Net New
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-4 h-0.5 bg-[#d97706] inline-block" />
-              Net New %
-            </span>
+      {filteredComposition.length > 0 && (
+        <div>
+          <SectionHeader
+            title="Reach Composition"
+            subtitle="Mørk = previously reached · Grønn = net new · Linje = Net New %"
+          />
+          <div className="rounded-xl border border-[var(--color-border)] p-5 bg-white">
+            <ReachCompositionChart data={filteredComposition} />
+            <div className="flex gap-6 mt-4 text-xs text-[rgba(9,10,8,0.4)]">
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-sm bg-[#d4d4d0] inline-block" />
+                Previously reached
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-sm bg-[var(--color-green-mint)] inline-block" />
+                Net New
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-4 h-0.5 bg-[#d97706] inline-block" />
+                Net New %
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Weekly breakdown table */}
       {filteredTable.length > 0 && (
@@ -135,7 +200,7 @@ export default function ReachClient({
                 <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
                   {[
                     "Uke", "Rolling Reach", "Ukentlig Reach", "Net New",
-                    "Net New %", "Spend", "CPM", "CPM Net New", "Freq."
+                    "Net New %", "Spend", "CPM", "CPM Net New", "Freq.",
                   ].map((h) => (
                     <th
                       key={h}
@@ -174,17 +239,17 @@ export default function ReachClient({
                         })}
                         style={{ fontFamily: "var(--font-mono)" }}
                       >
-                        {row.netNewPct}%
+                        {row.netNewPct.toFixed(1)}%
                       </span>
                     </td>
                     <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
                       {formatNok(row.spend)}
                     </td>
                     <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
-                      {row.cpm} kr
+                      {Math.round(row.cpm)} kr
                     </td>
                     <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
-                      {row.cpmNetNew} kr
+                      {Math.round(row.cpmNetNew)} kr
                     </td>
                     <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
                       {row.frequency.toFixed(1)}
@@ -194,6 +259,22 @@ export default function ReachClient({
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {filteredTable.length === 0 && filteredComposition.length === 0 && (
+        <div className="rounded-xl border border-[var(--color-border)] p-12 text-center">
+          <p className="text-sm text-[rgba(9,10,8,0.4)] mb-4">
+            Ingen reach-data tilgjengelig for denne perioden.
+          </p>
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="text-xs font-semibold px-4 py-2 rounded-lg bg-[var(--color-accent)] text-[var(--color-black)] hover:opacity-90 transition-colors"
+          >
+            {syncing ? "Henter..." : "Hent data fra Meta"}
+          </button>
         </div>
       )}
     </div>

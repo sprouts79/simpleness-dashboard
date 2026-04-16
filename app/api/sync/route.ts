@@ -19,7 +19,7 @@ import {
 } from "@/lib/meta-api";
 
 export async function POST(req: NextRequest) {
-  const { clientId } = await req.json();
+  const { clientId, months } = await req.json();
   if (!clientId) {
     return NextResponse.json({ error: "clientId required" }, { status: 400 });
   }
@@ -159,7 +159,9 @@ export async function POST(req: NextRequest) {
   // ── 3. Weekly rolling reach ──────────────────────────────────────────────────
   let reachSynced = 0;
   try {
-    const reachSince = daysAgoInTz(91, tz); // 13 weeks
+    // Extend sync window based on requested period (months param), default 13 weeks
+    const reachDays = months ? Math.ceil(months * 30.44) + 14 : 91;
+    const reachSince = daysAgoInTz(reachDays, tz);
     const weeklyRows = await fetchWeeklyReachRows(accountId, reachSince, until, 90);
 
     const upsertRows = weeklyRows.map((r) => {
