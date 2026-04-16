@@ -23,24 +23,25 @@ export interface PulseRow {
   frequency: number;
 }
 
+export type PeriodKey = "today" | "7d" | "30d" | "prev_month" | "3m" | "6m" | "12m";
+export type CompareKey = "period" | "year";
+
 // Performance
 export interface PerformanceKpis {
   spend: number;
-  spendDeltaWow: number;
-  spendDeltaMom: number;
+  spendDelta: number;
   roas: number;
-  roasDeltaWow: number;
-  roasDeltaMom: number;
+  roasDelta: number;
   cpa: number;
-  cpaDeltaWow: number;
-  cpaDeltaMom: number;
+  cpaDelta: number;
   cpm: number;
-  cpmDeltaWow: number;
-  cpmDeltaMom: number;
+  cpmDelta: number;
   frequency: number;
-  frequencyDeltaWow: number;
+  frequencyDelta: number;
   ctr: number;
-  ctrDeltaWow: number;
+  ctrDelta: number;
+  periodLabel: string;
+  compareLabel: string;
 }
 
 export interface SpendTrendPoint {

@@ -19,6 +19,8 @@ import {
   AdCohort,
   CreativeChurnPoint,
   Ad,
+  PeriodKey,
+  CompareKey,
 } from "./types";
 import {
   CLIENTS as MOCK_CLIENTS,
@@ -47,6 +49,56 @@ function daysAgo(n: number): string {
 
 function today(): string {
   return new Date().toISOString().split("T")[0];
+}
+
+function shiftDays(dateStr: string, days: number): string {
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split("T")[0];
+}
+
+const PERIOD_LABELS: Record<PeriodKey, string> = {
+  today: "I dag",
+  "7d": "Siste 7 dager",
+  "30d": "Siste 30 dager",
+  prev_month: "Forrige måned",
+  "3m": "Siste 3 måneder",
+  "6m": "Siste 6 måneder",
+  "12m": "Siste 12 måneder",
+};
+
+export function getPeriodRange(period: PeriodKey): { since: string; until: string } {
+  const t = today();
+  if (period === "today") return { since: t, until: t };
+  if (period === "7d") return { since: daysAgo(7), until: t };
+  if (period === "30d") return { since: daysAgo(30), until: t };
+  if (period === "prev_month") {
+    const now = new Date();
+    const firstOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastOfPrevMonth = new Date(firstOfThisMonth.getTime() - 86400000);
+    const firstOfPrevMonth = new Date(lastOfPrevMonth.getFullYear(), lastOfPrevMonth.getMonth(), 1);
+    return {
+      since: firstOfPrevMonth.toISOString().split("T")[0],
+      until: lastOfPrevMonth.toISOString().split("T")[0],
+    };
+  }
+  if (period === "3m") return { since: daysAgo(90), until: t };
+  if (period === "6m") return { since: daysAgo(180), until: t };
+  return { since: daysAgo(365), until: t }; // 12m
+}
+
+export function getCompareRange(
+  since: string,
+  until: string,
+  compare: CompareKey
+): { compSince: string; compUntil: string } {
+  if (compare === "year") {
+    return { compSince: shiftDays(since, -365), compUntil: shiftDays(until, -365) };
+  }
+  const sinceDate = new Date(since);
+  const untilDate = new Date(until);
+  const diffDays = Math.round((untilDate.getTime() - sinceDate.getTime()) / 86400000) + 1;
+  return { compSince: shiftDays(since, -diffDays), compUntil: shiftDays(until, -diffDays) };
 }
 
 // ─── Clients (Supabase) ──────────────────────────────────────────────────────
@@ -188,67 +240,61 @@ export async function getPulseData(): Promise<PulseRow[]> {
 // ─── Performance KPIs ────────────────────────────────────────────────────────
 
 export async function getPerformanceKpis(
-  clientId: string
+  clientId: string,
+  since: string,
+  until: string,
+  compSince: string,
+  compUntil: string,
+  periodLabel: string,
+  compareLabel: string,
 ): Promise<PerformanceKpis | null> {
-  const since30 = daysAgo(30);
-  const since60 = daysAgo(60);
-  const since7 = daysAgo(7);
-  const since14 = daysAgo(14);
-  const t = today();
-  const t7 = daysAgo(7);
-  const t30 = daysAgo(30);
-
   const { data } = await supabase
     .from("meta_performance_daily")
     .select("date,spend,purchases,purchase_value,impressions,clicks,frequency")
     .eq("client_id", clientId)
-    .gte("date", since60)
-    .lte("date", t)
+    .gte("date", compSince)
+    .lte("date", until)
     .order("date");
 
   if (!data?.length) return MOCK_PERFORMANCE_KPIS[clientId] ?? null;
 
-  const curr7 = data.filter((r) => r.date >= since7);
-  const prev7 = data.filter((r) => r.date >= since14 && r.date < since7);
-  const curr30 = data.filter((r) => r.date >= since30);
-  const prev30 = data.filter((r) => r.date >= since60 && r.date < since30);
+  const curr = data.filter((r) => r.date >= since && r.date <= until);
+  const comp = data.filter((r) => r.date >= compSince && r.date <= compUntil);
 
-  const c7 = derivedKpis(aggRows(curr7));
-  const p7 = derivedKpis(aggRows(prev7));
-  const c30 = derivedKpis(aggRows(curr30));
-  const p30 = derivedKpis(aggRows(prev30));
+  const c = derivedKpis(aggRows(curr));
+  const p = derivedKpis(aggRows(comp));
 
   return {
-    spend: c30.spend,
-    spendDeltaWow: pctDelta(c7.spend, p7.spend),
-    spendDeltaMom: pctDelta(c30.spend, p30.spend),
-    roas: c30.roas,
-    roasDeltaWow: pctDelta(c7.roas, p7.roas),
-    roasDeltaMom: pctDelta(c30.roas, p30.roas),
-    cpa: c30.cpa,
-    cpaDeltaWow: pctDelta(c7.cpa, p7.cpa),
-    cpaDeltaMom: pctDelta(c30.cpa, p30.cpa),
-    cpm: c30.cpm,
-    cpmDeltaWow: pctDelta(c7.cpm, p7.cpm),
-    cpmDeltaMom: pctDelta(c30.cpm, p30.cpm),
-    frequency: c30.frequency,
-    frequencyDeltaWow: pctDelta(c7.frequency, p7.frequency),
-    ctr: c30.ctr,
-    ctrDeltaWow: pctDelta(c7.ctr, p7.ctr),
+    spend: c.spend,
+    spendDelta: pctDelta(c.spend, p.spend),
+    roas: c.roas,
+    roasDelta: pctDelta(c.roas, p.roas),
+    cpa: c.cpa,
+    cpaDelta: pctDelta(c.cpa, p.cpa),
+    cpm: c.cpm,
+    cpmDelta: pctDelta(c.cpm, p.cpm),
+    frequency: c.frequency,
+    frequencyDelta: pctDelta(c.frequency, p.frequency),
+    ctr: c.ctr,
+    ctrDelta: pctDelta(c.ctr, p.ctr),
+    periodLabel,
+    compareLabel,
   };
 }
 
 // ─── Spend Trend ─────────────────────────────────────────────────────────────
 
 export async function getSpendTrend(
-  clientId: string
+  clientId: string,
+  since: string,
+  until: string,
 ): Promise<SpendTrendPoint[]> {
   const { data } = await supabase
     .from("meta_performance_daily")
     .select("date,spend,purchases,purchase_value")
     .eq("client_id", clientId)
-    .gte("date", daysAgo(90))
-    .lte("date", today())
+    .gte("date", since)
+    .lte("date", until)
     .order("date");
 
   if (!data?.length) return MOCK_SPEND_TREND[clientId] ?? [];
@@ -272,13 +318,13 @@ export async function getSpendTrend(
 
 // ─── Campaigns ───────────────────────────────────────────────────────────────
 
-export async function getCampaigns(clientId: string): Promise<Campaign[]> {
+export async function getCampaigns(clientId: string, since: string, until: string): Promise<Campaign[]> {
   const { data } = await supabase
     .from("meta_performance_daily")
     .select("campaign_id,campaign_name,spend,purchases,purchase_value,impressions,clicks,reach,frequency")
     .eq("client_id", clientId)
-    .gte("date", daysAgo(30))
-    .lte("date", today())
+    .gte("date", since)
+    .lte("date", until)
     .not("campaign_id", "is", null);
 
   if (!data?.length) return MOCK_CAMPAIGNS[clientId] ?? [];

@@ -1,37 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import KpiCard from "@/components/ui/KpiCard";
 import SectionHeader from "@/components/ui/SectionHeader";
 import SpendTrendChart from "@/components/charts/SpendTrendChart";
 import InfoBox from "@/components/ui/InfoBox";
-import { PerformanceKpis, SpendTrendPoint, Campaign } from "@/lib/types";
+import { PerformanceKpis, SpendTrendPoint, Campaign, PeriodKey, CompareKey } from "@/lib/types";
 import clsx from "clsx";
+import { useState } from "react";
 
-type Period = "wow" | "mom";
-type TrendDays = 7 | 30 | 90;
+const PERIOD_OPTIONS: { value: PeriodKey; label: string }[] = [
+  { value: "today", label: "I dag" },
+  { value: "7d", label: "7 dager" },
+  { value: "30d", label: "30 dager" },
+  { value: "prev_month", label: "Forrige mnd" },
+  { value: "3m", label: "3 mnd" },
+  { value: "6m", label: "6 mnd" },
+  { value: "12m", label: "12 mnd" },
+];
+
+const COMPARE_OPTIONS: { value: CompareKey; label: string }[] = [
+  { value: "period", label: "Forrige periode" },
+  { value: "year", label: "Forrige år" },
+];
 
 function formatNok(n: number) {
   if (n >= 1000000) return `NOK ${(n / 1000000).toFixed(1)}M`;
   if (n >= 1000) return `NOK ${Math.round(n / 1000)}k`;
   return `NOK ${Math.round(n)}`;
-}
-
-function DeltaChip({ value, invert = false }: { value: number; invert?: boolean }) {
-  const good = invert ? value < 0 : value > 0;
-  const sign = value > 0 ? "+" : "";
-  return (
-    <span
-      className={clsx("text-xs", {
-        "text-green-600": good,
-        "text-red-500": !good && value !== 0,
-        "text-[rgba(9,10,8,0.35)]": value === 0,
-      })}
-      style={{ fontFamily: "var(--font-mono)" }}
-    >
-      {sign}{value.toFixed(1)}%
-    </span>
-  );
 }
 
 function CampaignRow({ campaign, depth = 0 }: { campaign: Campaign; depth?: number }) {
@@ -40,10 +36,7 @@ function CampaignRow({ campaign, depth = 0 }: { campaign: Campaign; depth?: numb
 
   return (
     <>
-      <tr
-        className="border-b border-[var(--color-border)] hover:bg-[var(--color-surface)] transition-colors"
-        style={{ paddingLeft: depth * 16 }}
-      >
+      <tr className="border-b border-[var(--color-border)] hover:bg-[var(--color-surface)] transition-colors">
         <td className="px-5 py-3">
           <div className="flex items-center gap-2" style={{ paddingLeft: depth * 20 }}>
             {hasChildren && (
@@ -98,37 +91,59 @@ export default function PerformanceClient({
   kpis,
   trend,
   campaigns,
+  period,
+  compare,
 }: {
   kpis: PerformanceKpis;
   trend: SpendTrendPoint[];
   campaigns: Campaign[];
+  period: PeriodKey;
+  compare: CompareKey;
 }) {
-  const [period, setPeriod] = useState<Period>("wow");
-  const [trendDays, setTrendDays] = useState<TrendDays>(30);
+  const router = useRouter();
 
-  const deltaRoas = period === "wow" ? kpis.roasDeltaWow : kpis.roasDeltaMom;
-  const deltaCpa = period === "wow" ? kpis.cpaDeltaWow : kpis.cpaDeltaMom;
-  const deltaCpm = period === "wow" ? kpis.cpmDeltaWow : kpis.cpmDeltaMom;
-  const deltaSpend = period === "wow" ? kpis.spendDeltaWow : kpis.spendDeltaMom;
+  function navigate(newPeriod: PeriodKey, newCompare: CompareKey) {
+    router.push(`?period=${newPeriod}&compare=${newCompare}`);
+  }
+
+  const deltaLabel = kpis.compareLabel;
 
   return (
     <div className="space-y-8">
-      {/* Period toggle */}
-      <div className="flex items-center justify-between">
-        <div />
+      {/* Period selector + compare toggle */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        {/* Period */}
         <div className="flex bg-[var(--color-surface)] rounded-lg p-1 gap-1">
-          {(["wow", "mom"] as Period[]).map((p) => (
+          {PERIOD_OPTIONS.map(({ value, label }) => (
             <button
-              key={p}
-              onClick={() => setPeriod(p)}
+              key={value}
+              onClick={() => navigate(value, compare)}
               className={clsx(
-                "text-xs font-semibold px-3 py-1.5 rounded-md transition-colors",
-                period === p
+                "text-xs font-semibold px-3 py-1.5 rounded-md transition-colors whitespace-nowrap",
+                period === value
                   ? "bg-white text-[var(--color-black)] shadow-sm"
                   : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)]"
               )}
             >
-              {p === "wow" ? "Uke vs uke" : "Måned vs måned"}
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Compare */}
+        <div className="flex bg-[var(--color-surface)] rounded-lg p-1 gap-1">
+          {COMPARE_OPTIONS.map(({ value, label }) => (
+            <button
+              key={value}
+              onClick={() => navigate(period, value)}
+              className={clsx(
+                "text-xs font-semibold px-3 py-1.5 rounded-md transition-colors whitespace-nowrap",
+                compare === value
+                  ? "bg-white text-[var(--color-black)] shadow-sm"
+                  : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)]"
+              )}
+            >
+              {label}
             </button>
           ))}
         </div>
@@ -136,27 +151,27 @@ export default function PerformanceClient({
 
       {/* Primary KPIs */}
       <div>
-        <SectionHeader title="Nøkkeltall" subtitle="Siste 30 dager" />
+        <SectionHeader title="Nøkkeltall" subtitle={kpis.periodLabel} />
         <div className="grid grid-cols-3 gap-3 mb-3">
           <KpiCard
             label="Spend"
-            value={`NOK ${Math.round(kpis.spend / 1000)}k`}
-            delta={deltaSpend}
-            deltaLabel={period === "wow" ? "vs forrige uke" : "vs forrige måned"}
+            value={formatNok(kpis.spend)}
+            delta={kpis.spendDelta}
+            deltaLabel={deltaLabel}
             size="large"
           />
           <KpiCard
             label="ROAS"
             value={`${kpis.roas.toFixed(1)}×`}
-            delta={deltaRoas}
-            deltaLabel={period === "wow" ? "vs forrige uke" : "vs forrige måned"}
+            delta={kpis.roasDelta}
+            deltaLabel={deltaLabel}
             size="large"
           />
           <KpiCard
             label="CPA"
             value={`${Math.round(kpis.cpa)} kr`}
-            delta={deltaCpa}
-            deltaLabel={period === "wow" ? "vs forrige uke" : "vs forrige måned"}
+            delta={kpis.cpaDelta}
+            deltaLabel={deltaLabel}
             size="large"
           />
         </div>
@@ -164,48 +179,28 @@ export default function PerformanceClient({
           <KpiCard
             label="CPM"
             value={`${Math.round(kpis.cpm)} kr`}
-            delta={deltaCpm}
-            deltaLabel={period === "wow" ? "vs forrige uke" : "vs forrige måned"}
+            delta={kpis.cpmDelta}
+            deltaLabel={deltaLabel}
           />
           <KpiCard
             label="Frekvens"
             value={kpis.frequency.toFixed(1)}
-            delta={kpis.frequencyDeltaWow}
+            delta={kpis.frequencyDelta}
             note={kpis.frequency > 8 ? "⚠ For høy — audience fatigue" : kpis.frequency > 6 ? "Moderat" : "Frisk"}
           />
           <KpiCard
             label="CTR (Link)"
             value={`${kpis.ctr.toFixed(1)}%`}
-            delta={kpis.ctrDeltaWow}
+            delta={kpis.ctrDelta}
           />
         </div>
       </div>
 
       {/* Trend chart */}
       <div>
-        <SectionHeader
-          title="Spend & ROAS — trend"
-          action={
-            <div className="flex bg-[var(--color-surface)] rounded-lg p-1 gap-1">
-              {([7, 30, 90] as TrendDays[]).map((d) => (
-                <button
-                  key={d}
-                  onClick={() => setTrendDays(d)}
-                  className={clsx(
-                    "text-xs font-semibold px-2.5 py-1 rounded-md transition-colors",
-                    trendDays === d
-                      ? "bg-white text-[var(--color-black)] shadow-sm"
-                      : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)]"
-                  )}
-                >
-                  {d}d
-                </button>
-              ))}
-            </div>
-          }
-        />
+        <SectionHeader title="Spend & ROAS — trend" subtitle={kpis.periodLabel} />
         <div className="rounded-xl border border-[var(--color-border)] p-4 bg-white">
-          <SpendTrendChart data={trend} days={trendDays} />
+          <SpendTrendChart data={trend} days={365} />
           <div className="flex gap-6 mt-3 text-xs text-[rgba(9,10,8,0.4)]">
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-2.5 rounded-sm bg-[#e8e8e6] inline-block" />
@@ -255,7 +250,7 @@ export default function PerformanceClient({
       <InfoBox>
         <p className="font-semibold mb-1">Hvordan lese denne rapporten</p>
         <p className="mb-2">
-          Nøkkeltallene viser perioden du har valgt, med delta (pil) som forteller om det er bedre eller verre enn forrige tilsvarende periode.
+          Nøkkeltallene viser perioden du har valgt, med delta (pil) som forteller om det er bedre eller verre enn sammenligningsperioden.
           <strong> ROAS</strong> (Return on Ad Spend) viser hvor mye omsetning du får per krone brukt — høyere er bedre.
           <strong> CPA</strong> (kostnad per konvertering) viser hva du betaler per kjøp — lavere er bedre.
           <strong> CPM</strong> er hva du betaler per 1000 visninger — et mål på auksjonskostnaden.

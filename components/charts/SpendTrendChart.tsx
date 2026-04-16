@@ -17,7 +17,7 @@ import { nb } from "date-fns/locale";
 
 interface Props {
   data: SpendTrendPoint[];
-  days?: 7 | 30 | 90;
+  days?: number; // kept for backwards compat but unused — chart shows all data passed in
 }
 
 function formatNok(v: number) {
@@ -51,16 +51,15 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-export default function SpendTrendChart({ data, days = 30 }: Props) {
-  const sliced = data.slice(-days);
-
-  const formatted = sliced.map((d) => ({
+export default function SpendTrendChart({ data }: Props) {
+  const formatted = data.map((d) => ({
     ...d,
     label: format(parseISO(d.date), "d. MMM", { locale: nb }),
   }));
 
   // Show every Nth tick to avoid crowding
-  const tickInterval = days <= 7 ? 0 : days <= 30 ? 6 : 14;
+  const n = formatted.length;
+  const tickInterval = n <= 7 ? 0 : n <= 30 ? 6 : n <= 90 ? 14 : 30;
 
   return (
     <ResponsiveContainer width="100%" height={220}>
