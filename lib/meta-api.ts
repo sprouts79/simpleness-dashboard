@@ -9,6 +9,12 @@ function token() {
   return process.env.META_SYSTEM_USER_TOKEN!;
 }
 
+// Attribution windows applied to all action/conversion metrics.
+// 7d_click = 7-day click-through, 1d_view = 1-day view-through, 1d_ev = 1-day engaged view (Reels/Stories).
+// Change here to update globally — no other code needs to change.
+const ATTRIBUTION_WINDOWS = ["7d_click", "1d_view", "1d_ev"];
+const ATTRIBUTION_PARAM = `&action_attribution_windows=${encodeURIComponent(JSON.stringify(ATTRIBUTION_WINDOWS))}`;
+
 // Date helpers — always calculated in the ad account's timezone so they match
 // what Meta Ads Manager displays. en-CA locale gives YYYY-MM-DD format.
 export function dateInTz(date: Date, tz: string): string {
@@ -92,7 +98,7 @@ export async function fetchDailyInsights(
   ].join(",");
 
   const timeRange = encodeURIComponent(JSON.stringify({ since, until }));
-  const url = `${BASE}/${accountId}/insights?fields=${fields}&time_range=${timeRange}&time_increment=1&level=${level}&limit=500&access_token=${token()}`;
+  const url = `${BASE}/${accountId}/insights?fields=${fields}&time_range=${timeRange}&time_increment=1&level=${level}&limit=500${ATTRIBUTION_PARAM}&access_token=${token()}`;
 
   const rows = await paginate<any>(url);
 
@@ -157,13 +163,13 @@ export async function fetchAdInsights(
   ].join(",");
 
   const timeRange = encodeURIComponent(JSON.stringify({ since, until }));
-  const coreUrl = `${BASE}/${accountId}/insights?fields=${coreFields}&time_range=${timeRange}&level=ad&limit=200&access_token=${token()}`;
+  const coreUrl = `${BASE}/${accountId}/insights?fields=${coreFields}&time_range=${timeRange}&level=ad&limit=200${ATTRIBUTION_PARAM}&access_token=${token()}`;
 
   const rows = await paginate<any>(coreUrl);
 
   // Fetch thruplays separately to avoid oversized requests
   const videoFields = "ad_id,video_thruplay_watched_actions";
-  const videoUrl = `${BASE}/${accountId}/insights?fields=${videoFields}&time_range=${timeRange}&level=ad&limit=200&access_token=${token()}`;
+  const videoUrl = `${BASE}/${accountId}/insights?fields=${videoFields}&time_range=${timeRange}&level=ad&limit=200${ATTRIBUTION_PARAM}&access_token=${token()}`;
   let videoRows: any[] = [];
   try {
     videoRows = await paginate<any>(videoUrl);
@@ -362,12 +368,12 @@ export async function fetchAdWeeklyInsights(
   ].join(",");
 
   const timeRange = encodeURIComponent(JSON.stringify({ since, until }));
-  const coreUrl = `${BASE}/${accountId}/insights?fields=${coreFields}&time_range=${timeRange}&time_increment=7&level=ad&limit=500&access_token=${token()}`;
+  const coreUrl = `${BASE}/${accountId}/insights?fields=${coreFields}&time_range=${timeRange}&time_increment=7&level=ad&limit=500${ATTRIBUTION_PARAM}&access_token=${token()}`;
   const rows = await paginate<any>(coreUrl);
 
   // Fetch thruplays separately (same pattern as fetchAdInsights)
   const videoFields = "ad_id,video_thruplay_watched_actions";
-  const videoUrl = `${BASE}/${accountId}/insights?fields=${videoFields}&time_range=${timeRange}&time_increment=7&level=ad&limit=500&access_token=${token()}`;
+  const videoUrl = `${BASE}/${accountId}/insights?fields=${videoFields}&time_range=${timeRange}&time_increment=7&level=ad&limit=500${ATTRIBUTION_PARAM}&access_token=${token()}`;
   let videoRows: any[] = [];
   try {
     videoRows = await paginate<any>(videoUrl);

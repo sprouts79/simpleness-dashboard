@@ -58,15 +58,15 @@ function sortAds(ads: Ad[], metric: CohortMetric): Ad[] {
 
 // ─── Preview modal ────────────────────────────────────────────────────────────
 
-function PreviewModal({ url, onClose }: { url: string; onClose: () => void }) {
+function PreviewModal({ videoUrl, onClose }: { videoUrl: string; onClose: () => void }) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
       onClick={onClose}
     >
       <div
-        className="relative bg-white rounded-2xl overflow-hidden shadow-2xl"
-        style={{ width: 400, maxHeight: "90vh" }}
+        className="relative bg-black rounded-2xl overflow-hidden shadow-2xl"
+        style={{ width: 380, maxHeight: "92vh" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
@@ -76,15 +76,15 @@ function PreviewModal({ url, onClose }: { url: string; onClose: () => void }) {
         >
           ✕
         </button>
-        {/* Meta preview iframe — 9:16 */}
-        <div className="aspect-[9/16] w-full">
-          <iframe
-            src={url}
-            className="w-full h-full border-0"
-            allow="autoplay"
-            allowFullScreen
-          />
-        </div>
+        {/* Direct video source — no iframe, no fb.me restrictions */}
+        <video
+          src={videoUrl}
+          autoPlay
+          controls
+          playsInline
+          className="w-full h-auto block"
+          style={{ maxHeight: "92vh" }}
+        />
       </div>
     </div>
   );
@@ -129,7 +129,7 @@ function AdCard({
             src={ad.thumbnailUrl}
             alt={ad.name}
             onError={() => setImgError(true)}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
@@ -209,7 +209,7 @@ export default function TopAdsList({
 }) {
   const [period, setPeriod] = useState<TopPeriod>("month");
   const [metric, setMetric] = useState<CohortMetric>("spend");
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null);
   const [loadingAdId, setLoadingAdId] = useState<string | null>(null);
 
   const adsMap: Record<TopPeriod, Ad[]> = { week: topWeek, month: topMonth, quarter: topQuarter };
@@ -221,7 +221,13 @@ export default function TopAdsList({
     try {
       const res = await fetch(`/api/preview?adId=${adId}`);
       const data = await res.json();
-      if (data.url) setPreviewUrl(data.url);
+      if (data.videoUrl) {
+        // Video ad — play inline
+        setPreviewVideoUrl(data.videoUrl);
+      } else if (data.previewUrl) {
+        // Image/other ad — open Meta preview in new tab
+        window.open(data.previewUrl, "_blank", "noopener,noreferrer");
+      }
     } finally {
       setLoadingAdId(null);
     }
@@ -280,9 +286,9 @@ export default function TopAdsList({
         ))}
       </div>
 
-      {/* Preview modal */}
-      {previewUrl && (
-        <PreviewModal url={previewUrl} onClose={() => setPreviewUrl(null)} />
+      {/* Preview modal — video only (image ads open in new tab) */}
+      {previewVideoUrl && (
+        <PreviewModal videoUrl={previewVideoUrl} onClose={() => setPreviewVideoUrl(null)} />
       )}
     </>
   );
