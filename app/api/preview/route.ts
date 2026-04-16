@@ -50,15 +50,23 @@ export async function GET(req: NextRequest) {
 
   if (!videoId) return NextResponse.json({});
 
-  // Step 3: Fetch the direct CDN source URL — embeds in a <video> element
+  // Step 3: Fetch video source URL.
+  // `source` is a direct CDN MP4 URL. `format` is an array of per-resolution URLs.
+  // We try source first; if empty, fall back to the highest-resolution format entry.
   const videoRes = await fetch(
-    `${BASE}/${videoId}?fields=source&access_token=${token}`,
+    `${BASE}/${videoId}?fields=source,format&access_token=${token}`,
     { cache: "no-store" }
   );
   const videoJson: any = await videoRes.json();
 
-  if (videoJson.source) {
-    return NextResponse.json({ videoUrl: videoJson.source });
+  const videoUrl =
+    videoJson.source ||
+    (Array.isArray(videoJson.format) && videoJson.format.length > 0
+      ? videoJson.format[videoJson.format.length - 1].url  // last entry = highest res
+      : null);
+
+  if (videoUrl) {
+    return NextResponse.json({ videoUrl });
   }
 
   return NextResponse.json({});
