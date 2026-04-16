@@ -3,6 +3,8 @@ import { getPulseData } from "@/lib/db";
 import { ClientStatus } from "@/lib/types";
 import clsx from "clsx";
 
+export const dynamic = "force-dynamic";
+
 function fmt(n: number, prefix = "", decimals = 0) {
   if (n >= 1000000) return `${prefix}${(n / 1000000).toFixed(1)}M`;
   if (n >= 1000) return `${prefix}${Math.round(n / 1000)}k`;
