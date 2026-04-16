@@ -1,12 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
+} from "recharts";
 import SectionHeader from "@/components/ui/SectionHeader";
-import CreativeChurnChart from "@/components/charts/CreativeChurnChart";
 import CohortTable from "@/components/creative/CohortTable";
 import AdGallery from "@/components/creative/AdGallery";
 import { Ad, AdCohort, CreativeChurnPoint, CohortMetric } from "@/lib/types";
 import clsx from "clsx";
+
+const COHORT_COLORS = [
+  "#89FF58", "#515B12", "#41BD0E", "#DFF7CC",
+  "#d97706", "#7c3aed", "#0ea5e9", "#ec4899",
+];
 
 type GallerySort = "spend" | "roas" | "ctr" | "hookRate";
 type View = "galleri" | "tabell";
@@ -80,38 +87,64 @@ export default function CreativeClient({
   const [view, setView] = useState<View>("galleri");
   const [gallerySort, setGallerySort] = useState<GallerySort>("spend");
 
-  const cohortLabels = cohorts.map((c) => c.label);
   const totalSpend = cohorts.reduce((s, c) => s + c.weeks.reduce((ws, w) => ws + w.spend, 0), 0);
   const cohortGroups = groupByCohort(ads, gallerySort);
 
+  // Build spend-per-cohort data for chart (oldest → newest for chronological order)
+  const cohortSpendData = [...cohorts].reverse().map((c, i) => ({
+    label: c.label,
+    spend: c.weeks.reduce((s, w) => s + w.spend, 0),
+    adCount: c.adCount,
+    color: COHORT_COLORS[i % COHORT_COLORS.length],
+  }));
+
   return (
     <div className="space-y-8">
-      {/* Creative Churn chart — only show if computed churn data exists */}
-      {churnData.length > 0 && (
+      {/* Cohort spend chart */}
+      {cohorts.length > 0 && (
         <div>
           <SectionHeader
-            title="Creative Churn"
-            subtitle={`NOK ${Math.round(totalSpend / 1000)}k totalt · ${cohorts.length} kohorter · Spend fordelt per kreativ-kohort`}
+            title="Spend per kohort"
+            subtitle={`NOK ${Math.round(totalSpend / 1000)}k totalt · ${cohorts.length} kohorter`}
           />
           <div className="rounded-xl border border-[var(--color-border)] p-5 bg-white">
-            <CreativeChurnChart data={churnData} cohortLabels={cohortLabels} />
-            <div className="flex flex-wrap gap-3 mt-4">
-              {cohorts.map((c, i) => {
-                const colors = [
-                  "#89FF58", "#515B12", "#41BD0E", "#DFF7CC",
-                  "#d97706", "#7c3aed", "#0ea5e9", "#ec4899",
-                ];
-                return (
-                  <span key={c.label} className="flex items-center gap-1.5 text-xs text-[rgba(9,10,8,0.5)]">
-                    <span
-                      className="w-2.5 h-2.5 rounded-sm inline-block"
-                      style={{ background: colors[i % colors.length] }}
-                    />
-                    {c.label} ({c.adCount} ads)
-                  </span>
-                );
-              })}
-            </div>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={cohortSpendData} margin={{ top: 4, right: 12, bottom: 0, left: 0 }} barSize={32}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e8e8e6" vertical={false} />
+                <XAxis
+                  dataKey="label"
+                  tick={{ fontSize: 11, fill: "rgba(9,10,8,0.4)", fontFamily: "var(--font-mono)" }}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: "rgba(9,10,8,0.4)", fontFamily: "var(--font-mono)" }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(v) => `${Math.round(v / 1000)}k`}
+                  width={40}
+                />
+                <Tooltip
+                  cursor={{ fill: "rgba(9,10,8,0.03)" }}
+                  content={({ active, payload }) => {
+                    if (!active || !payload?.length) return null;
+                    const d = payload[0].payload;
+                    return (
+                      <div className="bg-white border border-[var(--color-border)] rounded-lg px-3 py-2 shadow-sm text-xs">
+                        <p className="font-semibold mb-1">{d.label}</p>
+                        <p style={{ fontFamily: "var(--font-mono)" }}>NOK {Math.round(d.spend).toLocaleString("no-NO")}</p>
+                        <p className="text-[rgba(9,10,8,0.4)]">{d.adCount} annonser</p>
+                      </div>
+                    );
+                  }}
+                />
+                <Bar dataKey="spend" radius={[4, 4, 0, 0]}>
+                  {cohortSpendData.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} fillOpacity={0.85} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       )}
