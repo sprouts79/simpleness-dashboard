@@ -389,8 +389,10 @@ export async function getAds(clientId: string): Promise<Ad[]> {
     id: r.ad_id,
     name: r.ad_name,
     cohortDate: r.cohort_date ?? r.created_date ?? "",
-    format: r.format ?? "static",
-    status: r.status ?? "active",
+    // Derive format from video signal — stored object_type is unreliable (SHARE = link post, not necessarily carousel)
+    format: (r.video_views_3s ?? 0) > 0 ? "video" : "static",
+    // Active = actually getting spend (most reliable signal — bypasses parent campaign/adset status)
+    status: (r.spend ?? 0) > 0 ? "active" : "paused",
     thumbnailUrl: r.thumbnail_url ?? "",
     hookRate: r.hook_rate ?? 0,
     holdRate: r.hold_rate ?? 0,
