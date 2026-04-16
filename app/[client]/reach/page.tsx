@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getReachKpis, getReachComposition, getReachTable } from "@/lib/db";
 import ReachClient from "@/components/reach/ReachClient";
 

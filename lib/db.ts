@@ -318,6 +318,7 @@ export async function getReachKpis(clientId: string): Promise<ReachKpis | null> 
     .from("meta_reach_weekly")
     .select("*")
     .eq("client_id", clientId)
+    .lte("week_start", daysAgo(6)) // only complete weeks (started ≥7 days ago)
     .order("week_start", { ascending: false })
     .limit(12);
 
@@ -346,6 +347,7 @@ export async function getReachComposition(
     .from("meta_reach_weekly")
     .select("week_start,weekly_reach,net_new_reach,pct_net_new")
     .eq("client_id", clientId)
+    .lte("week_start", daysAgo(6)) // only complete weeks
     .order("week_start");
 
   if (!data?.length) return REACH_COMPOSITION[clientId] ?? [];
@@ -363,6 +365,7 @@ export async function getReachTable(clientId: string): Promise<ReachMonthRow[]> 
     .from("meta_reach_weekly")
     .select("*")
     .eq("client_id", clientId)
+    .lte("week_start", daysAgo(6)) // only complete weeks
     .order("week_start", { ascending: false });
 
   if (!data?.length) return REACH_TABLE[clientId] ?? [];
