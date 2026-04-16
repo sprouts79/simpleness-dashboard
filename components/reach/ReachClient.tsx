@@ -17,14 +17,12 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import ReachCompositionChart from "@/components/charts/ReachCompositionChart";
 import { MonthlyReachRow } from "@/lib/types";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type View = "monthly-rolling" | "net-new";
-type Period = 1 | 3 | 6 | 12 | 18 | 24;
-const LOOKBACK_OPTIONS = [30, 60, 90, 120, 180, 360, 720] as const;
-type LookbackDays = (typeof LOOKBACK_OPTIONS)[number];
-
-// ─── Formatters ───────────────────────────────────────────────────────────────
+// Lookback window options — 3M is the default (90d)
+const LOOKBACK_OPTIONS = [
+  { label: "3M", days: 90 },
+  { label: "6M", days: 180 },
+  { label: "12M", days: 360 },
+];
 
 function formatReach(n: number) {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
@@ -42,10 +40,8 @@ function formatNokShort(n: number) {
   return `NOK ${Math.round(n)}`;
 }
 
-// ─── Inline chart tooltips ────────────────────────────────────────────────────
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const CpmNetNewTooltip = ({ active, payload, label }: any) => {
+const CpmTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-white border border-[var(--color-border)] rounded-lg px-3 py-2 shadow-sm text-xs">
@@ -57,21 +53,6 @@ const CpmNetNewTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const FrequencyTooltip = ({ active, payload, label }: any) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="bg-white border border-[var(--color-border)] rounded-lg px-3 py-2 shadow-sm text-xs">
-      <p className="font-semibold mb-1">{label}</p>
-      <p style={{ fontFamily: "var(--font-mono)" }}>
-        {(payload[0]?.value ?? 0).toFixed(2)}×
-      </p>
-    </div>
-  );
-};
-
-// ─── Component ────────────────────────────────────────────────────────────────
-
 export default function ReachClient({
   clientId,
   data,
@@ -82,54 +63,60 @@ export default function ReachClient({
   currentLookback: number;
 }) {
   const router = useRouter();
-  const [view, setView] = useState<View>("monthly-rolling");
-  const [period, setPeriod] = useState<Period>(6);
-  const [lookback, setLookback] = useState<LookbackDays>(
-    (LOOKBACK_OPTIONS.includes(currentLookback as LookbackDays)
-      ? currentLookback
-      : 90) as LookbackDays
-  );
   const [syncing, setSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
-  // Filter data to selected period (data is newest-first)
-  const filtered = data.slice(0, period);
-  const availableMonths = data.length;
+  // Fixed 6-month display window, newest-first data
+  const filtered = data.slice(0, 6);
 
-  // KPIs computed inline — no useMemo so they always update with period
   const kpis = filtered.length === 0 ? null : {
-    totalReach: filtered[0].rollingReach,
     totalSpend: filtered.reduce((s, r) => s + r.spend, 0),
-    avgCpm: filtered.reduce((s, r) => s + r.cpm, 0) / filtered.length,
-    avgNetNew: filtered.reduce((s, r) => s + r.netNew, 0) / filtered.length,
+    totalReach: filtered[0].rollingReach,
+    avgNetNewReach: Math.round(filtered.reduce((s, r) => s + r.netNew, 0) / filtered.length),
     avgNetNewPct: filtered.reduce((s, r) => s + r.netNewPct, 0) / filtered.length,
-    avgCpmNetNew: filtered.reduce((s, r) => s + r.cpmNetNew, 0) / filtered.length,
   };
 
-  // Chart data (oldest → newest for chronological display)
+  // Chart data: oldest → newest for chronological display
   const chartData = [...filtered].reverse().map((r) => ({
     month: r.monthLabel,
     previouslyReached: Math.max(0, r.rollingReach - r.netNew),
     netNew: r.netNew,
     netNewPct: parseFloat(r.netNewPct.toFixed(1)),
     cpmNetNew: r.cpmNetNew,
-    frequency: r.frequency,
   }));
+
+  const activeOption = LOOKBACK_OPTIONS.find((o) => o.days === currentLookback) ?? LOOKBACK_OPTIONS[0];
+
+  const netNewStatus =
+    !kpis ? "" :
+    kpis.avgNetNewPct >= 30 ? "Frisk målgruppe" :
+    kpis.avgNetNewPct >= 18 ? "Moderat metning" :
+    "Høy metning";
+
+  // Switching lookback navigates to new URL — server fetches the right data
+  function handleLookbackClick(days: number) {
+    if (days !== currentLookback) {
+      router.push(`?lookback=${days}`);
+    }
+  }
 
   async function handleSync() {
     setSyncing(true);
     setSyncStatus(null);
     try {
-      const lb = view === "net-new" ? lookback : 90;
       const res = await fetch("/api/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clientId, months: period, lookbackDays: lb, syncType: "reach" }),
+        body: JSON.stringify({
+          clientId,
+          months: 6,
+          lookbackDays: currentLookback,
+          syncType: "reach",
+        }),
       });
       const json = await res.json();
       if (json.ok) {
-        setSyncStatus(`Synkronisert — ${json.reachSynced} uker`);
-        router.push(`?lookback=${lb}`);
+        setSyncStatus(`Synkronisert — ${json.reachSynced} uker hentet`);
         router.refresh();
       } else {
         setSyncStatus(`Feil: ${json.errors?.join(", ") || "Ukjent"}`);
@@ -141,78 +128,33 @@ export default function ReachClient({
     }
   }
 
-  function handleLookbackChange(val: LookbackDays) {
-    setLookback(val);
-    router.push(`?lookback=${val}`);
-  }
-
-  // ── Render ─────────────────────────────────────────────────────────────────
-
   return (
     <div className="space-y-8">
 
-      {/* View toggle */}
-      <div className="flex bg-[var(--color-surface)] rounded-lg p-1 gap-1 self-start w-fit">
-        {(
-          [
-            { value: "monthly-rolling", label: "Monthly Rolling Reach" },
-            { value: "net-new", label: "Net New Reach" },
-          ] as { value: View; label: string }[]
-        ).map(({ value, label }) => (
-          <button
-            key={value}
-            onClick={() => setView(value)}
-            className={clsx(
-              "text-xs font-semibold px-4 py-1.5 rounded-md transition-colors",
-              view === value
-                ? "bg-white text-[var(--color-black)] shadow-sm"
-                : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)]"
-            )}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* Controls row */}
-      <div className="flex flex-wrap items-center gap-3 justify-between">
+      {/* Controls: lookback selector + Hent data */}
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {/* Period selector */}
+          <span className="text-xs font-medium text-[rgba(9,10,8,0.45)]">Lookback vindu</span>
           <div className="flex bg-[var(--color-surface)] rounded-lg p-1 gap-1">
-            {([1, 3, 6, 12, 18, 24] as Period[]).map((p) => (
+            {LOOKBACK_OPTIONS.map(({ label, days }) => (
               <button
-                key={p}
-                onClick={() => setPeriod(p)}
+                key={days}
+                onClick={() => handleLookbackClick(days)}
                 className={clsx(
                   "text-xs font-semibold px-3 py-1.5 rounded-md transition-colors",
-                  period === p
+                  currentLookback === days
                     ? "bg-white text-[var(--color-black)] shadow-sm"
                     : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)]"
                 )}
               >
-                {p}M
+                {label}
               </button>
             ))}
           </div>
-
-          {/* Lookback selector — only in Net New view */}
-          {view === "net-new" && (
-            <div className="flex bg-[var(--color-surface)] rounded-lg p-1 gap-1">
-              {LOOKBACK_OPTIONS.map((d) => (
-                <button
-                  key={d}
-                  onClick={() => handleLookbackChange(d)}
-                  className={clsx(
-                    "text-xs font-semibold px-3 py-1.5 rounded-md transition-colors",
-                    lookback === d
-                      ? "bg-white text-[var(--color-black)] shadow-sm"
-                      : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)]"
-                  )}
-                >
-                  {d}D
-                </button>
-              ))}
-            </div>
+          {currentLookback !== 90 && filtered.length === 0 && (
+            <span className="text-xs text-[rgba(9,10,8,0.35)]">
+              Ingen data — trykk Hent data
+            </span>
           )}
         </div>
 
@@ -230,7 +172,7 @@ export default function ReachClient({
                 : "bg-[var(--color-accent)] text-[var(--color-black)] hover:opacity-90"
             )}
           >
-            {syncing ? "Henter..." : "Pull Analytics"}
+            {syncing ? "Henter..." : "Hent data"}
           </button>
         </div>
       </div>
@@ -238,15 +180,18 @@ export default function ReachClient({
       {/* Empty state */}
       {filtered.length === 0 && (
         <div className="rounded-xl border border-[var(--color-border)] p-12 text-center">
-          <p className="text-sm text-[rgba(9,10,8,0.4)] mb-4">
-            Ingen reach-data tilgjengelig. Trykk Pull Analytics for å hente fra Meta.
+          <p className="text-sm text-[rgba(9,10,8,0.4)] mb-2">
+            Ingen reach-data for {activeOption.label} lookback ({currentLookback}d).
+          </p>
+          <p className="text-xs text-[rgba(9,10,8,0.3)] mb-6">
+            Trykk Hent data for å synkronisere fra Meta.
           </p>
           <button
             onClick={handleSync}
             disabled={syncing}
             className="text-xs font-semibold px-4 py-2 rounded-lg bg-[var(--color-accent)] text-[var(--color-black)] hover:opacity-90 transition-colors"
           >
-            {syncing ? "Henter..." : "Pull Analytics"}
+            {syncing ? "Henter..." : "Hent data"}
           </button>
         </div>
       )}
@@ -257,75 +202,44 @@ export default function ReachClient({
           {kpis && (
             <div>
               <SectionHeader
-                title="Nøkkeltall"
-                subtitle={
-                  view === "monthly-rolling"
-                    ? `${filtered.length} av ${period} mnd tilgjengelig · 90d lookback`
-                    : `${filtered.length} av ${period} mnd tilgjengelig · ${lookback}d lookback`
-                }
+                title="Reach-nøkkeltall"
+                subtitle={`Siste 6 måneder · ${currentLookback}d lookback · ${filtered.length} mnd data`}
               />
               <div className="grid grid-cols-4 gap-3">
-                {view === "monthly-rolling" ? (
-                  <>
-                    <KpiCard
-                      label="Total Reach"
-                      value={formatReach(kpis.totalReach)}
-                      note="90d rullerende vindu"
-                      size="large"
-                    />
-                    <KpiCard
-                      label="Total Spend"
-                      value={formatNokShort(kpis.totalSpend)}
-                      note={`siste ${period} mnd`}
-                    />
-                    <KpiCard
-                      label="Avg CPM"
-                      value={`${Math.round(kpis.avgCpm)} kr`}
-                      note="snitt per måned"
-                    />
-                    <KpiCard
-                      label="Avg Monthly Net New"
-                      value={formatReach(kpis.avgNetNew)}
-                      note="nye unike per mnd"
-                    />
-                  </>
-                ) : (
-                  <>
-                    <KpiCard
-                      label="Total Reach"
-                      value={formatReach(kpis.totalReach)}
-                      note={`${lookback}d rullerende vindu`}
-                      size="large"
-                    />
-                    <KpiCard
-                      label="Avg Net New Reach"
-                      value={formatReach(kpis.avgNetNew)}
-                      note="per måned"
-                    />
-                    <KpiCard
-                      label="Avg % Net New"
-                      value={`${kpis.avgNetNewPct.toFixed(1)}%`}
-                      note={
-                        kpis.avgNetNewPct >= 30
-                          ? "Frisk målgruppe"
-                          : kpis.avgNetNewPct >= 18
-                          ? "Moderat metning"
-                          : "Høy metning"
-                      }
-                      highlight={kpis.avgNetNewPct < 18}
-                    />
-                    <KpiCard
-                      label="Avg CPM Net New"
-                      value={`${Math.round(kpis.avgCpmNetNew)} kr`}
-                      note="per 1000 nye nådd"
-                    />
-                  </>
-                )}
+                <KpiCard
+                  label="Total Spend"
+                  value={formatNokShort(kpis.totalSpend)}
+                  note="siste 6 mnd"
+                />
+                <KpiCard
+                  label="Total Reach"
+                  value={formatReach(kpis.totalReach)}
+                  note={`${currentLookback}d rullerende vindu`}
+                  size="large"
+                />
+                <KpiCard
+                  label="Avg Net New Reach"
+                  value={formatReach(kpis.avgNetNewReach)}
+                  note="per måned"
+                />
+                <KpiCard
+                  label="Avg % Net New"
+                  value={`${kpis.avgNetNewPct.toFixed(1)}%`}
+                  note={netNewStatus}
+                  highlight={kpis.avgNetNewPct < 18}
+                />
               </div>
+
+              {kpis.avgNetNewPct < 20 && (
+                <div className="mt-3 px-4 py-3 rounded-lg border border-yellow-200 bg-yellow-50 text-xs text-yellow-800">
+                  <strong>Advarsel:</strong> Net New Reach er {kpis.avgNetNewPct.toFixed(1)}% — under 30%-terskelen.
+                  Frekvens er høy. Vurder kreativ refresh, utvidelse av målgruppe, eller budsjettreduksjon.
+                </div>
+              )}
             </div>
           )}
 
-          {/* Reach Composition Chart */}
+          {/* Reach Composition chart */}
           <div>
             <SectionHeader
               title="Reach Composition Analysis"
@@ -373,239 +287,89 @@ export default function ReachClient({
                     width={52}
                     tickFormatter={(v) => `${Math.round(v)}`}
                   />
-                  <Tooltip content={<CpmNetNewTooltip />} cursor={{ stroke: "rgba(9,10,8,0.06)" }} />
+                  <Tooltip content={<CpmTooltip />} cursor={{ stroke: "rgba(9,10,8,0.06)" }} />
                   <Line
                     type="monotone"
                     dataKey="cpmNetNew"
                     stroke="var(--color-link)"
                     strokeWidth={2}
                     dot={{ r: 3, fill: "var(--color-link)", strokeWidth: 0 }}
-                    name="CPM Net New"
                   />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Frequency */}
+          {/* Monthly breakdown table */}
           <div>
             <SectionHeader
-              title="Frequency"
-              subtitle="Gjennomsnittlig frekvens per måned"
+              title="Monthly Breakdown"
+              subtitle={`${currentLookback}d lookback · siste ${filtered.length} måneder`}
             />
-            <div className="rounded-xl border border-[var(--color-border)] p-5 bg-white">
-              <ResponsiveContainer width="100%" height={220}>
-                <LineChart data={chartData} margin={{ top: 4, right: 48, bottom: 0, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e8e8e6" vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tick={{ fontSize: 11, fill: "rgba(9,10,8,0.4)", fontFamily: "var(--font-mono)" }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 11, fill: "rgba(9,10,8,0.4)", fontFamily: "var(--font-mono)" }}
-                    tickLine={false}
-                    axisLine={false}
-                    width={36}
-                    tickFormatter={(v) => v.toFixed(1)}
-                  />
-                  <Tooltip content={<FrequencyTooltip />} cursor={{ stroke: "rgba(9,10,8,0.06)" }} />
-                  <Line
-                    type="monotone"
-                    dataKey="frequency"
-                    stroke="#d97706"
-                    strokeWidth={2}
-                    dot={{ r: 3, fill: "#d97706", strokeWidth: 0 }}
-                    name="Frequency"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+            <div className="rounded-xl border border-[var(--color-border)] overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
+                    {["Måned", "Rolling Reach", "Net New", "Spend", "CPM", "Frequency", "CPM Net New", "%"].map((h) => (
+                      <th
+                        key={h}
+                        className={clsx(
+                          "py-3 text-xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.45)]",
+                          h === "Måned" ? "text-left px-5" : "text-right px-4"
+                        )}
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((row) => (
+                    <tr
+                      key={row.monthKey}
+                      className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface)] transition-colors"
+                    >
+                      <td className="px-5 py-2.5 font-medium text-sm whitespace-nowrap">
+                        {row.monthLabel}
+                      </td>
+                      <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
+                        {formatReach(row.rollingReach)}
+                      </td>
+                      <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)", color: "var(--color-link)" }}>
+                        {formatReach(row.netNew)}
+                      </td>
+                      <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
+                        {formatNok(row.spend)}
+                      </td>
+                      <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
+                        {Math.round(row.cpm)} kr
+                      </td>
+                      <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
+                        {row.frequency.toFixed(2)}×
+                      </td>
+                      <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
+                        {Math.round(row.cpmNetNew)} kr
+                      </td>
+                      <td className="px-4 py-2.5 text-right">
+                        <span
+                          className={clsx("text-xs font-semibold px-1.5 py-0.5 rounded", {
+                            "bg-green-100 text-green-700": row.netNewPct >= 30,
+                            "bg-yellow-100 text-yellow-700": row.netNewPct >= 18 && row.netNewPct < 30,
+                            "bg-red-100 text-red-700": row.netNewPct < 18,
+                          })}
+                          style={{ fontFamily: "var(--font-mono)" }}
+                        >
+                          {row.netNewPct.toFixed(1)}%
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-
-          {/* Table */}
-          {view === "monthly-rolling" ? (
-            <MonthlyRollingTable rows={filtered} />
-          ) : (
-            <NetNewTable rows={filtered} period={period} lookback={lookback} />
-          )}
         </>
       )}
-    </div>
-  );
-}
-
-// ─── Monthly Rolling Reach table ──────────────────────────────────────────────
-
-function MonthlyRollingTable({ rows }: { rows: MonthlyReachRow[] }) {
-  const headers = [
-    "Måned",
-    "Rolling Reach",
-    "Net New",
-    "Spend",
-    "CPM",
-    "Frequency",
-    "CPM Net New",
-    "%",
-  ];
-
-  return (
-    <div>
-      <SectionHeader title="Monthly Breakdown" />
-      <div className="rounded-xl border border-[var(--color-border)] overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-              {headers.map((h) => (
-                <th
-                  key={h}
-                  className={clsx(
-                    "py-3 text-xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.45)]",
-                    h === "Måned" ? "text-left px-5" : "text-right px-4"
-                  )}
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr
-                key={row.monthKey}
-                className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface)] transition-colors"
-              >
-                <td className="px-5 py-2.5 font-medium text-sm whitespace-nowrap">
-                  {row.monthLabel}
-                </td>
-                <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
-                  {formatReach(row.rollingReach)}
-                </td>
-                <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)", color: "var(--color-link)" }}>
-                  {formatReach(row.netNew)}
-                </td>
-                <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
-                  {formatNok(row.spend)}
-                </td>
-                <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
-                  {Math.round(row.cpm)} kr
-                </td>
-                <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
-                  {row.frequency.toFixed(2)}×
-                </td>
-                <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
-                  {Math.round(row.cpmNetNew)} kr
-                </td>
-                <td className="px-4 py-2.5 text-right">
-                  <span
-                    className={clsx("text-xs font-semibold px-1.5 py-0.5 rounded", {
-                      "bg-green-100 text-green-700": row.netNewPct >= 30,
-                      "bg-yellow-100 text-yellow-700": row.netNewPct >= 18 && row.netNewPct < 30,
-                      "bg-red-100 text-red-700": row.netNewPct < 18,
-                    })}
-                    style={{ fontFamily: "var(--font-mono)" }}
-                  >
-                    {row.netNewPct.toFixed(1)}%
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-// ─── Net New Reach table ──────────────────────────────────────────────────────
-
-function NetNewTable({
-  rows,
-  period,
-  lookback,
-}: {
-  rows: MonthlyReachRow[];
-  period: Period;
-  lookback: LookbackDays;
-}) {
-  const weeks = period * 4;
-  const headers = [
-    "Month Ending",
-    "Reach (perioden)",
-    `Rolling Reach (${lookback}d)`,
-    `Prev. Reached (${lookback}d excl.)`,
-    "Net New",
-    "Spend",
-    "CPM",
-    "Freq.",
-    "CPM Net New",
-  ];
-
-  return (
-    <div>
-      <SectionHeader
-        title={`${weeks}W Analyse · ${lookback}D Lookback`}
-        subtitle="Net New Reach breakdown per måned"
-      />
-      <div className="rounded-xl border border-[var(--color-border)] overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-              {headers.map((h) => (
-                <th
-                  key={h}
-                  className={clsx(
-                    "py-3 text-xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.45)]",
-                    h === "Month Ending" ? "text-left px-5" : "text-right px-4"
-                  )}
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => {
-              const prevReached = Math.max(0, row.rollingReach - row.netNew);
-              return (
-                <tr
-                  key={row.monthKey}
-                  className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface)] transition-colors"
-                >
-                  <td className="px-5 py-2.5 font-medium text-sm whitespace-nowrap">
-                    {row.monthLabel}
-                  </td>
-                  <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
-                    {formatReach(row.monthlyReach)}
-                  </td>
-                  <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
-                    {formatReach(row.rollingReach)}
-                  </td>
-                  <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
-                    {formatReach(prevReached)}
-                  </td>
-                  <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)", color: "var(--color-link)" }}>
-                    {formatReach(row.netNew)}
-                  </td>
-                  <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
-                    {formatNok(row.spend)}
-                  </td>
-                  <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
-                    {Math.round(row.cpm)} kr
-                  </td>
-                  <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
-                    {row.frequency.toFixed(2)}×
-                  </td>
-                  <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
-                    {Math.round(row.cpmNetNew)} kr
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
     </div>
   );
 }
