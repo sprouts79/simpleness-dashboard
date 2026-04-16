@@ -56,6 +56,42 @@ function sortAds(ads: Ad[], metric: CohortMetric): Ad[] {
   );
 }
 
+// ─── Preview modal ────────────────────────────────────────────────────────────
+
+function PreviewModal({ url, onClose }: { url: string; onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+      onClick={onClose}
+    >
+      <div
+        className="relative bg-white rounded-2xl overflow-hidden shadow-2xl"
+        style={{ width: 400, maxHeight: "90vh" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-black/50 text-white text-sm flex items-center justify-center hover:bg-black/70 transition-colors"
+        >
+          ✕
+        </button>
+        {/* Meta preview iframe — 9:16 */}
+        <div className="aspect-[9/16] w-full">
+          <iframe
+            src={url}
+            className="w-full h-full border-0"
+            allow="autoplay"
+            allowFullScreen
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Ad card ─────────────────────────────────────────────────────────────────
+
 function MetricCell({ label, value }: { label: string; value: string }) {
   return (
     <div>
@@ -65,14 +101,29 @@ function MetricCell({ label, value }: { label: string; value: string }) {
   );
 }
 
-function AdCard({ ad, rank, metric }: { ad: Ad; rank: number; metric: CohortMetric }) {
+function AdCard({
+  ad,
+  rank,
+  metric,
+  onOpen,
+  isLoading,
+}: {
+  ad: Ad;
+  rank: number;
+  metric: CohortMetric;
+  onOpen: () => void;
+  isLoading: boolean;
+}) {
   const [imgError, setImgError] = useState(false);
   const hasThumbnail = !!ad.thumbnailUrl && !imgError;
 
   return (
-    <div className="rounded-xl border border-[var(--color-border)] overflow-hidden bg-white">
-      {/* Thumbnail */}
-      <div className="aspect-[4/5] bg-[var(--color-surface)] relative overflow-hidden">
+    <div
+      className="rounded-xl border border-[var(--color-border)] overflow-hidden bg-white cursor-pointer group hover:border-[var(--color-link)] transition-colors"
+      onClick={onOpen}
+    >
+      {/* Thumbnail 9:16 */}
+      <div className="aspect-[9/16] bg-[var(--color-surface)] relative overflow-hidden">
         {hasThumbnail ? (
           <img
             src={ad.thumbnailUrl}
@@ -83,33 +134,44 @@ function AdCard({ ad, rank, metric }: { ad: Ad; rank: number; metric: CohortMetr
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <div className="text-center">
-              <p className="text-3xl mb-1">{ad.format === "video" ? "▶" : "▣"}</p>
-              <p className="text-xs text-[rgba(9,10,8,0.3)] capitalize">{ad.format}</p>
+              <p className="text-2xl mb-1">{ad.format === "video" ? "▶" : "▣"}</p>
+              <p className="text-[10px] text-[rgba(9,10,8,0.3)] capitalize">{ad.format}</p>
             </div>
           </div>
         )}
 
-        {/* Rank badge */}
+        {/* Rank */}
         <span
-          className="absolute top-2 left-2 w-6 h-6 rounded-full bg-black/60 text-white text-xs font-bold flex items-center justify-center"
+          className="absolute top-2 left-2 w-5 h-5 rounded-full bg-black/60 text-white text-[10px] font-bold flex items-center justify-center"
           style={{ fontFamily: "var(--font-mono)" }}
         >
           {rank}
         </span>
 
-        {/* Primary metric badge */}
+        {/* Primary metric */}
         <span
-          className="absolute bottom-2 right-2 bg-black/60 text-white text-xs font-semibold px-2 py-1 rounded-md"
+          className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded"
           style={{ fontFamily: "var(--font-mono)" }}
         >
           {formatMetricValue(getMetricValue(ad, metric), metric)}
         </span>
+
+        {/* Play / open overlay */}
+        <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
+          <div className="w-10 h-10 rounded-full bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow">
+            {isLoading ? (
+              <span className="text-xs">...</span>
+            ) : (
+              <span className="text-sm ml-0.5">▶</span>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Metrics */}
-      <div className="p-3">
-        <p className="text-xs font-medium leading-tight mb-3 line-clamp-2 h-8">{ad.name}</p>
-        <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+      <div className="p-2.5">
+        <p className="text-[11px] font-medium leading-tight mb-2 line-clamp-2 h-7">{ad.name}</p>
+        <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
           {metric !== "spend" && (
             <MetricCell
               label="Spend"
@@ -128,14 +190,13 @@ function AdCard({ ad, rank, metric }: { ad: Ad; rank: number; metric: CohortMetr
           {metric !== "cpa" && ad.cpa > 0 && (
             <MetricCell label="CPA" value={`${Math.round(ad.cpa)} kr`} />
           )}
-          {metric !== "cpm" && ad.cpm > 0 && (
-            <MetricCell label="CPM" value={`${Math.round(ad.cpm)} kr`} />
-          )}
         </div>
       </div>
     </div>
   );
 }
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export default function TopAdsList({
   topWeek,
@@ -148,9 +209,23 @@ export default function TopAdsList({
 }) {
   const [period, setPeriod] = useState<TopPeriod>("month");
   const [metric, setMetric] = useState<CohortMetric>("spend");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [loadingAdId, setLoadingAdId] = useState<string | null>(null);
 
   const adsMap: Record<TopPeriod, Ad[]> = { week: topWeek, month: topMonth, quarter: topQuarter };
   const sorted = sortAds(adsMap[period], metric).slice(0, 12);
+
+  async function openPreview(adId: string) {
+    if (loadingAdId) return;
+    setLoadingAdId(adId);
+    try {
+      const res = await fetch(`/api/preview?adId=${adId}`);
+      const data = await res.json();
+      if (data.url) setPreviewUrl(data.url);
+    } finally {
+      setLoadingAdId(null);
+    }
+  }
 
   if (!adsMap[period].length) {
     return (
@@ -161,7 +236,7 @@ export default function TopAdsList({
   }
 
   return (
-    <div>
+    <>
       {/* Controls */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex bg-[var(--color-surface)] rounded-lg p-1 gap-1">
@@ -180,7 +255,6 @@ export default function TopAdsList({
             </button>
           ))}
         </div>
-
         <select
           value={metric}
           onChange={(e) => setMetric(e.target.value as CohortMetric)}
@@ -192,12 +266,24 @@ export default function TopAdsList({
         </select>
       </div>
 
-      {/* Card grid */}
-      <div className="grid grid-cols-3 gap-4">
+      {/* Card grid — 4 columns */}
+      <div className="grid grid-cols-4 gap-3">
         {sorted.map((ad, i) => (
-          <AdCard key={ad.id} ad={ad} rank={i + 1} metric={metric} />
+          <AdCard
+            key={ad.id}
+            ad={ad}
+            rank={i + 1}
+            metric={metric}
+            onOpen={() => openPreview(ad.id)}
+            isLoading={loadingAdId === ad.id}
+          />
         ))}
       </div>
-    </div>
+
+      {/* Preview modal */}
+      {previewUrl && (
+        <PreviewModal url={previewUrl} onClose={() => setPreviewUrl(null)} />
+      )}
+    </>
   );
 }
