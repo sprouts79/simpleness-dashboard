@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import SectionHeader from "@/components/ui/SectionHeader";
 import CohortTable from "@/components/creative/CohortTable";
@@ -116,64 +116,89 @@ export default function CreativeClient({
     }
   }
 
-  const totalSpend = cohorts.reduce((s, c) => s + c.weeks.reduce((ws, w) => ws + w.spend, 0), 0);
   const cohortGroups = groupByCohort(ads, gallerySort);
 
-  // Build spend-per-cohort data for chart (oldest → newest for chronological order)
-  const cohortSpendData = [...cohorts].reverse().map((c, i) => ({
-    label: c.label,
-    spend: c.weeks.reduce((s, w) => s + w.spend, 0),
-    adCount: c.adCount,
-    color: COHORT_COLORS[i % COHORT_COLORS.length],
-  }));
+  // Oldest-first cohort labels for stacked chart areas
+  const cohortKeysOldestFirst = [...cohorts].reverse().map((c) => c.label);
+  const totalChurnSpend = churnData.reduce((s, p) =>
+    s + cohortKeysOldestFirst.reduce((cs, k) => cs + ((p[k] as number) ?? 0), 0), 0);
 
   return (
     <div className="space-y-8">
-      {/* Cohort spend chart */}
-      {cohorts.length > 0 && (
+      {/* Stacked spend-by-cohort chart over time */}
+      {churnData.length > 0 && (
         <div>
           <SectionHeader
-            title="Spend per kohort"
-            subtitle={`NOK ${Math.round(totalSpend / 1000)}k totalt · ${cohorts.length} kohorter`}
+            title="Spend per kohort over tid"
+            subtitle={`NOK ${Math.round(totalChurnSpend / 1000)}k totalt · ${cohorts.length} kohorter · siste 12 uker`}
           />
           <div className="rounded-xl border border-[var(--color-border)] p-5 bg-white">
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={cohortSpendData} margin={{ top: 4, right: 12, bottom: 0, left: 0 }} barSize={32}>
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={churnData} margin={{ top: 4, right: 12, bottom: 0, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e8e8e6" vertical={false} />
                 <XAxis
-                  dataKey="label"
-                  tick={{ fontSize: 11, fill: "rgba(9,10,8,0.4)", fontFamily: "var(--font-mono)" }}
+                  dataKey="month"
+                  tick={{ fontSize: 10, fill: "rgba(9,10,8,0.4)", fontFamily: "var(--font-mono)" }}
                   tickLine={false}
                   axisLine={false}
+                  interval="preserveStartEnd"
                 />
                 <YAxis
                   tick={{ fontSize: 11, fill: "rgba(9,10,8,0.4)", fontFamily: "var(--font-mono)" }}
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={(v) => `${Math.round(v / 1000)}k`}
-                  width={40}
+                  width={44}
                 />
                 <Tooltip
-                  cursor={{ fill: "rgba(9,10,8,0.03)" }}
-                  content={({ active, payload }) => {
+                  cursor={{ stroke: "rgba(9,10,8,0.06)" }}
+                  content={({ active, payload, label }) => {
                     if (!active || !payload?.length) return null;
-                    const d = payload[0].payload;
+                    const total = payload.reduce((s, p) => s + ((p.value as number) ?? 0), 0);
                     return (
-                      <div className="bg-white border border-[var(--color-border)] rounded-lg px-3 py-2 shadow-sm text-xs">
-                        <p className="font-semibold mb-1">{d.label}</p>
-                        <p style={{ fontFamily: "var(--font-mono)" }}>NOK {Math.round(d.spend).toLocaleString("no-NO")}</p>
-                        <p className="text-[rgba(9,10,8,0.4)]">{d.adCount} annonser</p>
+                      <div className="bg-white border border-[var(--color-border)] rounded-lg px-3 py-2 shadow-sm text-xs max-w-[220px]">
+                        <p className="font-semibold mb-1.5">{label}</p>
+                        {[...payload].reverse().map((p, i) => (
+                          (p.value as number) > 0 && (
+                            <div key={i} className="flex items-center gap-1.5 mb-0.5">
+                              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: p.fill }} />
+                              <span className="text-[rgba(9,10,8,0.5)] truncate">{p.dataKey}</span>
+                              <span className="ml-auto font-mono pl-2">
+                                {Math.round(p.value as number).toLocaleString("no-NO")}
+                              </span>
+                            </div>
+                          )
+                        ))}
+                        <div className="border-t border-[var(--color-border)] mt-1.5 pt-1.5 font-semibold" style={{ fontFamily: "var(--font-mono)" }}>
+                          NOK {Math.round(total).toLocaleString("no-NO")}
+                        </div>
                       </div>
                     );
                   }}
                 />
-                <Bar dataKey="spend" radius={[4, 4, 0, 0]}>
-                  {cohortSpendData.map((entry, i) => (
-                    <Cell key={i} fill={entry.color} fillOpacity={0.85} />
-                  ))}
-                </Bar>
-              </BarChart>
+                {cohortKeysOldestFirst.map((key, i) => (
+                  <Area
+                    key={key}
+                    type="monotone"
+                    dataKey={key}
+                    stackId="a"
+                    stroke={COHORT_COLORS[i % COHORT_COLORS.length]}
+                    fill={COHORT_COLORS[i % COHORT_COLORS.length]}
+                    fillOpacity={0.75}
+                    strokeWidth={0}
+                  />
+                ))}
+              </AreaChart>
             </ResponsiveContainer>
+            {/* Legend */}
+            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3">
+              {cohortKeysOldestFirst.map((key, i) => (
+                <span key={key} className="flex items-center gap-1.5 text-xs text-[rgba(9,10,8,0.5)]">
+                  <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: COHORT_COLORS[i % COHORT_COLORS.length] }} />
+                  {key}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       )}

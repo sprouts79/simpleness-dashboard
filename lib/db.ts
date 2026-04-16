@@ -542,9 +542,49 @@ export async function getCohorts(clientId: string): Promise<AdCohort[]> {
 export async function getCreativeChurn(
   clientId: string
 ): Promise<CreativeChurnPoint[]> {
-  // Creative churn requires ad-level daily spend data which isn't synced yet.
-  // Return empty — the chart is hidden when churnData is empty.
-  return [];
+  const { data: adsData } = await supabase
+    .from("meta_ads")
+    .select("ad_id, created_date")
+    .eq("client_id", clientId);
+
+  const { data: weeklyData } = await supabase
+    .from("meta_ad_weekly")
+    .select("ad_id, week_start, spend")
+    .eq("client_id", clientId)
+    .gte("week_start", daysAgo(90))
+    .gt("spend", 0);
+
+  if (!adsData?.length || !weeklyData?.length) return [];
+
+  const adCreatedMap = new Map(
+    adsData
+      .filter((a) => !!a.created_date)
+      .map((a) => [a.ad_id as string, a.created_date as string])
+  );
+
+  // (calendar_week_start → cohort_label → spend)
+  const byWeek = new Map<string, Map<string, number>>();
+
+  for (const row of weeklyData) {
+    const createdDate = adCreatedMap.get(row.ad_id);
+    if (!createdDate) continue;
+    const cohortLabel = formatWeekRangeLabel(getMondayOf(createdDate));
+    if (!byWeek.has(row.week_start)) byWeek.set(row.week_start, new Map());
+    const cm = byWeek.get(row.week_start)!;
+    cm.set(cohortLabel, (cm.get(cohortLabel) ?? 0) + (row.spend ?? 0));
+  }
+
+  // Sort calendar weeks ascending
+  const sortedWeeks = Array.from(byWeek.keys()).sort();
+
+  return sortedWeeks.map((weekStart) => {
+    const cohortData = byWeek.get(weekStart)!;
+    const point: CreativeChurnPoint = { month: formatWeekLabel(weekStart) };
+    for (const [label, spend] of cohortData.entries()) {
+      point[label] = spend;
+    }
+    return point;
+  });
 }
 
 // ─── Monthly Reach (aggregated from weekly rows) ──────────────────────────────

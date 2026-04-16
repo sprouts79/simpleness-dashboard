@@ -64,6 +64,22 @@ export default function CohortTable({ cohorts, metric }: Props) {
     return sorted[Math.floor(sorted.length / 2)];
   });
 
+  // Build ALL COHORTS aggregate row: impression-weighted for rates, summed for spend/purchases
+  const allCohortWeeks: (AdCohort["weeks"][0] | undefined)[] = weekCols.map((w) => {
+    const weekSlice = cohorts.map((c) => getWeek(c, w)).filter(Boolean) as AdCohort["weeks"];
+    if (!weekSlice.length) return undefined;
+    const spend = weekSlice.reduce((s, wd) => s + wd.spend, 0);
+    const impressions = weekSlice.reduce((s, wd) => s + wd.impressions, 0);
+    const hookRate = impressions > 0 ? weekSlice.reduce((s, wd) => s + wd.hookRate * wd.impressions, 0) / impressions : 0;
+    const holdRate = impressions > 0 ? weekSlice.reduce((s, wd) => s + wd.holdRate * wd.impressions, 0) / impressions : 0;
+    const ctr = impressions > 0 ? weekSlice.reduce((s, wd) => s + wd.ctr * wd.impressions, 0) / impressions : 0;
+    const cpm = impressions > 0 ? (spend / impressions) * 1000 : 0;
+    const cpa = weekSlice.filter((wd) => wd.cpa > 0).reduce((s, wd) => s + wd.cpa, 0) / (weekSlice.filter((wd) => wd.cpa > 0).length || 1);
+    const roas = weekSlice.filter((wd) => wd.roas > 0).reduce((s, wd) => s + wd.roas, 0) / (weekSlice.filter((wd) => wd.roas > 0).length || 1);
+    return { week: w, spend, impressions, hookRate, holdRate, ctr, cpm, cpa, roas };
+  });
+  const totalAdCount = cohorts.reduce((s, c) => s + c.adCount, 0);
+
   return (
     <div className="overflow-x-auto rounded-xl border border-[var(--color-border)]">
       <table className="text-sm w-full">
@@ -89,7 +105,7 @@ export default function CohortTable({ cohorts, metric }: Props) {
           {cohorts.map((cohort) => (
             <tr
               key={cohort.cohortDate}
-              className="border-b border-[var(--color-border)] last:border-0"
+              className="border-b border-[var(--color-border)]"
             >
               <td className="px-5 py-2.5 font-medium whitespace-nowrap">{cohort.label}</td>
               <td className="px-3 py-2.5 text-center text-xs text-[rgba(9,10,8,0.5)]">
@@ -126,6 +142,36 @@ export default function CohortTable({ cohorts, metric }: Props) {
               })}
             </tr>
           ))}
+
+          {/* ALL COHORTS aggregate row */}
+          <tr className="border-t-2 border-[var(--color-border)] bg-[var(--color-surface)]">
+            <td className="px-5 py-2.5 font-semibold whitespace-nowrap text-xs uppercase tracking-widest text-[rgba(9,10,8,0.6)]">
+              All Cohorts
+            </td>
+            <td className="px-3 py-2.5 text-center text-xs font-semibold text-[rgba(9,10,8,0.5)]">
+              {totalAdCount}
+            </td>
+            {weekCols.map((w) => {
+              const wd = allCohortWeeks[w];
+              if (!wd) {
+                return (
+                  <td key={w} className="px-3 py-2.5 text-center">
+                    <span className="text-[rgba(9,10,8,0.15)] text-xs">—</span>
+                  </td>
+                );
+              }
+              return (
+                <td key={w} className="px-2 py-1.5 text-center">
+                  <span
+                    className="inline-block px-2 py-1 rounded text-xs font-semibold bg-[rgba(9,10,8,0.06)] text-[var(--color-black)]"
+                    style={{ fontFamily: "var(--font-mono)", minWidth: 52 }}
+                  >
+                    {formatCell(getCellValue(wd, metric), metric)}
+                  </span>
+                </td>
+              );
+            })}
+          </tr>
         </tbody>
       </table>
     </div>
