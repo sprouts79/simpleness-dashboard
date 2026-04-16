@@ -31,6 +31,13 @@ import {
   COHORTS,
 } from "./mock-data";
 
+// Formats "2026-04-09" → "apr. '26"  — avoids toLocaleDateString inconsistencies in Node.js
+function formatWeekLabel(dateStr: string): string {
+  const [year, month] = dateStr.split("-");
+  const months = ["jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "des"];
+  return `${months[parseInt(month) - 1]}. '${year.slice(-2)}`;
+}
+
 function daysAgo(n: number): string {
   const d = new Date();
   d.setDate(d.getDate() - n);
@@ -344,7 +351,7 @@ export async function getReachComposition(
   if (!data?.length) return REACH_COMPOSITION[clientId] ?? [];
 
   return data.map((r) => ({
-    month: new Date(r.week_start).toLocaleDateString("no-NO", { month: "short", year: "2-digit" }),
+    month: formatWeekLabel(r.week_start),
     previouslyReached: (r.weekly_reach ?? 0) - (r.net_new_reach ?? 0),
     netNew: r.net_new_reach ?? 0,
     netNewPct: r.pct_net_new ?? 0,
@@ -361,7 +368,7 @@ export async function getReachTable(clientId: string): Promise<ReachMonthRow[]> 
   if (!data?.length) return REACH_TABLE[clientId] ?? [];
 
   return data.map((r) => ({
-    month: new Date(r.week_start).toLocaleDateString("no-NO", { month: "short", year: "2-digit" }),
+    month: formatWeekLabel(r.week_start),
     rollingReach: r.cumulative_reach ?? 0,
     weeklyReach: r.weekly_reach ?? 0,
     netNew: r.net_new_reach ?? 0,

@@ -9,9 +9,9 @@ function StatusDot({ status }: { status: ClientStatus }) {
   return (
     <span
       className={clsx("inline-block w-1.5 h-1.5 rounded-full flex-shrink-0", {
-        "bg-green-500": status === "green",
-        "bg-yellow-500": status === "yellow",
-        "bg-red-500": status === "red",
+        "bg-[#22c55e]": status === "green",
+        "bg-[#eab308]": status === "yellow",
+        "bg-[#ef4444]": status === "red",
       })}
     />
   );
@@ -27,46 +27,47 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
   const isPulse = pathname === "/";
 
   return (
-    <aside
-      className="flex flex-col w-[220px] flex-shrink-0 h-full overflow-y-auto"
-      style={{ background: "var(--color-sidebar)" }}
-    >
+    <aside className="flex flex-col w-[210px] flex-shrink-0 h-full overflow-y-auto bg-[#090a08] border-r border-white/[0.06]">
+
       {/* Logo */}
-      <div className="px-5 pt-6 pb-5 border-b border-white/10">
-        <span
-          className="text-xs font-bold tracking-widest uppercase"
-          style={{ color: "var(--color-accent)" }}
-        >
-          Simpleness
-        </span>
-        <p className="text-white/40 text-2xs mt-0.5 tracking-wide">
+      <div className="px-5 pt-5 pb-4 border-b border-white/[0.06]">
+        {/* PNG logo inverted for dark background — replace with logo-invers.svg when available */}
+        {/* LOGO: logo-standard.png from CDN, inverted for dark background (invers SVG not yet exported) */}
+        <img
+          src="https://simpleness-design-system.vercel.app/logo-standard.png"
+          alt="simpleness"
+          height={18}
+          style={{ filter: "invert(1)", opacity: 0.92 }}
+          className="block"
+        />
+        <p className="text-[10px] text-white/30 mt-1.5 tracking-wider font-medium uppercase">
           Agency Dashboard
         </p>
       </div>
 
-      {/* Pulse link */}
-      <nav className="px-3 pt-4">
+      {/* Navigation */}
+      <nav className="px-2.5 pt-3 flex-1">
+        {/* Pulse */}
         <Link
           href="/"
           className={clsx(
-            "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors mb-1",
+            "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors mb-0.5",
             isPulse
-              ? "sidebar-link-active"
-              : "text-white/60 hover:text-white hover:bg-white/5"
+              ? "bg-[#89ff58]/10 text-[#89ff58]"
+              : "text-white/50 hover:text-white/80 hover:bg-white/[0.04]"
           )}
         >
-          <span className="text-base leading-none">◉</span>
-          <span>Pulse</span>
+          <span className={clsx("w-1.5 h-1.5 rounded-full flex-shrink-0", isPulse ? "bg-[#89ff58]" : "bg-white/20")} />
+          Pulse
         </Link>
 
-        {/* Divider */}
-        <div className="mt-3 mb-2 px-3">
-          <p className="text-2xs font-semibold tracking-widest uppercase text-white/25">
+        {/* Clients section */}
+        <div className="mt-4 mb-1.5 px-3">
+          <p className="text-[10px] font-semibold tracking-widest uppercase text-white/20">
             Kunder
           </p>
         </div>
 
-        {/* Client list */}
         {clients.map((client) => {
           const isActive = pathname.startsWith(`/${client.slug}`);
           return (
@@ -74,23 +75,21 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
               key={client.id}
               href={`/${client.slug}/performance`}
               className={clsx(
-                "flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors mb-0.5",
+                "flex items-center justify-between px-3 py-2 rounded-lg text-[13px] transition-colors mb-0.5",
                 isActive
-                  ? "sidebar-link-active font-medium"
-                  : "text-white/60 hover:text-white hover:bg-white/5"
+                  ? "bg-[#89ff58]/10 text-[#89ff58] font-medium"
+                  : "text-white/50 hover:text-white/80 hover:bg-white/[0.04]"
               )}
             >
-              <div className="flex items-center gap-2 min-w-0">
+              <div className="flex items-center gap-2.5 min-w-0">
                 <StatusDot status={client.status} />
                 <span className="truncate">{client.name}</span>
               </div>
               <span
-                className="text-2xs font-medium ml-2 flex-shrink-0"
+                className="text-[11px] font-medium ml-2 flex-shrink-0 tabular-nums"
                 style={{
                   fontFamily: "var(--font-mono)",
-                  color: isActive
-                    ? "var(--color-accent)"
-                    : "rgba(255,255,255,0.3)",
+                  color: isActive ? "rgba(137,255,88,0.6)" : "rgba(255,255,255,0.2)",
                 }}
               >
                 {formatSpend(client.weeklySpend)}
@@ -101,11 +100,9 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
       </nav>
 
       {/* Footer */}
-      <div className="mt-auto px-5 py-4 border-t border-white/10">
-        <p className="text-2xs text-white/25">
-          Siste oppdatering
-          <br />
-          <span style={{ fontFamily: "var(--font-mono)" }}>15. apr 2026</span>
+      <div className="px-5 py-4 border-t border-white/[0.06]">
+        <p className="text-[10px] text-white/20">
+          Oppdatert i dag
         </p>
       </div>
     </aside>

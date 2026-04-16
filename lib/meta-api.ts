@@ -268,13 +268,21 @@ export interface WeeklyReachRow {
   impressions: number;
   spend: number;
   frequency: number;
-  cumulativeReach: number; // unique reach over lookbackDays window ending at weekEnd
+  cumulativeReach: number;  // unique reach over lookbackDays window ending at weekEnd (includes this week)
+  prevWindowReach: number;  // unique reach over same window START, ending day before weekStart (excludes this week)
 }
 
 /**
- * Fetches weekly reach data for the given period.
- * Uses time_increment=7 for one bulk call to get per-week metrics,
- * then N individual calls to compute rolling cumulative reach per week.
+ * Fetches weekly reach data using the correct Foxwell/ricky-mba methodology.
+ *
+ * For each week, two API calls with the SAME window start date:
+ *   R_full = unique reach over [weekEnd - (lookbackDays-1), weekEnd]  — includes this week
+ *   R_prev = unique reach over [weekEnd - (lookbackDays-1), weekStart - 1] — excludes this week
+ *   net_new = R_full - R_prev  (always ≥ 0, always ≤ weeklyReach)
+ *
+ * This correctly answers: "how many of this week's viewers haven't seen the ad in the past ~90 days?"
+ * The sliding-window diff (comparing two different 90d windows) produces false negatives when audiences
+ * are stable because people aging out of the trailing end cancel out new entrants.
  */
 export async function fetchWeeklyReachRows(
   accountId: string,
@@ -282,7 +290,7 @@ export async function fetchWeeklyReachRows(
   until: string,
   lookbackDays = 90
 ): Promise<WeeklyReachRow[]> {
-  // One call: weekly breakdown
+  // One bulk call for per-week metrics
   const fields = "reach,impressions,spend,frequency";
   const timeRange = encodeURIComponent(JSON.stringify({ since, until }));
   const url = `${BASE}/${accountId}/insights?fields=${fields}&time_range=${timeRange}&time_increment=7&level=account&limit=52&access_token=${token()}`;
@@ -294,9 +302,16 @@ export async function fetchWeeklyReachRows(
     const weekStart: string = r.date_start;
     const weekEnd: string = r.date_stop;
 
-    // Cumulative: unique reach over the rolling lookback window ending at weekEnd
-    const lookbackStart = subtractDays(weekEnd, lookbackDays - 1);
-    const cumData = await fetchReach(accountId, lookbackStart, weekEnd);
+    // Both calls share the same window start date
+    const windowStart = subtractDays(weekEnd, lookbackDays - 1);
+
+    // R_full: 90d reach including this week
+    const fullData = await fetchReach(accountId, windowStart, weekEnd);
+
+    // R_prev: same window start, ends the day before this week
+    // = reach pool as it existed before this week's impressions
+    const prevWindowEnd = subtractDays(weekStart, 1);
+    const prevData = await fetchReach(accountId, windowStart, prevWindowEnd);
 
     result.push({
       weekStart,
@@ -305,7 +320,8 @@ export async function fetchWeeklyReachRows(
       impressions: parseInt(r.impressions ?? "0"),
       spend: parseFloat(r.spend ?? "0"),
       frequency: parseFloat(r.frequency ?? "0"),
-      cumulativeReach: cumData.reach,
+      cumulativeReach: fullData.reach,
+      prevWindowReach: prevData.reach,
     });
   }
 

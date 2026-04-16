@@ -161,12 +161,12 @@ export async function POST(req: NextRequest) {
   try {
     const reachSince = daysAgoInTz(91, tz); // 13 weeks
     const weeklyRows = await fetchWeeklyReachRows(accountId, reachSince, until, 90);
-    weeklyRows.sort((a, b) => a.weekStart.localeCompare(b.weekStart));
 
-    let prevCumulative = 0;
     const upsertRows = weeklyRows.map((r) => {
-      const netNew = Math.max(0, r.cumulativeReach - prevCumulative);
-      prevCumulative = r.cumulativeReach;
+      // Correct Foxwell/ricky-mba methodology:
+      // net_new = R_full (90d incl. this week) - R_prev (same window excl. this week)
+      // Always >= 0 because R_full >= R_prev (more days = more or equal unique reach)
+      const netNew = Math.max(0, r.cumulativeReach - r.prevWindowReach);
 
       const cpm = r.impressions > 0 ? (r.spend / r.impressions) * 1000 : 0;
       const cpmNetNew = netNew > 0 ? r.spend / (netNew / 1000) : 0;
