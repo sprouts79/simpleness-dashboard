@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ResponsiveContainer,
@@ -94,18 +94,17 @@ export default function ReachClient({
 
   // Filter data to selected period (data is newest-first)
   const filtered = data.slice(0, period);
+  const availableMonths = data.length;
 
-  // KPIs computed from filtered data
-  const kpis = useMemo(() => {
-    if (!filtered.length) return null;
-    const totalReach = filtered[0].rollingReach;
-    const totalSpend = filtered.reduce((s, r) => s + r.spend, 0);
-    const avgCpm = filtered.reduce((s, r) => s + r.cpm, 0) / filtered.length;
-    const avgNetNew = filtered.reduce((s, r) => s + r.netNew, 0) / filtered.length;
-    const avgNetNewPct = filtered.reduce((s, r) => s + r.netNewPct, 0) / filtered.length;
-    const avgCpmNetNew = filtered.reduce((s, r) => s + r.cpmNetNew, 0) / filtered.length;
-    return { totalReach, totalSpend, avgCpm, avgNetNew, avgNetNewPct, avgCpmNetNew };
-  }, [filtered]);
+  // KPIs computed inline — no useMemo so they always update with period
+  const kpis = filtered.length === 0 ? null : {
+    totalReach: filtered[0].rollingReach,
+    totalSpend: filtered.reduce((s, r) => s + r.spend, 0),
+    avgCpm: filtered.reduce((s, r) => s + r.cpm, 0) / filtered.length,
+    avgNetNew: filtered.reduce((s, r) => s + r.netNew, 0) / filtered.length,
+    avgNetNewPct: filtered.reduce((s, r) => s + r.netNewPct, 0) / filtered.length,
+    avgCpmNetNew: filtered.reduce((s, r) => s + r.cpmNetNew, 0) / filtered.length,
+  };
 
   // Chart data (oldest → newest for chronological display)
   const chartData = [...filtered].reverse().map((r) => ({
@@ -125,7 +124,7 @@ export default function ReachClient({
       const res = await fetch("/api/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clientId, months: period, lookbackDays: lb }),
+        body: JSON.stringify({ clientId, months: period, lookbackDays: lb, syncType: "reach" }),
       });
       const json = await res.json();
       if (json.ok) {
@@ -261,8 +260,8 @@ export default function ReachClient({
                 title="Nøkkeltall"
                 subtitle={
                   view === "monthly-rolling"
-                    ? `Siste ${period} mnd · 90d lookback`
-                    : `Siste ${period} mnd · ${lookback}d lookback`
+                    ? `${filtered.length} av ${period} mnd tilgjengelig · 90d lookback`
+                    : `${filtered.length} av ${period} mnd tilgjengelig · ${lookback}d lookback`
                 }
               />
               <div className="grid grid-cols-4 gap-3">
