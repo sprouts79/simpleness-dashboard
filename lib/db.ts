@@ -254,6 +254,8 @@ export async function getPerformanceKpis(
     .eq("client_id", clientId)
     .gte("date", compSince)
     .lte("date", until)
+    .not("campaign_id", "is", null)   // exclude stray NULL rows (matches getCampaigns)
+    .neq("campaign_id", "")           // exclude account-level aggregate rows if any
     .order("date");
 
   if (!data?.length) return MOCK_PERFORMANCE_KPIS[clientId] ?? null;
@@ -295,6 +297,8 @@ export async function getSpendTrend(
     .eq("client_id", clientId)
     .gte("date", since)
     .lte("date", until)
+    .not("campaign_id", "is", null)
+    .neq("campaign_id", "")
     .order("date");
 
   if (!data?.length) return MOCK_SPEND_TREND[clientId] ?? [];
@@ -453,11 +457,76 @@ export async function getAds(clientId: string): Promise<Ad[]> {
     hookRate: r.hook_rate ?? 0,
     holdRate: r.hold_rate ?? 0,
     ctr: r.ctr ? r.ctr * 100 : 0, // stored as decimal, display as %
+    cpm: (r.impressions ?? 0) > 0 ? ((r.spend ?? 0) / r.impressions) * 1000 : 0,
     spend: r.spend ?? 0,
     roas: r.roas ?? 0,
     cpa: r.cpa ?? 0,
     impressions: r.impressions ?? 0,
   }));
+}
+
+export async function getTopAds(clientId: string, days: number, limit = 10): Promise<Ad[]> {
+  const since = daysAgo(days);
+  const until = today();
+
+  // Aggregate per ad from meta_ad_weekly
+  const { data: weeklyData } = await supabase
+    .from("meta_ad_weekly")
+    .select("ad_id, spend, impressions, clicks, purchases, purchase_value, video_views_3s, video_views_thruplays")
+    .eq("client_id", clientId)
+    .gte("week_start", since)
+    .lte("week_start", until);
+
+  if (!weeklyData?.length) return [];
+
+  // Aggregate per ad
+  type Agg = { spend: number; impressions: number; clicks: number; purchases: number; purchaseValue: number; v3s: number; thruplays: number };
+  const adMap = new Map<string, Agg>();
+  for (const r of weeklyData) {
+    const prev = adMap.get(r.ad_id) ?? { spend: 0, impressions: 0, clicks: 0, purchases: 0, purchaseValue: 0, v3s: 0, thruplays: 0 };
+    adMap.set(r.ad_id, {
+      spend: prev.spend + (r.spend ?? 0),
+      impressions: prev.impressions + (r.impressions ?? 0),
+      clicks: prev.clicks + (r.clicks ?? 0),
+      purchases: prev.purchases + (r.purchases ?? 0),
+      purchaseValue: prev.purchaseValue + (r.purchase_value ?? 0),
+      v3s: prev.v3s + (r.video_views_3s ?? 0),
+      thruplays: prev.thruplays + (r.video_views_thruplays ?? 0),
+    });
+  }
+
+  // Fetch ad metadata (name, thumbnail) for the relevant ad_ids
+  const adIds = Array.from(adMap.keys());
+  const { data: adMeta } = await supabase
+    .from("meta_ads")
+    .select("ad_id, ad_name, thumbnail_url, cohort_date, created_date")
+    .in("ad_id", adIds);
+
+  const metaByAdId = new Map((adMeta ?? []).map((r) => [r.ad_id, r]));
+
+  return Array.from(adMap.entries())
+    .map(([adId, agg]) => {
+      const meta = metaByAdId.get(adId);
+      const imp = agg.impressions;
+      return {
+        id: adId,
+        name: meta?.ad_name ?? adId,
+        cohortDate: meta?.cohort_date ?? meta?.created_date ?? "",
+        format: agg.v3s > 0 ? "video" as const : "static" as const,
+        status: agg.spend > 0 ? "active" as const : "paused" as const,
+        thumbnailUrl: meta?.thumbnail_url ?? "",
+        hookRate: imp > 0 ? (agg.v3s / imp) * 100 : 0,
+        holdRate: imp > 0 ? (agg.thruplays / imp) * 100 : 0,
+        ctr: imp > 0 ? (agg.clicks / imp) * 100 : 0,
+        cpm: imp > 0 ? (agg.spend / imp) * 1000 : 0,
+        spend: agg.spend,
+        roas: agg.spend > 0 ? agg.purchaseValue / agg.spend : 0,
+        cpa: agg.purchases > 0 ? agg.spend / agg.purchases : 0,
+        impressions: imp,
+      };
+    })
+    .sort((a, b) => b.spend - a.spend)
+    .slice(0, limit);
 }
 
 // Returns ISO Monday of the week containing dateStr (YYYY-MM-DD)
@@ -614,14 +683,29 @@ export async function getCreativeChurn(
     cm.set(cohortLabel, (cm.get(cohortLabel) ?? 0) + (row.spend ?? 0));
   }
 
-  // Sort calendar weeks ascending
-  const sortedWeeks = Array.from(byWeek.keys()).sort();
+  // Collect all cohort labels across all weeks
+  const allCohortLabels = new Set<string>();
+  for (const cm of byWeek.values()) {
+    for (const label of cm.keys()) allCohortLabels.add(label);
+  }
 
-  return sortedWeeks.map((weekStart) => {
-    const cohortData = byWeek.get(weekStart)!;
+  // Fill all weeks from min to max (no gaps) and ensure every cohort has a value (0 if missing)
+  const sortedWeeks = Array.from(byWeek.keys()).sort();
+  if (!sortedWeeks.length) return [];
+
+  const allWeeks: string[] = [];
+  const cursor = new Date(sortedWeeks[0] + "T00:00:00Z");
+  const maxDate = new Date(sortedWeeks[sortedWeeks.length - 1] + "T00:00:00Z");
+  while (cursor <= maxDate) {
+    allWeeks.push(cursor.toISOString().split("T")[0]);
+    cursor.setUTCDate(cursor.getUTCDate() + 7);
+  }
+
+  return allWeeks.map((weekStart) => {
+    const cohortData = byWeek.get(weekStart) ?? new Map<string, number>();
     const point: CreativeChurnPoint = { month: formatWeekLabel(weekStart) };
-    for (const [label, spend] of cohortData.entries()) {
-      point[label] = spend;
+    for (const label of allCohortLabels) {
+      point[label] = cohortData.get(label) ?? 0;
     }
     return point;
   });
