@@ -8,6 +8,7 @@ import {
 import SectionHeader from "@/components/ui/SectionHeader";
 import CohortTable from "@/components/creative/CohortTable";
 import AdGallery from "@/components/creative/AdGallery";
+import TopAdsList from "@/components/creative/TopAdsList";
 import InfoBox from "@/components/ui/InfoBox";
 import { Ad, AdCohort, CreativeChurnPoint, CohortMetric } from "@/lib/types";
 import clsx from "clsx";
@@ -81,14 +82,20 @@ export default function CreativeClient({
   ads,
   cohorts,
   churnData,
+  topWeek,
+  topMonth,
+  topQuarter,
 }: {
   clientId: string;
   ads: Ad[];
   cohorts: AdCohort[];
   churnData: CreativeChurnPoint[];
+  topWeek: Ad[];
+  topMonth: Ad[];
+  topQuarter: Ad[];
 }) {
   const router = useRouter();
-  const [metric, setMetric] = useState<CohortMetric>("hookRate");
+  const [metric, setMetric] = useState<CohortMetric>("spend");
   const [view, setView] = useState<View>("tabell");
   const [gallerySort, setGallerySort] = useState<GallerySort>("spend");
   const [syncing, setSyncing] = useState(false);
@@ -305,6 +312,17 @@ export default function CreativeClient({
               <AdGallery ads={cohortAds} />
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Topp 10 annonser */}
+      {(topWeek.length > 0 || topMonth.length > 0 || topQuarter.length > 0) && (
+        <div>
+          <SectionHeader
+            title="Topp 10 annonser"
+            subtitle="Sortert etter valgt metrikk · velg periode og metrikk"
+          />
+          <TopAdsList topWeek={topWeek} topMonth={topMonth} topQuarter={topQuarter} />
         </div>
       )}
 

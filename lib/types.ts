@@ -138,6 +138,7 @@ export interface Ad {
   hookRate: number;
   holdRate: number;
   ctr: number;
+  cpm: number;
   spend: number;
   roas: number;
   cpa: number;

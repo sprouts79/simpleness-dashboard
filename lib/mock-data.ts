@@ -509,6 +509,7 @@ export const ADS: Record<string, Ad[]> = {
       hookRate: hookRates[i],
       holdRate: holdRates[i],
       ctr: parseFloat((0.8 + Math.random() * 2.2).toFixed(2)),
+      cpm: Math.round(80 + Math.random() * 80),
       spend: Math.round(8000 + Math.random() * 42000),
       roas: parseFloat((2.2 + Math.random() * 3.4).toFixed(2)),
       cpa: Math.round(140 + Math.random() * 180),
