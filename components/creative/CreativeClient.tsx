@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
@@ -75,17 +76,45 @@ function groupByCohort(
 }
 
 export default function CreativeClient({
+  clientId,
   ads,
   cohorts,
   churnData,
 }: {
+  clientId: string;
   ads: Ad[];
   cohorts: AdCohort[];
   churnData: CreativeChurnPoint[];
 }) {
+  const router = useRouter();
   const [metric, setMetric] = useState<CohortMetric>("hookRate");
-  const [view, setView] = useState<View>("galleri");
+  const [view, setView] = useState<View>("tabell");
   const [gallerySort, setGallerySort] = useState<GallerySort>("spend");
+  const [syncing, setSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<string | null>(null);
+
+  async function handleSync() {
+    setSyncing(true);
+    setSyncStatus(null);
+    try {
+      const res = await fetch("/api/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clientId, syncType: "cohort" }),
+      });
+      const json = await res.json();
+      if (json.ok) {
+        setSyncStatus(`Synkronisert — ${json.cohortSynced} ukerader`);
+        router.refresh();
+      } else {
+        setSyncStatus(`Feil: ${json.errors?.join(", ") || "Ukjent"}`);
+      }
+    } catch (e: unknown) {
+      setSyncStatus(`Feil: ${e instanceof Error ? e.message : "Ukjent"}`);
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   const totalSpend = cohorts.reduce((s, c) => s + c.weeks.reduce((ws, w) => ws + w.spend, 0), 0);
   const cohortGroups = groupByCohort(ads, gallerySort);
@@ -153,11 +182,11 @@ export default function CreativeClient({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-sm font-semibold text-[rgba(9,10,8,0.45)] uppercase tracking-widest">
-            {view === "galleri" ? "Annonse-galleri" : "Kohort-ytelse"}
+            {view === "galleri" ? "Annonse-galleri" : "Kohort-ytelse · siste 12 uker"}
           </h2>
           {view === "tabell" && (
             <p className="text-xs text-[rgba(9,10,8,0.4)] mt-0.5">
-              Grønn = over median · Rød = under median · Per kolonne (uke)
+              Rader = lanserings­uke · Kolonner = uker siden lansering · Grønn/rød = over/under median per kolonne
             </p>
           )}
         </div>
@@ -203,6 +232,25 @@ export default function CreativeClient({
               ))}
             </select>
           )}
+
+          {/* Sync button */}
+          <div className="flex items-center gap-2">
+            {syncStatus && (
+              <span className="text-xs text-[rgba(9,10,8,0.45)]">{syncStatus}</span>
+            )}
+            <button
+              onClick={handleSync}
+              disabled={syncing}
+              className={clsx(
+                "text-xs font-semibold px-4 py-2 rounded-lg transition-colors",
+                syncing
+                  ? "bg-[var(--color-surface)] text-[rgba(9,10,8,0.35)] cursor-not-allowed border border-[var(--color-border)]"
+                  : "bg-[var(--color-accent)] text-[var(--color-black)] hover:opacity-90"
+              )}
+            >
+              {syncing ? "Henter..." : "Hent data"}
+            </button>
+          </div>
         </div>
       </div>
 

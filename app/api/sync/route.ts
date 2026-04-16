@@ -1,11 +1,12 @@
 /**
  * POST /api/sync
- * Body: { clientId: string, syncType?: "all" | "performance" | "ads" | "reach", months?: number, lookbackDays?: number }
+ * Body: { clientId: string, syncType?: "all" | "performance" | "ads" | "reach" | "cohort", months?: number, lookbackDays?: number }
  *
  * syncType="all":         performance + ads + reach (default)
  * syncType="performance": only daily campaign insights
  * syncType="ads":         only ad insights + creatives
  * syncType="reach":       only weekly reach rows
+ * syncType="cohort":      only weekly ad-level data for cohort analysis (12 weeks)
  *
  * Safe to call repeatedly — idempotent.
  */
@@ -17,6 +18,7 @@ import {
   fetchAdInsights,
   fetchAdMeta,
   fetchWeeklyReachRows,
+  fetchAdWeeklyInsights,
   fetchAccountTimezone,
   daysAgoInTz,
   dateInTz,
@@ -57,6 +59,7 @@ export async function POST(req: NextRequest) {
 
   let performanceSynced = 0;
   let adsSynced = 0;
+  let cohortSynced = 0;
 
   // ── 1. Performance ───────────────────────────────────────────────────────────
   if (syncType === "all" || syncType === "performance") {
@@ -182,11 +185,51 @@ export async function POST(req: NextRequest) {
     errors.push(`reach fetch: ${e.message}`);
   }
 
+  // ── 4. Cohort (weekly ad-level insights) ─────────────────────────────────────
+  if (syncType === "cohort") try {
+    const cohortSince = daysAgoInTz(84, tz); // 12 weeks back
+    const weeklyInsights = await fetchAdWeeklyInsights(accountId, cohortSince, until);
+
+    const upsertRows = weeklyInsights.map((ins) => {
+      const hookRate = ins.impressions > 0 ? (ins.videoViews3s / ins.impressions) * 100 : null;
+      const holdRate = ins.impressions > 0 ? (ins.videoViewsThruplays / ins.impressions) * 100 : null;
+      return {
+        ad_id: ins.adId,
+        client_id: clientId,
+        week_start: ins.weekStart,
+        spend: ins.spend,
+        impressions: ins.impressions,
+        clicks: ins.clicks,
+        purchases: ins.purchases,
+        purchase_value: ins.purchaseValue,
+        video_views_3s: ins.videoViews3s,
+        video_views_thruplays: ins.videoViewsThruplays,
+        hook_rate: hookRate,
+        hold_rate: holdRate,
+        ctr: ins.impressions > 0 ? ins.clicks / ins.impressions : null,
+        cpm: ins.impressions > 0 ? (ins.spend / ins.impressions) * 1000 : null,
+        cpa: ins.purchases > 0 ? ins.spend / ins.purchases : null,
+        roas: ins.purchaseValue > 0 && ins.spend > 0 ? ins.purchaseValue / ins.spend : null,
+        synced_at: new Date().toISOString(),
+      };
+    });
+
+    const { error } = await supabase
+      .from("meta_ad_weekly")
+      .upsert(upsertRows, { onConflict: "ad_id,week_start" });
+
+    if (error) errors.push(`cohort: ${error.message}`);
+    else cohortSynced = upsertRows.length;
+  } catch (e: any) {
+    errors.push(`cohort fetch: ${e.message}`);
+  }
+
   return NextResponse.json({
     ok: errors.length === 0,
     performanceSynced,
     adsSynced,
     reachSynced,
+    cohortSynced,
     since,
     until,
     errors,

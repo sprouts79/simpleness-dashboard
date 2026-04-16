@@ -414,69 +414,125 @@ export async function getAds(clientId: string): Promise<Ad[]> {
   }));
 }
 
+// Returns ISO Monday of the week containing dateStr (YYYY-MM-DD)
+function getMondayOf(dateStr: string): string {
+  const d = new Date(dateStr + "T00:00:00Z");
+  const day = d.getUTCDay(); // 0=Sun, 1=Mon...
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setUTCDate(d.getUTCDate() + diff);
+  return d.toISOString().split("T")[0];
+}
+
+function formatWeekRangeLabel(weekStart: string): string {
+  const start = new Date(weekStart + "T00:00:00Z");
+  const end = new Date(weekStart + "T00:00:00Z");
+  end.setUTCDate(end.getUTCDate() + 6);
+
+  const months = ["jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "des"];
+  const startDay = start.getUTCDate();
+  const endDay = end.getUTCDate();
+  const endMonth = months[end.getUTCMonth()];
+  const year = end.getUTCFullYear();
+
+  if (start.getUTCMonth() === end.getUTCMonth()) {
+    return `${startDay}–${endDay} ${endMonth} ${year}`;
+  }
+  const startMonth = months[start.getUTCMonth()];
+  return `${startDay} ${startMonth}–${endDay} ${endMonth} ${year}`;
+}
+
 export async function getCohorts(clientId: string): Promise<AdCohort[]> {
-  const { data } = await supabase
+  // 1. Get created_date for all ads (needed to compute cohort week + week number)
+  const { data: adsData } = await supabase
     .from("meta_ads")
-    .select(
-      "cohort_date,created_date,spend,impressions,clicks,purchases,purchase_value,hook_rate,hold_rate,video_views_3s,video_views_thruplays"
-    )
+    .select("ad_id, created_date")
+    .eq("client_id", clientId);
+
+  if (!adsData?.length) return COHORTS[clientId] ?? [];
+
+  const adCreatedMap = new Map(
+    adsData
+      .filter((a) => !!a.created_date)
+      .map((a) => [a.ad_id as string, a.created_date as string])
+  );
+
+  // 2. Get weekly ad data for last 12 weeks (84 days)
+  const { data: weeklyData } = await supabase
+    .from("meta_ad_weekly")
+    .select("ad_id, week_start, spend, impressions, clicks, purchases, purchase_value, video_views_3s, video_views_thruplays")
     .eq("client_id", clientId)
+    .gte("week_start", daysAgo(90))
     .gt("spend", 0);
 
-  if (!data?.length) return COHORTS[clientId] ?? [];
+  if (!weeklyData?.length) return COHORTS[clientId] ?? [];
 
-  // Group by cohort month (YYYY-MM)
-  const groups = new Map<string, typeof data>();
-  for (const ad of data) {
-    const key = (ad.cohort_date ?? ad.created_date ?? "").substring(0, 7);
-    if (!key || key.length < 7) continue;
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key)!.push(ad);
+  // 3. Aggregate: cohort_week_start → week_number → metrics
+  type WeekAgg = {
+    spend: number; impressions: number; clicks: number;
+    purchases: number; purchaseValue: number;
+    v3s: number; thruplays: number;
+  };
+
+  const cohortWeekMap = new Map<string, Map<number, WeekAgg>>();
+  const cohortAdSets = new Map<string, Set<string>>();
+
+  for (const row of weeklyData) {
+    const createdDate = adCreatedMap.get(row.ad_id);
+    if (!createdDate) continue;
+
+    const cohortMonday = getMondayOf(createdDate);
+    const insightMonday = getMondayOf(row.week_start);
+
+    const cohortMs = new Date(cohortMonday + "T00:00:00Z").getTime();
+    const insightMs = new Date(insightMonday + "T00:00:00Z").getTime();
+    const weekNum = Math.round((insightMs - cohortMs) / (7 * 24 * 3600 * 1000));
+
+    if (weekNum < 0 || weekNum > 11) continue;
+
+    if (!cohortWeekMap.has(cohortMonday)) cohortWeekMap.set(cohortMonday, new Map());
+    if (!cohortAdSets.has(cohortMonday)) cohortAdSets.set(cohortMonday, new Set());
+    cohortAdSets.get(cohortMonday)!.add(row.ad_id);
+
+    const weekMap = cohortWeekMap.get(cohortMonday)!;
+    const prev = weekMap.get(weekNum) ?? { spend: 0, impressions: 0, clicks: 0, purchases: 0, purchaseValue: 0, v3s: 0, thruplays: 0 };
+    weekMap.set(weekNum, {
+      spend: prev.spend + (row.spend ?? 0),
+      impressions: prev.impressions + (row.impressions ?? 0),
+      clicks: prev.clicks + (row.clicks ?? 0),
+      purchases: prev.purchases + (row.purchases ?? 0),
+      purchaseValue: prev.purchaseValue + (row.purchase_value ?? 0),
+      v3s: prev.v3s + (row.video_views_3s ?? 0),
+      thruplays: prev.thruplays + (row.video_views_thruplays ?? 0),
+    });
   }
 
-  if (!groups.size) return COHORTS[clientId] ?? [];
+  if (!cohortWeekMap.size) return COHORTS[clientId] ?? [];
 
-  return Array.from(groups.entries())
-    .sort((a, b) => b[0].localeCompare(a[0])) // newest first
-    .map(([key, ads]) => {
-      const totalSpend = ads.reduce((s, a) => s + (a.spend ?? 0), 0);
-      const totalImpressions = ads.reduce((s, a) => s + (a.impressions ?? 0), 0);
-      const totalClicks = ads.reduce((s, a) => s + (a.clicks ?? 0), 0);
-      const totalPurchases = ads.reduce((s, a) => s + (a.purchases ?? 0), 0);
-      const totalPurchaseValue = ads.reduce((s, a) => s + (a.purchase_value ?? 0), 0);
-      const totalV3s = ads.reduce((s, a) => s + (a.video_views_3s ?? 0), 0);
-      const totalThruplays = ads.reduce((s, a) => s + (a.video_views_thruplays ?? 0), 0);
+  return Array.from(cohortWeekMap.entries())
+    .sort((a, b) => b[0].localeCompare(a[0])) // newest cohort first
+    .map(([cohortMonday, weekMap]) => {
+      const adCount = cohortAdSets.get(cohortMonday)?.size ?? 0;
+      const maxWeekNum = Math.max(...weekMap.keys(), -1);
 
-      const hookRate = totalImpressions > 0 ? (totalV3s / totalImpressions) * 100 : 0;
-      const holdRate = totalImpressions > 0 ? (totalThruplays / totalImpressions) * 100 : 0;
-      const ctr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
-      const cpm = totalImpressions > 0 ? (totalSpend / totalImpressions) * 1000 : 0;
-      const cpa = totalPurchases > 0 ? totalSpend / totalPurchases : 0;
-      const roas = totalSpend > 0 ? totalPurchaseValue / totalSpend : 0;
-
-      const [year, month] = key.split("-");
-      const label = new Date(parseInt(year), parseInt(month) - 1).toLocaleDateString("no-NO", {
-        month: "short",
-        year: "numeric",
-      });
+      // Build sparse array indexed by week number (CohortTable reads weeks[w])
+      const weeks: AdCohort["weeks"] = [];
+      for (let w = 0; w <= Math.min(maxWeekNum, 11); w++) {
+        const agg = weekMap.get(w);
+        if (!agg) continue; // sparse — CohortTable shows "—" for missing indices
+        const hookRate = agg.impressions > 0 ? (agg.v3s / agg.impressions) * 100 : 0;
+        const holdRate = agg.impressions > 0 ? (agg.thruplays / agg.impressions) * 100 : 0;
+        const ctr = agg.impressions > 0 ? (agg.clicks / agg.impressions) * 100 : 0;
+        const cpm = agg.impressions > 0 ? (agg.spend / agg.impressions) * 1000 : 0;
+        const cpa = agg.purchases > 0 ? agg.spend / agg.purchases : 0;
+        const roas = agg.spend > 0 ? agg.purchaseValue / agg.spend : 0;
+        weeks[w] = { week: w, spend: agg.spend, impressions: agg.impressions, hookRate, holdRate, ctr, cpm, cpa, roas };
+      }
 
       return {
-        cohortDate: key + "-01",
-        label,
-        adCount: ads.length,
-        weeks: [
-          {
-            week: 0, // W0 = lifetime aggregate (weekly breakdown requires ad-level daily data)
-            spend: totalSpend,
-            impressions: totalImpressions,
-            hookRate,
-            holdRate,
-            ctr,
-            cpm,
-            cpa,
-            roas,
-          },
-        ],
+        cohortDate: cohortMonday,
+        label: formatWeekRangeLabel(cohortMonday),
+        adCount,
+        weeks,
       };
     });
 }

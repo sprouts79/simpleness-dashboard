@@ -14,5 +14,5 @@ export default async function CreativePage({
     getCreativeChurn(clientId),
   ]);
 
-  return <CreativeClient ads={ads} cohorts={cohorts} churnData={churnData} />;
+  return <CreativeClient clientId={clientId} ads={ads} cohorts={cohorts} churnData={churnData} />;
 }

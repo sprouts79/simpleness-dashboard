@@ -333,6 +333,71 @@ export async function fetchWeeklyReachRows(
   );
 }
 
+// ─── Creative: weekly ad-level insights for cohort analysis ──────────────────
+
+export interface AdWeeklyInsight {
+  adId: string;
+  weekStart: string; // YYYY-MM-DD (date_start of the 7-day window)
+  spend: number;
+  impressions: number;
+  clicks: number;
+  purchases: number;
+  purchaseValue: number;
+  videoViews3s: number;
+  videoViewsThruplays: number;
+}
+
+export async function fetchAdWeeklyInsights(
+  accountId: string,
+  since: string,
+  until: string
+): Promise<AdWeeklyInsight[]> {
+  const coreFields = [
+    "ad_id",
+    "spend",
+    "impressions",
+    "clicks",
+    "actions",
+    "action_values",
+  ].join(",");
+
+  const timeRange = encodeURIComponent(JSON.stringify({ since, until }));
+  const coreUrl = `${BASE}/${accountId}/insights?fields=${coreFields}&time_range=${timeRange}&time_increment=7&level=ad&limit=500&access_token=${token()}`;
+  const rows = await paginate<any>(coreUrl);
+
+  // Fetch thruplays separately (same pattern as fetchAdInsights)
+  const videoFields = "ad_id,video_thruplay_watched_actions";
+  const videoUrl = `${BASE}/${accountId}/insights?fields=${videoFields}&time_range=${timeRange}&time_increment=7&level=ad&limit=500&access_token=${token()}`;
+  let videoRows: any[] = [];
+  try {
+    videoRows = await paginate<any>(videoUrl);
+  } catch {
+    // Non-fatal
+  }
+
+  // Map: ad_id → week_start → row
+  const videoMap = new Map<string, Map<string, any>>();
+  for (const r of videoRows) {
+    if (!videoMap.has(r.ad_id)) videoMap.set(r.ad_id, new Map());
+    videoMap.get(r.ad_id)!.set(r.date_start, r);
+  }
+
+  return rows.map((r) => {
+    const v = videoMap.get(r.ad_id)?.get(r.date_start);
+    return {
+      adId: r.ad_id,
+      weekStart: r.date_start,
+      spend: parseFloat(r.spend ?? "0"),
+      impressions: parseInt(r.impressions ?? "0"),
+      clicks: parseInt(r.clicks ?? "0"),
+      purchases: getMetric(r.actions, "purchase"),
+      purchaseValue: getMetric(r.action_values, "purchase"),
+      videoViews3s: getMetric(r.actions, "video_view"),
+      videoViewsThruplays: getMetric(v?.video_thruplay_watched_actions, "video_view"),
+    };
+  });
+}
+
 export interface ReachResult {
   reach: number;
   impressions: number;
