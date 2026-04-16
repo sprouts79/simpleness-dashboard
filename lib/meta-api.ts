@@ -9,6 +9,25 @@ function token() {
   return process.env.META_SYSTEM_USER_TOKEN!;
 }
 
+// Date helpers — always calculated in the ad account's timezone so they match
+// what Meta Ads Manager displays. en-CA locale gives YYYY-MM-DD format.
+export function dateInTz(date: Date, tz: string): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: tz }).format(date);
+}
+
+export function daysAgoInTz(n: number, tz: string): string {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return dateInTz(d, tz);
+}
+
+export async function fetchAccountTimezone(accountId: string): Promise<string> {
+  const url = `${BASE}/${accountId}?fields=timezone_name&access_token=${token()}`;
+  const res = await fetch(url, { cache: "no-store" });
+  const json: any = await res.json();
+  return json.timezone_name ?? "UTC";
+}
+
 function getMetric(
   arr: { action_type: string; value: string }[] | undefined,
   type: string

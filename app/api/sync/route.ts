@@ -12,17 +12,10 @@ import {
   fetchDailyInsights,
   fetchAdInsights,
   fetchAdMeta,
+  fetchAccountTimezone,
+  daysAgoInTz,
+  dateInTz,
 } from "@/lib/meta-api";
-
-function daysAgo(n: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return d.toISOString().split("T")[0];
-}
-
-function today(): string {
-  return new Date().toISOString().split("T")[0];
-}
 
 export async function POST(req: NextRequest) {
   const { clientId } = await req.json();
@@ -49,8 +42,11 @@ export async function POST(req: NextRequest) {
   }
 
   const accountId = client.meta_account_id;
-  const since = daysAgo(90);
-  const until = today();
+
+  // Use account timezone so date boundaries match Ads Manager exactly
+  const tz = await fetchAccountTimezone(accountId);
+  const since = daysAgoInTz(90, tz);
+  const until = dateInTz(new Date(), tz);
   const errors: string[] = [];
 
   // ── 1. Campaign-level daily insights ────────────────────────────────────────
