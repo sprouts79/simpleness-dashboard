@@ -72,9 +72,10 @@ function PreviewModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
       onClick={onClose}
     >
+      {/* No overflow-hidden on the wrapper — border-radius clips image corners otherwise */}
       <div
-        className="relative bg-black rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center"
-        style={{ maxWidth: "min(420px, calc(100vw - 32px))", maxHeight: "92vh" }}
+        className="relative shadow-2xl"
+        style={{ maxWidth: "min(420px, calc(100vw - 32px))" }}
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -89,12 +90,14 @@ function PreviewModal({
             autoPlay
             controls
             playsInline
-            style={{ maxWidth: "min(420px, calc(100vw - 32px))", maxHeight: "92vh", display: "block" }}
+            className="rounded-2xl block"
+            style={{ maxWidth: "min(420px, calc(100vw - 32px))", maxHeight: "92vh" }}
           />
         ) : imageUrl ? (
           <img
             src={imageUrl}
-            style={{ maxWidth: "min(420px, calc(100vw - 32px))", maxHeight: "92vh", width: "auto", height: "auto", display: "block" }}
+            className="rounded-2xl block"
+            style={{ maxWidth: "min(420px, calc(100vw - 32px))", maxHeight: "92vh", width: "auto", height: "auto" }}
           />
         ) : null}
       </div>
