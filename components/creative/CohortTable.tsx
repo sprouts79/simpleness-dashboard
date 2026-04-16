@@ -43,16 +43,22 @@ function isHigherBetter(metric: CohortMetric): boolean {
 }
 
 export default function CohortTable({ cohorts, metric }: Props) {
-  // Find max weeks across all cohorts
-  const maxWeeks = Math.max(...cohorts.map((c) => c.weeks.length), 0);
-  const weekCols = Array.from({ length: maxWeeks }, (_, i) => i);
+  // Find max week number across all cohorts (each week has a .week property)
+  const maxWeekNum = cohorts.reduce((max, c) =>
+    c.weeks.reduce((m, w) => Math.max(m, w.week), max), -1);
+  const weekCols = maxWeekNum >= 0 ? Array.from({ length: maxWeekNum + 1 }, (_, i) => i) : [];
+
+  // Look up a week by its number (dense array, so use .find)
+  function getWeek(cohort: AdCohort, weekNum: number) {
+    return cohort.weeks.find((w) => w.week === weekNum);
+  }
 
   // Compute per-column median for heatmap
   const colMedians: number[] = weekCols.map((w) => {
     const vals = cohorts
-      .map((c) => c.weeks[w])
+      .map((c) => getWeek(c, w))
       .filter(Boolean)
-      .map((week) => getCellValue(week, metric));
+      .map((week) => getCellValue(week!, metric));
     if (!vals.length) return 0;
     const sorted = [...vals].sort((a, b) => a - b);
     return sorted[Math.floor(sorted.length / 2)];
@@ -90,7 +96,7 @@ export default function CohortTable({ cohorts, metric }: Props) {
                 {cohort.adCount}
               </td>
               {weekCols.map((w) => {
-                const weekData = cohort.weeks[w];
+                const weekData = getWeek(cohort, w);
                 if (!weekData) {
                   return (
                     <td key={w} className="px-3 py-2.5 text-center">

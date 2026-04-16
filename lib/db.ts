@@ -512,21 +512,23 @@ export async function getCohorts(clientId: string): Promise<AdCohort[]> {
     .sort((a, b) => b[0].localeCompare(a[0])) // newest cohort first
     .map(([cohortMonday, weekMap]) => {
       const adCount = cohortAdSets.get(cohortMonday)?.size ?? 0;
-      const maxWeekNum = Math.max(...weekMap.keys(), -1);
+      const weekNums = Array.from(weekMap.keys());
+      const maxWeekNum = weekNums.length > 0 ? Math.max(...weekNums) : -1;
 
-      // Build sparse array indexed by week number (CohortTable reads weeks[w])
+      // Dense array of only weeks with data, sorted by week number.
+      // CohortTable looks up weeks by the `week` property (not array index).
       const weeks: AdCohort["weeks"] = [];
-      for (let w = 0; w <= Math.min(maxWeekNum, 11); w++) {
-        const agg = weekMap.get(w);
-        if (!agg) continue; // sparse — CohortTable shows "—" for missing indices
+      for (const [w, agg] of weekMap.entries()) {
+        if (w < 0 || w > 11) continue;
         const hookRate = agg.impressions > 0 ? (agg.v3s / agg.impressions) * 100 : 0;
         const holdRate = agg.impressions > 0 ? (agg.thruplays / agg.impressions) * 100 : 0;
         const ctr = agg.impressions > 0 ? (agg.clicks / agg.impressions) * 100 : 0;
         const cpm = agg.impressions > 0 ? (agg.spend / agg.impressions) * 1000 : 0;
         const cpa = agg.purchases > 0 ? agg.spend / agg.purchases : 0;
         const roas = agg.spend > 0 ? agg.purchaseValue / agg.spend : 0;
-        weeks[w] = { week: w, spend: agg.spend, impressions: agg.impressions, hookRate, holdRate, ctr, cpm, cpa, roas };
+        weeks.push({ week: w, spend: agg.spend, impressions: agg.impressions, hookRate, holdRate, ctr, cpm, cpa, roas });
       }
+      weeks.sort((a, b) => a.week - b.week);
 
       return {
         cohortDate: cohortMonday,
