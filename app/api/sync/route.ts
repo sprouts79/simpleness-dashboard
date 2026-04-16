@@ -125,7 +125,8 @@ export async function POST(req: NextRequest) {
         campaign_id: ins.campaignId || null,
         created_date: createdDate,
         cohort_date: createdDate,
-        format: m?.format ?? null,
+        // Infer format: video if 3s views exist, otherwise static
+        format: ins.videoViews3s > 0 ? "video" : (m?.format ?? "static"),
         thumbnail_url: m?.thumbnailUrl ?? null,
         status: m?.status ?? null,
         spend: ins.spend,

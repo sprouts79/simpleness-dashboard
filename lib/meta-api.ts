@@ -119,7 +119,10 @@ export async function fetchAdInsights(
   since: string,
   until: string
 ): Promise<AdInsight[]> {
-  const fields = [
+  // Split into two requests to avoid Meta's data size limit:
+  // 1. Core metrics (spend, impressions, reach, clicks, purchases)
+  // 2. Video metrics (thruplays, 3s views via video_view action)
+  const coreFields = [
     "ad_id",
     "ad_name",
     "adset_id",
@@ -132,30 +135,43 @@ export async function fetchAdInsights(
     "ctr",
     "actions",
     "action_values",
-    "video_thruplay_watched_actions",
   ].join(",");
 
   const timeRange = encodeURIComponent(JSON.stringify({ since, until }));
-  const url = `${BASE}/${accountId}/insights?fields=${fields}&time_range=${timeRange}&level=ad&limit=500&access_token=${token()}`;
+  const coreUrl = `${BASE}/${accountId}/insights?fields=${coreFields}&time_range=${timeRange}&level=ad&limit=200&access_token=${token()}`;
 
-  const rows = await paginate<any>(url);
+  const rows = await paginate<any>(coreUrl);
 
-  return rows.map((r) => ({
-    adId: r.ad_id,
-    adName: r.ad_name,
-    adsetId: r.adset_id ?? "",
-    campaignId: r.campaign_id ?? "",
-    spend: parseFloat(r.spend ?? "0"),
-    impressions: parseInt(r.impressions ?? "0"),
-    reach: parseInt(r.reach ?? "0"),
-    clicks: parseInt(r.clicks ?? "0"),
-    purchases: getMetric(r.actions, "purchase"),
-    purchaseValue: getMetric(r.action_values, "purchase"),
-    videoViews3s: getMetric(r.actions, "video_view"),
-    videoViewsThruplays: getMetric(r.video_thruplay_watched_actions, "video_view"),
-    ctr: parseFloat(r.ctr ?? "0"),
-    cpm: parseFloat(r.cpm ?? "0"),
-  }));
+  // Fetch thruplays separately to avoid oversized requests
+  const videoFields = "ad_id,video_thruplay_watched_actions";
+  const videoUrl = `${BASE}/${accountId}/insights?fields=${videoFields}&time_range=${timeRange}&level=ad&limit=200&access_token=${token()}`;
+  let videoRows: any[] = [];
+  try {
+    videoRows = await paginate<any>(videoUrl);
+  } catch {
+    // Non-fatal — thruplays will be 0
+  }
+  const videoMap = new Map(videoRows.map((r) => [r.ad_id, r]));
+
+  return rows.map((r) => {
+    const v = videoMap.get(r.ad_id);
+    return {
+      adId: r.ad_id,
+      adName: r.ad_name,
+      adsetId: r.adset_id ?? "",
+      campaignId: r.campaign_id ?? "",
+      spend: parseFloat(r.spend ?? "0"),
+      impressions: parseInt(r.impressions ?? "0"),
+      reach: parseInt(r.reach ?? "0"),
+      clicks: parseInt(r.clicks ?? "0"),
+      purchases: getMetric(r.actions, "purchase"),
+      purchaseValue: getMetric(r.action_values, "purchase"),
+      videoViews3s: getMetric(r.actions, "video_view"),
+      videoViewsThruplays: getMetric(v?.video_thruplay_watched_actions, "video_view"),
+      ctr: parseFloat(r.ctr ?? "0"),
+      cpm: parseFloat(r.cpm ?? "0"),
+    };
+  });
 }
 
 // ─── Creative: ad metadata (name, status, created_time, format) ──────────────
@@ -172,37 +188,23 @@ export interface AdMeta {
 }
 
 export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
-  const fields = [
-    "id",
-    "name",
-    "adset_id",
-    "campaign_id",
-    "status",
-    "created_time",
-    "creative{thumbnail_url,object_type}",
-  ].join(",");
+  // Omit creative expansion — Meta refuses it on large accounts.
+  // Format is inferred from video_views in insights (videoViews3s > 0 → video).
+  const fields = ["id", "name", "adset_id", "campaign_id", "status", "created_time"].join(",");
 
-  const url = `${BASE}/${accountId}/ads?fields=${fields}&limit=200&access_token=${token()}`;
+  const url = `${BASE}/${accountId}/ads?fields=${fields}&limit=500&access_token=${token()}`;
   const rows = await paginate<any>(url);
 
-  return rows.map((r) => {
-    const objectType: string = r.creative?.object_type ?? "";
-    let format: AdMeta["format"] = null;
-    if (objectType === "VIDEO") format = "video";
-    else if (objectType === "SHARE") format = "carousel";
-    else if (objectType === "PHOTO" || objectType === "STATUS") format = "static";
-
-    return {
-      adId: r.id,
-      adName: r.name,
-      adsetId: r.adset_id ?? "",
-      campaignId: r.campaign_id ?? "",
-      status: (r.status ?? "").toLowerCase(),
-      createdTime: r.created_time ?? "",
-      thumbnailUrl: r.creative?.thumbnail_url ?? "",
-      format,
-    };
-  });
+  return rows.map((r) => ({
+    adId: r.id,
+    adName: r.name,
+    adsetId: r.adset_id ?? "",
+    campaignId: r.campaign_id ?? "",
+    status: (r.status ?? "").toLowerCase(),
+    createdTime: r.created_time ?? "",
+    thumbnailUrl: "",   // fetched separately if needed
+    format: null,       // inferred from videoViews3s in upsert
+  }));
 }
 
 // ─── Reach: weekly rolling reach ─────────────────────────────────────────────
