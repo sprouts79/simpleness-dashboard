@@ -9,9 +9,9 @@ function StatusDot({ status }: { status: ClientStatus }) {
   return (
     <span
       className={clsx("inline-block w-1.5 h-1.5 rounded-full flex-shrink-0", {
-        "bg-[#22c55e]": status === "green",
-        "bg-[#eab308]": status === "yellow",
-        "bg-[#ef4444]": status === "red",
+        "bg-[var(--color-status-green)]": status === "green",
+        "bg-[var(--color-status-yellow)]": status === "yellow",
+        "bg-[var(--color-status-red)]": status === "red",
       })}
     />
   );
@@ -27,43 +27,36 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
   const isPulse = pathname === "/";
 
   return (
-    <aside className="flex flex-col w-[210px] flex-shrink-0 h-full overflow-y-auto bg-[#090a08] border-r border-white/[0.06]">
+    <aside className="flex flex-col w-[210px] flex-shrink-0 h-full overflow-y-auto bg-[var(--color-surface)] border-r border-[var(--color-border)]">
 
       {/* Logo */}
-      <div className="px-5 pt-5 pb-4 border-b border-white/[0.06]">
-        {/* PNG logo inverted for dark background — replace with logo-invers.svg when available */}
-        {/* LOGO: logo-standard.png from CDN, inverted for dark background (invers SVG not yet exported) */}
+      <div className="px-5 pt-5 pb-4 border-b border-[var(--color-border)]">
+        {/* LOGO: logo-standard.png — replace with logo-standard.svg when exported from Figma */}
         <img
           src="https://simpleness-design-system.vercel.app/logo-standard.png"
           alt="simpleness"
           height={18}
-          style={{ filter: "invert(1)", opacity: 0.92 }}
           className="block"
         />
-        <p className="text-[10px] text-white/30 mt-1.5 tracking-wider font-medium uppercase">
-          Agency Dashboard
-        </p>
       </div>
 
       {/* Navigation */}
       <nav className="px-2.5 pt-3 flex-1">
-        {/* Pulse */}
         <Link
           href="/"
           className={clsx(
             "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors mb-0.5",
             isPulse
-              ? "bg-[#89ff58]/10 text-[#89ff58]"
-              : "text-white/50 hover:text-white/80 hover:bg-white/[0.04]"
+              ? "bg-[var(--color-green-pale)] text-[var(--color-link)]"
+              : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)] hover:bg-[var(--color-border)]"
           )}
         >
-          <span className={clsx("w-1.5 h-1.5 rounded-full flex-shrink-0", isPulse ? "bg-[#89ff58]" : "bg-white/20")} />
+          <span className={clsx("w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[var(--color-accent)]", !isPulse && "opacity-30")} />
           Pulse
         </Link>
 
-        {/* Clients section */}
         <div className="mt-4 mb-1.5 px-3">
-          <p className="text-[10px] font-semibold tracking-widest uppercase text-white/20">
+          <p className="text-[10px] font-semibold tracking-widest uppercase text-[rgba(9,10,8,0.3)]">
             Kunder
           </p>
         </div>
@@ -77,8 +70,8 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
               className={clsx(
                 "flex items-center justify-between px-3 py-2 rounded-lg text-[13px] transition-colors mb-0.5",
                 isActive
-                  ? "bg-[#89ff58]/10 text-[#89ff58] font-medium"
-                  : "text-white/50 hover:text-white/80 hover:bg-white/[0.04]"
+                  ? "bg-[var(--color-green-pale)] text-[var(--color-link)] font-semibold"
+                  : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)] hover:bg-[var(--color-border)]"
               )}
             >
               <div className="flex items-center gap-2.5 min-w-0">
@@ -86,10 +79,10 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
                 <span className="truncate">{client.name}</span>
               </div>
               <span
-                className="text-[11px] font-medium ml-2 flex-shrink-0 tabular-nums"
+                className="text-[11px] ml-2 flex-shrink-0 tabular-nums"
                 style={{
                   fontFamily: "var(--font-mono)",
-                  color: isActive ? "rgba(137,255,88,0.6)" : "rgba(255,255,255,0.2)",
+                  color: isActive ? "var(--color-link)" : "rgba(9,10,8,0.25)",
                 }}
               >
                 {formatSpend(client.weeklySpend)}
@@ -98,13 +91,6 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
           );
         })}
       </nav>
-
-      {/* Footer */}
-      <div className="px-5 py-4 border-t border-white/[0.06]">
-        <p className="text-[10px] text-white/20">
-          Oppdatert i dag
-        </p>
-      </div>
     </aside>
   );
 }
