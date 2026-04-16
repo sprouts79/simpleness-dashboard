@@ -189,7 +189,7 @@ export async function POST(req: NextRequest) {
 
     const { error } = await supabase
       .from("meta_reach_weekly")
-      .upsert(upsertRows, { onConflict: "client_id,week_start" });
+      .upsert(upsertRows, { onConflict: "client_id,week_start,lookback_days" });
 
     if (error) errors.push(`reach: ${error.message}`);
     else reachSynced = upsertRows.length;
