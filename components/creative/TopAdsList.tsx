@@ -122,17 +122,17 @@ function AdCard({
       className="rounded-xl border border-[var(--color-border)] overflow-hidden bg-white cursor-pointer group hover:border-[var(--color-link)] transition-colors"
       onClick={onOpen}
     >
-      {/* Thumbnail 9:16 */}
-      <div className="aspect-[9/16] bg-[var(--color-surface)] relative overflow-hidden">
+      {/* Thumbnail — natural aspect ratio, no forced crop */}
+      <div className="bg-[var(--color-surface)] relative overflow-hidden">
         {hasThumbnail ? (
           <img
             src={ad.thumbnailUrl}
             alt={ad.name}
             onError={() => setImgError(true)}
-            className="w-full h-full object-contain"
+            className="w-full h-auto block"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
+          <div className="aspect-[9/16] w-full flex items-center justify-center">
             <div className="text-center">
               <p className="text-2xl mb-1">{ad.format === "video" ? "▶" : "▣"}</p>
               <p className="text-[10px] text-[rgba(9,10,8,0.3)] capitalize">{ad.format}</p>

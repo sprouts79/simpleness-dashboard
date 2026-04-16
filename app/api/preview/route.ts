@@ -20,9 +20,11 @@ export async function GET(req: NextRequest) {
 
   const token = process.env.META_SYSTEM_USER_TOKEN!;
 
-  // Step 1: Get the ad's creative to find a video_id (if it's a video ad)
+  // Step 1: Get the ad's creative ID using the plain `creative` field.
+  // Nested expansion (creative{video_id}) silently returns nothing for some accounts —
+  // so we always use two separate calls instead.
   const adRes = await fetch(
-    `${BASE}/${adId}?fields=creative%7Bvideo_id%7D&access_token=${token}`,
+    `${BASE}/${adId}?fields=creative&access_token=${token}`,
     { cache: "no-store" }
   );
   const adJson: any = await adRes.json();
@@ -31,18 +33,28 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: adJson.error.message }, { status: 502 });
   }
 
-  const videoId = adJson.creative?.video_id;
+  const creativeId = adJson.creative?.id;
 
-  if (videoId) {
-    // Step 2: Fetch the direct video source URL — can be used in a <video> element
-    const videoRes = await fetch(
-      `${BASE}/${videoId}?fields=source&access_token=${token}`,
+  if (creativeId) {
+    // Step 2: Get video_id from the creative object
+    const creativeRes = await fetch(
+      `${BASE}/${creativeId}?fields=video_id&access_token=${token}`,
       { cache: "no-store" }
     );
-    const videoJson: any = await videoRes.json();
+    const creativeJson: any = await creativeRes.json();
+    const videoId = creativeJson.video_id;
 
-    if (videoJson.source) {
-      return NextResponse.json({ videoUrl: videoJson.source });
+    if (videoId) {
+      // Step 3: Fetch the direct CDN source URL — can be used in a <video> element
+      const videoRes = await fetch(
+        `${BASE}/${videoId}?fields=source&access_token=${token}`,
+        { cache: "no-store" }
+      );
+      const videoJson: any = await videoRes.json();
+
+      if (videoJson.source) {
+        return NextResponse.json({ videoUrl: videoJson.source });
+      }
     }
   }
 
