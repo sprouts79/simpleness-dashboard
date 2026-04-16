@@ -73,8 +73,8 @@ function PreviewModal({
       onClick={onClose}
     >
       <div
-        className="relative bg-black rounded-2xl overflow-hidden shadow-2xl"
-        style={{ maxWidth: 420, maxHeight: "92vh" }}
+        className="relative bg-black rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center"
+        style={{ maxWidth: "min(420px, calc(100vw - 32px))", maxHeight: "92vh" }}
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -89,14 +89,12 @@ function PreviewModal({
             autoPlay
             controls
             playsInline
-            className="w-full h-auto block"
-            style={{ maxHeight: "92vh" }}
+            style={{ maxWidth: "min(420px, calc(100vw - 32px))", maxHeight: "92vh", display: "block" }}
           />
         ) : imageUrl ? (
           <img
             src={imageUrl}
-            className="w-full h-auto block"
-            style={{ maxHeight: "92vh" }}
+            style={{ maxWidth: "min(420px, calc(100vw - 32px))", maxHeight: "92vh", width: "auto", height: "auto", display: "block" }}
           />
         ) : null}
       </div>
@@ -136,17 +134,17 @@ function AdCard({
       className="rounded-xl border border-[var(--color-border)] overflow-hidden bg-white cursor-pointer group hover:border-[var(--color-link)] transition-colors"
       onClick={onOpen}
     >
-      {/* Thumbnail — natural aspect ratio, no forced crop */}
-      <div className="bg-[var(--color-surface)] relative overflow-hidden">
+      {/* Thumbnail — fixed 9:16 container, object-contain so neither 1:1 nor 9:16 is cropped */}
+      <div className="aspect-[9/16] bg-[var(--color-surface)] relative overflow-hidden">
         {hasThumbnail ? (
           <img
             src={ad.thumbnailUrl}
             alt={ad.name}
             onError={() => setImgError(true)}
-            className="w-full h-auto block"
+            className="absolute inset-0 w-full h-full object-contain"
           />
         ) : (
-          <div className="aspect-[9/16] w-full flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
               <p className="text-2xl mb-1">{ad.format === "video" ? "▶" : "▣"}</p>
               <p className="text-[10px] text-[rgba(9,10,8,0.3)] capitalize">{ad.format}</p>
