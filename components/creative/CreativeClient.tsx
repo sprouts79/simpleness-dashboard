@@ -104,15 +104,20 @@ export default function CreativeClient({
   async function handleSync() {
     setSyncing(true);
     setSyncStatus(null);
+    // Gallery view syncs ad creatives + thumbnails; table view syncs weekly cohort data
+    const syncType = view === "galleri" ? "ads" : "cohort";
     try {
       const res = await fetch("/api/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clientId, syncType: "cohort" }),
+        body: JSON.stringify({ clientId, syncType }),
       });
       const json = await res.json();
       if (json.ok) {
-        setSyncStatus(`Synkronisert — ${json.cohortSynced} ukerader`);
+        const label = syncType === "ads"
+          ? `Synkronisert — ${json.adsSynced} annonser`
+          : `Synkronisert — ${json.cohortSynced} ukerader`;
+        setSyncStatus(label);
         router.refresh();
       } else {
         setSyncStatus(`Feil: ${json.errors?.join(", ") || "Ukjent"}`);
