@@ -442,21 +442,7 @@ function formatWeekRangeLabel(weekStart: string): string {
 }
 
 export async function getCohorts(clientId: string): Promise<AdCohort[]> {
-  // 1. Get created_date for all ads (needed to compute cohort week + week number)
-  const { data: adsData } = await supabase
-    .from("meta_ads")
-    .select("ad_id, created_date")
-    .eq("client_id", clientId);
-
-  if (!adsData?.length) return COHORTS[clientId] ?? [];
-
-  const adCreatedMap = new Map(
-    adsData
-      .filter((a) => !!a.created_date)
-      .map((a) => [a.ad_id as string, a.created_date as string])
-  );
-
-  // 2. Get weekly ad data for last 12 weeks (84 days)
+  // Get weekly ad data for last 12 weeks (84 days)
   const { data: weeklyData } = await supabase
     .from("meta_ad_weekly")
     .select("ad_id, week_start, spend, impressions, clicks, purchases, purchase_value, video_views_3s, video_views_thruplays")
@@ -466,7 +452,17 @@ export async function getCohorts(clientId: string): Promise<AdCohort[]> {
 
   if (!weeklyData?.length) return COHORTS[clientId] ?? [];
 
-  // 3. Aggregate: cohort_week_start → week_number → metrics
+  // W0 = first week the ad had spend (matches reference app behaviour).
+  // Build map: ad_id → earliest week_start with spend > 0.
+  const firstSpendMap = new Map<string, string>();
+  for (const row of weeklyData) {
+    const current = firstSpendMap.get(row.ad_id);
+    if (!current || row.week_start < current) {
+      firstSpendMap.set(row.ad_id, row.week_start);
+    }
+  }
+
+  // Aggregate: cohort_week_start → week_number → metrics
   type WeekAgg = {
     spend: number; impressions: number; clicks: number;
     purchases: number; purchaseValue: number;
@@ -477,10 +473,10 @@ export async function getCohorts(clientId: string): Promise<AdCohort[]> {
   const cohortAdSets = new Map<string, Set<string>>();
 
   for (const row of weeklyData) {
-    const createdDate = adCreatedMap.get(row.ad_id);
-    if (!createdDate) continue;
+    const firstSpend = firstSpendMap.get(row.ad_id);
+    if (!firstSpend) continue;
 
-    const cohortMonday = getMondayOf(createdDate);
+    const cohortMonday = getMondayOf(firstSpend);
     const insightMonday = getMondayOf(row.week_start);
 
     const cohortMs = new Date(cohortMonday + "T00:00:00Z").getTime();
@@ -542,11 +538,6 @@ export async function getCohorts(clientId: string): Promise<AdCohort[]> {
 export async function getCreativeChurn(
   clientId: string
 ): Promise<CreativeChurnPoint[]> {
-  const { data: adsData } = await supabase
-    .from("meta_ads")
-    .select("ad_id, created_date")
-    .eq("client_id", clientId);
-
   const { data: weeklyData } = await supabase
     .from("meta_ad_weekly")
     .select("ad_id, week_start, spend")
@@ -554,21 +545,24 @@ export async function getCreativeChurn(
     .gte("week_start", daysAgo(90))
     .gt("spend", 0);
 
-  if (!adsData?.length || !weeklyData?.length) return [];
+  if (!weeklyData?.length) return [];
 
-  const adCreatedMap = new Map(
-    adsData
-      .filter((a) => !!a.created_date)
-      .map((a) => [a.ad_id as string, a.created_date as string])
-  );
+  // Same first-spend-week logic as getCohorts
+  const firstSpendMap = new Map<string, string>();
+  for (const row of weeklyData) {
+    const current = firstSpendMap.get(row.ad_id);
+    if (!current || row.week_start < current) {
+      firstSpendMap.set(row.ad_id, row.week_start);
+    }
+  }
 
   // (calendar_week_start → cohort_label → spend)
   const byWeek = new Map<string, Map<string, number>>();
 
   for (const row of weeklyData) {
-    const createdDate = adCreatedMap.get(row.ad_id);
-    if (!createdDate) continue;
-    const cohortLabel = formatWeekRangeLabel(getMondayOf(createdDate));
+    const firstSpend = firstSpendMap.get(row.ad_id);
+    if (!firstSpend) continue;
+    const cohortLabel = formatWeekRangeLabel(getMondayOf(firstSpend));
     if (!byWeek.has(row.week_start)) byWeek.set(row.week_start, new Map());
     const cm = byWeek.get(row.week_start)!;
     cm.set(cohortLabel, (cm.get(cohortLabel) ?? 0) + (row.spend ?? 0));

@@ -15,6 +15,7 @@ import clsx from "clsx";
 import KpiCard from "@/components/ui/KpiCard";
 import SectionHeader from "@/components/ui/SectionHeader";
 import ReachCompositionChart from "@/components/charts/ReachCompositionChart";
+import InfoBox from "@/components/ui/InfoBox";
 import { MonthlyReachRow } from "@/lib/types";
 
 // Extension options — how far before the 6M display period to extend the window start
@@ -379,6 +380,21 @@ export default function ReachClient({
               </table>
             </div>
           </div>
+
+          {/* Hvordan lese denne rapporten */}
+          <InfoBox>
+            <p className="font-semibold mb-1">Hvordan lese denne rapporten</p>
+            <p className="mb-2">
+              <strong>Rolling Reach</strong> viser det totale antallet unike personer kontoen har nådd siden kampanjestart (kumulativt).
+              <strong> Net New Reach</strong> er de <em>nye</em> personene som ble nådd den måneden — folk som ikke hadde sett annonsene dine før.
+              <strong> % Net New</strong> er andelen av den månedlige rekkevidden som er nye folk.
+            </p>
+            <p>
+              <strong>Hva du ser etter:</strong> En sunn konto har jevnlig 30 %+ Net New Reach — det betyr at budsjettet når nye folk, ikke bare banker på samme dør igjen og igjen.
+              Under 18 % er et varseltegn: publikum er mettet, frekvensen er for høy, og du betaler for lite effekt. Vurder da å utvide målgruppen, lage nytt kreativt innhold, eller justere budsjettet ned.
+              <strong> Lookback</strong>-knappene lar deg se reach beregnet med lengre historikk — nyttig for å forstå reell rekkevidde over tid.
+            </p>
+          </InfoBox>
         </>
       )}
     </div>

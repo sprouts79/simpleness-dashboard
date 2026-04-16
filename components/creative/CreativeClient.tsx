@@ -8,6 +8,7 @@ import {
 import SectionHeader from "@/components/ui/SectionHeader";
 import CohortTable from "@/components/creative/CohortTable";
 import AdGallery from "@/components/creative/AdGallery";
+import InfoBox from "@/components/ui/InfoBox";
 import { Ad, AdCohort, CreativeChurnPoint, CohortMetric } from "@/lib/types";
 import clsx from "clsx";
 
@@ -306,6 +307,37 @@ export default function CreativeClient({
           ))}
         </div>
       )}
+
+      {/* Hvordan lese denne rapporten */}
+      <InfoBox>
+        <p className="font-semibold mb-1">Hvordan lese denne rapporten</p>
+        {view === "tabell" ? (
+          <>
+            <p className="mb-2">
+              Hver rad er en <strong>kohort</strong> — alle annonser som fikk spend for første gang i den uken.
+              Kolonnene viser ytelse uke for uke etter lansering: W0 = lanseringsuka, W1 = uka etter, osv.
+              Grønn celle = over medianen for den kolonnen. Rød = under.
+            </p>
+            <p>
+              <strong>Hva du ser etter:</strong> Annonser med høy Hook Rate i W0 fanger oppmerksomhet tidlig.
+              Se om ytelsen holder seg (W1, W2) eller faller raskt — det forteller deg levetiden på kreativet.
+              Kohorter som holder grønt lenge er vinnere. All Cohorts-raden viser snittet på tvers av alle uker.
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="mb-2">
+              Hvert farget bånd i grafen representerer en <strong>kreativ kohort</strong> — alle annonser som
+              første gang ble vist i en bestemt uke. Høyden på båndet viser hvor mye den kohorten bruker over tid.
+            </p>
+            <p>
+              <strong>Hva du ser etter:</strong> Sunne kontoer viser jevnlige nye kohorter (nye farger dukker opp),
+              mens eldre kohorter gradvis fases ut. Hvis mesteparten av budsjettet drives av gamle kohorter,
+              er det på tide med nytt kreativt innhold.
+            </p>
+          </>
+        )}
+      </InfoBox>
     </div>
   );
 }
