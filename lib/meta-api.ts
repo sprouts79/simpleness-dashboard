@@ -208,7 +208,7 @@ export interface AdMeta {
 
 export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
   // Step 1: Fetch ads with creative IDs only (lightweight — no nested expansion)
-  const fields = ["id", "name", "adset_id", "campaign_id", "status", "created_time", "creative{id}"].join(",");
+  const fields = ["id", "name", "adset_id", "campaign_id", "status", "created_time", "creative"].join(",");
   const url = `${BASE}/${accountId}/ads?fields=${fields}&limit=500&access_token=${token()}`;
   const rows = await paginate<any>(url);
 
