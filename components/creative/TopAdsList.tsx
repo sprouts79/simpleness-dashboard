@@ -58,7 +58,15 @@ function sortAds(ads: Ad[], metric: CohortMetric): Ad[] {
 
 // ─── Preview modal ────────────────────────────────────────────────────────────
 
-function PreviewModal({ videoUrl, onClose }: { videoUrl: string; onClose: () => void }) {
+function PreviewModal({
+  videoUrl,
+  imageUrl,
+  onClose,
+}: {
+  videoUrl?: string;
+  imageUrl?: string;
+  onClose: () => void;
+}) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
@@ -66,25 +74,31 @@ function PreviewModal({ videoUrl, onClose }: { videoUrl: string; onClose: () => 
     >
       <div
         className="relative bg-black rounded-2xl overflow-hidden shadow-2xl"
-        style={{ width: 380, maxHeight: "92vh" }}
+        style={{ maxWidth: 420, maxHeight: "92vh" }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
         <button
           onClick={onClose}
           className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-black/50 text-white text-sm flex items-center justify-center hover:bg-black/70 transition-colors"
         >
           ✕
         </button>
-        {/* Direct video source — no iframe, no fb.me restrictions */}
-        <video
-          src={videoUrl}
-          autoPlay
-          controls
-          playsInline
-          className="w-full h-auto block"
-          style={{ maxHeight: "92vh" }}
-        />
+        {videoUrl ? (
+          <video
+            src={videoUrl}
+            autoPlay
+            controls
+            playsInline
+            className="w-full h-auto block"
+            style={{ maxHeight: "92vh" }}
+          />
+        ) : imageUrl ? (
+          <img
+            src={imageUrl}
+            className="w-full h-auto block"
+            style={{ maxHeight: "92vh" }}
+          />
+        ) : null}
       </div>
     </div>
   );
@@ -209,24 +223,31 @@ export default function TopAdsList({
 }) {
   const [period, setPeriod] = useState<TopPeriod>("month");
   const [metric, setMetric] = useState<CohortMetric>("spend");
-  const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null);
+  const [preview, setPreview] = useState<{ videoUrl?: string; imageUrl?: string } | null>(null);
   const [loadingAdId, setLoadingAdId] = useState<string | null>(null);
 
   const adsMap: Record<TopPeriod, Ad[]> = { week: topWeek, month: topMonth, quarter: topQuarter };
   const sorted = sortAds(adsMap[period], metric).slice(0, 12);
 
-  async function openPreview(adId: string) {
+  async function openPreview(ad: Ad) {
     if (loadingAdId) return;
-    setLoadingAdId(adId);
+
+    if (ad.format !== "video") {
+      // Non-video: show thumbnail in modal — no API call needed
+      if (ad.thumbnailUrl) setPreview({ imageUrl: ad.thumbnailUrl });
+      return;
+    }
+
+    // Video: fetch direct source URL for inline playback
+    setLoadingAdId(ad.id);
     try {
-      const res = await fetch(`/api/preview?adId=${adId}`);
+      const res = await fetch(`/api/preview?adId=${ad.id}`);
       const data = await res.json();
       if (data.videoUrl) {
-        // Video ad — play inline
-        setPreviewVideoUrl(data.videoUrl);
-      } else if (data.previewUrl) {
-        // Image/other ad — open Meta preview in new tab
-        window.open(data.previewUrl, "_blank", "noopener,noreferrer");
+        setPreview({ videoUrl: data.videoUrl });
+      } else if (ad.thumbnailUrl) {
+        // Source URL unavailable — fall back to showing thumbnail
+        setPreview({ imageUrl: ad.thumbnailUrl });
       }
     } finally {
       setLoadingAdId(null);
@@ -280,15 +301,18 @@ export default function TopAdsList({
             ad={ad}
             rank={i + 1}
             metric={metric}
-            onOpen={() => openPreview(ad.id)}
+            onOpen={() => openPreview(ad)}
             isLoading={loadingAdId === ad.id}
           />
         ))}
       </div>
 
-      {/* Preview modal — video only (image ads open in new tab) */}
-      {previewVideoUrl && (
-        <PreviewModal videoUrl={previewVideoUrl} onClose={() => setPreviewVideoUrl(null)} />
+      {preview && (
+        <PreviewModal
+          videoUrl={preview.videoUrl}
+          imageUrl={preview.imageUrl}
+          onClose={() => setPreview(null)}
+        />
       )}
     </>
   );

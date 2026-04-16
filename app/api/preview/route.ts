@@ -1,11 +1,12 @@
 /**
  * GET /api/preview?adId=123
  *
- * For video ads: returns { videoUrl } — a direct CDN source URL usable in <video>.
- * For image/other ads: returns { previewUrl } — Meta's shareable preview link (open in new tab).
+ * Returns { videoUrl } for video ads — a direct CDN source URL usable in <video>.
+ * Returns {} for non-video ads — the caller falls back to showing the thumbnail it already has.
  *
- * fb.me / preview_shareable_link URLs block iframe embedding (X-Frame-Options: DENY),
- * so video ads must use the direct source URL for inline playback.
+ * Meta's preview_shareable_link redirects to a login wall, so we never use it.
+ * Nested field expansion (creative{video_id}) silently fails on some accounts,
+ * so we always use separate API calls.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -20,9 +21,7 @@ export async function GET(req: NextRequest) {
 
   const token = process.env.META_SYSTEM_USER_TOKEN!;
 
-  // Step 1: Get the ad's creative ID using the plain `creative` field.
-  // Nested expansion (creative{video_id}) silently returns nothing for some accounts —
-  // so we always use two separate calls instead.
+  // Step 1: Get the ad's creative ID (plain field — nested expansion is unreliable)
   const adRes = await fetch(
     `${BASE}/${adId}?fields=creative&access_token=${token}`,
     { cache: "no-store" }
@@ -34,36 +33,33 @@ export async function GET(req: NextRequest) {
   }
 
   const creativeId = adJson.creative?.id;
+  if (!creativeId) return NextResponse.json({});
 
-  if (creativeId) {
-    // Step 2: Get video_id from the creative object
-    const creativeRes = await fetch(
-      `${BASE}/${creativeId}?fields=video_id&access_token=${token}`,
-      { cache: "no-store" }
-    );
-    const creativeJson: any = await creativeRes.json();
-    const videoId = creativeJson.video_id;
-
-    if (videoId) {
-      // Step 3: Fetch the direct CDN source URL — can be used in a <video> element
-      const videoRes = await fetch(
-        `${BASE}/${videoId}?fields=source&access_token=${token}`,
-        { cache: "no-store" }
-      );
-      const videoJson: any = await videoRes.json();
-
-      if (videoJson.source) {
-        return NextResponse.json({ videoUrl: videoJson.source });
-      }
-    }
-  }
-
-  // Fallback: return the shareable preview link (image ads or if source is unavailable)
-  const previewRes = await fetch(
-    `${BASE}/${adId}?fields=preview_shareable_link&access_token=${token}`,
+  // Step 2: Get video_id from the creative.
+  // It can live at the top level (video_id) or nested in object_story_spec.video_data.
+  const creativeRes = await fetch(
+    `${BASE}/${creativeId}?fields=video_id,object_story_spec&access_token=${token}`,
     { cache: "no-store" }
   );
-  const previewJson: any = await previewRes.json();
+  const creativeJson: any = await creativeRes.json();
 
-  return NextResponse.json({ previewUrl: previewJson.preview_shareable_link ?? null });
+  const videoId =
+    creativeJson.video_id ??
+    creativeJson.object_story_spec?.video_data?.video_id ??
+    null;
+
+  if (!videoId) return NextResponse.json({});
+
+  // Step 3: Fetch the direct CDN source URL — embeds in a <video> element
+  const videoRes = await fetch(
+    `${BASE}/${videoId}?fields=source&access_token=${token}`,
+    { cache: "no-store" }
+  );
+  const videoJson: any = await videoRes.json();
+
+  if (videoJson.source) {
+    return NextResponse.json({ videoUrl: videoJson.source });
+  }
+
+  return NextResponse.json({});
 }
