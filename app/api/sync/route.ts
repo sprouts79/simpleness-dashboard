@@ -164,6 +164,7 @@ export async function POST(req: NextRequest) {
         cpm_net_new: cpmNetNew,
         frequency: r.frequency,
         lookback_days: lookbackDays,
+        synced_at: new Date().toISOString(),
       };
     });
 

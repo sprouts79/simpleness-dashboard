@@ -510,6 +510,7 @@ export async function getMonthlyReachData(
     .select("week_start,weekly_reach,cumulative_reach,net_new_reach,pct_net_new,spend,cpm,cpm_net_new,frequency")
     .eq("client_id", clientId)
     .eq("lookback_days", lookbackDays)
+    .not("synced_at", "is", null)           // only rows from current algorithm (old rows have NULL)
     .lt("week_start", currentMonthStart)    // exclude current month entirely
     .lte("week_start", daysAgo(6))          // only complete weeks (started ≥7 days ago)
     .order("week_start", { ascending: true }); // oldest first for grouping
