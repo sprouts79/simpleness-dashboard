@@ -151,3 +151,16 @@ export type CohortMetric =
   | "cpa"
   | "roas"
   | "spend";
+
+export interface MonthlyReachRow {
+  monthLabel: string;   // "okt. 25"
+  monthKey: string;     // "2025-10" for sorting
+  rollingReach: number; // cumulative_reach of last week in month
+  monthlyReach: number; // weekly_reach of last week (best proxy for period reach)
+  netNew: number;       // sum of weekly net_new_reach
+  netNewPct: number;    // netNew / sum(weekly_reach) * 100
+  spend: number;
+  cpm: number;          // avg of weekly cpm
+  cpmNetNew: number;    // spend / (netNew / 1000)
+  frequency: number;
+}

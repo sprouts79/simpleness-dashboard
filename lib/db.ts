@@ -15,6 +15,7 @@ import {
   ReachKpis,
   ReachCompositionPoint,
   ReachMonthRow,
+  MonthlyReachRow,
   AdCohort,
   CreativeChurnPoint,
   Ad,
@@ -486,4 +487,71 @@ export async function getCreativeChurn(
   // Creative churn requires ad-level daily spend data which isn't synced yet.
   // Return empty — the chart is hidden when churnData is empty.
   return [];
+}
+
+// ─── Monthly Reach (aggregated from weekly rows) ──────────────────────────────
+
+function formatMonthLabel(monthKey: string): string {
+  const [year, month] = monthKey.split("-");
+  const months = ["jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "des"];
+  const shortYear = year.slice(2); // "2025" → "25"
+  return `${months[parseInt(month) - 1]}. ${shortYear}`;
+}
+
+export async function getMonthlyReachData(
+  clientId: string,
+  lookbackDays = 90
+): Promise<MonthlyReachRow[]> {
+  const { data, error } = await supabase
+    .from("meta_reach_weekly")
+    .select("week_start,weekly_reach,cumulative_reach,net_new_reach,pct_net_new,spend,cpm,cpm_net_new,frequency")
+    .eq("client_id", clientId)
+    .eq("lookback_days", lookbackDays)
+    .lte("week_start", daysAgo(6)) // only complete weeks (started ≥7 days ago)
+    .order("week_start", { ascending: true }); // oldest first for grouping
+
+  if (error || !data?.length) return [];
+
+  // Group rows by YYYY-MM
+  const groups = new Map<string, typeof data>();
+  for (const row of data) {
+    const monthKey = row.week_start.substring(0, 7); // "2025-10"
+    if (!groups.has(monthKey)) groups.set(monthKey, []);
+    groups.get(monthKey)!.push(row);
+  }
+
+  const result: MonthlyReachRow[] = [];
+
+  for (const [monthKey, rows] of groups.entries()) {
+    // Last week in month (data is ascending, so last element is newest)
+    const lastRow = rows[rows.length - 1];
+
+    const rollingReach = lastRow.cumulative_reach ?? 0;
+    const monthlyReach = lastRow.weekly_reach ?? 0;
+
+    const totalNetNew = rows.reduce((s, r) => s + (r.net_new_reach ?? 0), 0);
+    const totalSpend = rows.reduce((s, r) => s + (r.spend ?? 0), 0);
+    const totalWeeklyReach = rows.reduce((s, r) => s + (r.weekly_reach ?? 0), 0);
+    const avgCpm = rows.reduce((s, r) => s + (r.cpm ?? 0), 0) / rows.length;
+    const avgFrequency = rows.reduce((s, r) => s + (r.frequency ?? 0), 0) / rows.length;
+
+    const netNewPct = totalWeeklyReach > 0 ? (totalNetNew / totalWeeklyReach) * 100 : 0;
+    const cpmNetNew = totalNetNew > 0 ? totalSpend / (totalNetNew / 1000) : 0;
+
+    result.push({
+      monthLabel: formatMonthLabel(monthKey),
+      monthKey,
+      rollingReach,
+      monthlyReach,
+      netNew: totalNetNew,
+      netNewPct: parseFloat(netNewPct.toFixed(1)),
+      spend: totalSpend,
+      cpm: parseFloat(avgCpm.toFixed(2)),
+      cpmNetNew: parseFloat(cpmNetNew.toFixed(2)),
+      frequency: parseFloat(avgFrequency.toFixed(2)),
+    });
+  }
+
+  // Return newest-first
+  return result.sort((a, b) => b.monthKey.localeCompare(a.monthKey));
 }

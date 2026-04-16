@@ -21,7 +21,7 @@ import {
 } from "@/lib/meta-api";
 
 export async function POST(req: NextRequest) {
-  const { clientId, months } = await req.json();
+  const { clientId, months, lookbackDays = 90 } = await req.json();
   if (!clientId) {
     return NextResponse.json({ error: "clientId required" }, { status: 400 });
   }
@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
     // Extend sync window based on requested period (months param), default 13 weeks
     const reachDays = months ? Math.ceil(months * 30.44) + 14 : 91;
     const reachSince = daysAgoInTz(reachDays, tz);
-    const weeklyRows = await fetchWeeklyReachRows(accountId, reachSince, until, 90);
+    const weeklyRows = await fetchWeeklyReachRows(accountId, reachSince, until, lookbackDays);
 
     const upsertRows = weeklyRows.map((r) => {
       // Correct Foxwell/ricky-mba methodology:
@@ -187,7 +187,7 @@ export async function POST(req: NextRequest) {
         cpm,
         cpm_net_new: cpmNetNew,
         frequency: r.frequency,
-        lookback_days: 90,
+        lookback_days: lookbackDays,
       };
     });
 
