@@ -296,36 +296,34 @@ export async function fetchWeeklyReachRows(
   const url = `${BASE}/${accountId}/insights?fields=${fields}&time_range=${timeRange}&time_increment=7&level=account&limit=52&access_token=${token()}`;
   const rows = await paginate<any>(url);
 
-  const result: WeeklyReachRow[] = [];
+  // Fan out all R_full + R_prev calls in parallel — avoids sequential await per week
+  // (13 weeks × 2 calls sequential = ~30s; parallel = ~2-3s)
+  return Promise.all(
+    rows.map(async (r) => {
+      const weekStart: string = r.date_start;
+      const weekEnd: string = r.date_stop;
 
-  for (const r of rows) {
-    const weekStart: string = r.date_start;
-    const weekEnd: string = r.date_stop;
+      // Both calls share the same window start date
+      const windowStart = subtractDays(weekEnd, lookbackDays - 1);
+      const prevWindowEnd = subtractDays(weekStart, 1);
 
-    // Both calls share the same window start date
-    const windowStart = subtractDays(weekEnd, lookbackDays - 1);
+      const [fullData, prevData] = await Promise.all([
+        fetchReach(accountId, windowStart, weekEnd),           // R_full: includes this week
+        fetchReach(accountId, windowStart, prevWindowEnd),     // R_prev: excludes this week
+      ]);
 
-    // R_full: 90d reach including this week
-    const fullData = await fetchReach(accountId, windowStart, weekEnd);
-
-    // R_prev: same window start, ends the day before this week
-    // = reach pool as it existed before this week's impressions
-    const prevWindowEnd = subtractDays(weekStart, 1);
-    const prevData = await fetchReach(accountId, windowStart, prevWindowEnd);
-
-    result.push({
-      weekStart,
-      weekEnd,
-      weeklyReach: parseInt(r.reach ?? "0"),
-      impressions: parseInt(r.impressions ?? "0"),
-      spend: parseFloat(r.spend ?? "0"),
-      frequency: parseFloat(r.frequency ?? "0"),
-      cumulativeReach: fullData.reach,
-      prevWindowReach: prevData.reach,
-    });
-  }
-
-  return result;
+      return {
+        weekStart,
+        weekEnd,
+        weeklyReach: parseInt(r.reach ?? "0"),
+        impressions: parseInt(r.impressions ?? "0"),
+        spend: parseFloat(r.spend ?? "0"),
+        frequency: parseFloat(r.frequency ?? "0"),
+        cumulativeReach: fullData.reach,
+        prevWindowReach: prevData.reach,
+      };
+    })
+  );
 }
 
 export interface ReachResult {

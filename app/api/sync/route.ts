@@ -7,6 +7,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+
+export const maxDuration = 60; // seconds — parallelized reach calls need headroom for longer periods
 import { supabase } from "@/lib/supabase";
 import {
   fetchDailyInsights,
