@@ -137,17 +137,17 @@ function AdCard({
       className="rounded-xl border border-[var(--color-border)] overflow-hidden bg-white cursor-pointer group hover:border-[var(--color-link)] transition-colors"
       onClick={onOpen}
     >
-      {/* Thumbnail — fixed 9:16 container, object-contain so neither 1:1 nor 9:16 is cropped */}
-      <div className="aspect-[9/16] bg-[var(--color-surface)] relative overflow-hidden">
+      {/* Thumbnail — natural aspect ratio from Meta, no forced crop */}
+      <div className="bg-[var(--color-surface)] relative">
         {hasThumbnail ? (
           <img
             src={ad.thumbnailUrl}
             alt={ad.name}
             onError={() => setImgError(true)}
-            className="absolute inset-0 w-full h-full object-contain"
+            className="w-full h-auto block"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
+          <div className="aspect-[9/16] flex items-center justify-center">
             <div className="text-center">
               <p className="text-2xl mb-1">{ad.format === "video" ? "▶" : "▣"}</p>
               <p className="text-[10px] text-[rgba(9,10,8,0.3)] capitalize">{ad.format}</p>
@@ -297,7 +297,7 @@ export default function TopAdsList({
       </div>
 
       {/* Card grid — 4 columns */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-4 gap-3 items-start">
         {sorted.map((ad, i) => (
           <AdCard
             key={ad.id}
