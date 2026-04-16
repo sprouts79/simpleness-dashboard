@@ -57,10 +57,10 @@ export async function POST(req: NextRequest) {
     const upsertRows = rows.map((r) => ({
       client_id: clientId,
       date: r.date,
-      campaign_id: r.campaignId || null,
+      campaign_id: r.campaignId || "",
       campaign_name: r.campaignName || null,
-      adset_id: null,
-      adset_name: null,
+      adset_id: r.adsetId || "",   // empty string, not null — NULL breaks UNIQUE upserts
+      adset_name: r.adsetName || null,
       spend: r.spend,
       impressions: r.impressions,
       reach: r.reach,
@@ -121,8 +121,7 @@ export async function POST(req: NextRequest) {
         campaign_id: ins.campaignId || null,
         created_date: createdDate,
         cohort_date: createdDate,
-        // Infer format: video if 3s views exist, otherwise static
-        format: ins.videoViews3s > 0 ? "video" : (m?.format ?? "static"),
+        format: m?.format ?? (ins.videoViews3s > 0 ? "video" : "static"),
         thumbnail_url: m?.thumbnailUrl ?? null,
         status: m?.status ?? null,
         spend: ins.spend,

@@ -207,23 +207,50 @@ export interface AdMeta {
 }
 
 export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
-  // Omit creative expansion — Meta refuses it on large accounts.
-  // Format is inferred from video_views in insights (videoViews3s > 0 → video).
-  const fields = ["id", "name", "adset_id", "campaign_id", "status", "created_time"].join(",");
-
+  // Step 1: Fetch ads with creative IDs only (lightweight — no nested expansion)
+  const fields = ["id", "name", "adset_id", "campaign_id", "status", "created_time", "creative{id}"].join(",");
   const url = `${BASE}/${accountId}/ads?fields=${fields}&limit=500&access_token=${token()}`;
   const rows = await paginate<any>(url);
 
-  return rows.map((r) => ({
-    adId: r.id,
-    adName: r.name,
-    adsetId: r.adset_id ?? "",
-    campaignId: r.campaign_id ?? "",
-    status: (r.status ?? "").toLowerCase(),
-    createdTime: r.created_time ?? "",
-    thumbnailUrl: "",   // fetched separately if needed
-    format: null,       // inferred from videoViews3s in upsert
-  }));
+  // Step 2: Batch fetch thumbnail_url + object_type per creative ID (50 at a time)
+  const creativeIds = [...new Set(
+    rows.map((r: any) => r.creative?.id as string | undefined).filter(Boolean)
+  )] as string[];
+
+  const creativeMap = new Map<string, { thumbnail_url?: string; object_type?: string }>();
+  for (let i = 0; i < creativeIds.length; i += 50) {
+    const ids = creativeIds.slice(i, i + 50).join(",");
+    const res = await fetch(
+      `${BASE}/?ids=${ids}&fields=thumbnail_url,object_type&access_token=${token()}`,
+      { cache: "no-store" }
+    );
+    const json: any = await res.json();
+    if (!json.error) {
+      for (const [id, data] of Object.entries(json)) {
+        creativeMap.set(id, data as { thumbnail_url?: string; object_type?: string });
+      }
+    }
+  }
+
+  return rows.map((r: any) => {
+    const creative = creativeMap.get(r.creative?.id);
+    const objectType = creative?.object_type ?? "";
+    let format: AdMeta["format"] = null;
+    if (objectType === "VIDEO") format = "video";
+    else if (objectType === "SHARE") format = "carousel";
+    else if (objectType === "PHOTO" || objectType === "STATUS") format = "static";
+
+    return {
+      adId: r.id,
+      adName: r.name,
+      adsetId: r.adset_id ?? "",
+      campaignId: r.campaign_id ?? "",
+      status: (r.status ?? "").toLowerCase(),
+      createdTime: r.created_time ?? "",
+      thumbnailUrl: creative?.thumbnail_url ?? "",
+      format,
+    };
+  });
 }
 
 // ─── Reach: weekly rolling reach ─────────────────────────────────────────────
