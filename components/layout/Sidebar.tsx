@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CLIENTS, PULSE_DATA } from "@/lib/mock-data";
-import { ClientStatus } from "@/lib/types";
+import { Client, ClientStatus } from "@/lib/types";
 import clsx from "clsx";
 
 function StatusDot({ status }: { status: ClientStatus }) {
@@ -23,9 +22,8 @@ function formatSpend(n: number) {
   return `${n}`;
 }
 
-export default function Sidebar() {
+export default function Sidebar({ clients }: { clients: Client[] }) {
   const pathname = usePathname();
-
   const isPulse = pathname === "/";
 
   return (
@@ -69,8 +67,7 @@ export default function Sidebar() {
         </div>
 
         {/* Client list */}
-        {CLIENTS.map((client) => {
-          const pulse = PULSE_DATA.find((p) => p.client.id === client.id);
+        {clients.map((client) => {
           const isActive = pathname.startsWith(`/${client.slug}`);
           return (
             <Link
@@ -89,9 +86,14 @@ export default function Sidebar() {
               </div>
               <span
                 className="text-2xs font-medium ml-2 flex-shrink-0"
-                style={{ fontFamily: "var(--font-mono)", color: isActive ? "var(--color-accent)" : "rgba(255,255,255,0.3)" }}
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  color: isActive
+                    ? "var(--color-accent)"
+                    : "rgba(255,255,255,0.3)",
+                }}
               >
-                {formatSpend(pulse?.spend7d ?? 0)}
+                {formatSpend(client.weeklySpend)}
               </span>
             </Link>
           );
@@ -101,7 +103,8 @@ export default function Sidebar() {
       {/* Footer */}
       <div className="mt-auto px-5 py-4 border-t border-white/10">
         <p className="text-2xs text-white/25">
-          Siste oppdatering<br />
+          Siste oppdatering
+          <br />
           <span style={{ fontFamily: "var(--font-mono)" }}>15. apr 2026</span>
         </p>
       </div>

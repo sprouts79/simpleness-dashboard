@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PULSE_DATA } from "@/lib/mock-data";
+import { getPulseData } from "@/lib/db";
 import { ClientStatus } from "@/lib/types";
 import clsx from "clsx";
 
@@ -51,8 +51,9 @@ function StatusPill({ status }: { status: ClientStatus }) {
   );
 }
 
-export default function PulsePage() {
-  const totalSpend = PULSE_DATA.reduce((s, r) => s + r.spend7d, 0);
+export default async function PulsePage() {
+  const pulseData = await getPulseData();
+  const totalSpend = pulseData.reduce((s, r) => s + r.spend7d, 0);
 
   return (
     <div className="px-8 py-8">
@@ -102,12 +103,10 @@ export default function PulsePage() {
             </tr>
           </thead>
           <tbody>
-            {PULSE_DATA.map((row, i) => (
+            {pulseData.map((row) => (
               <tr
                 key={row.client.id}
-                className={clsx(
-                  "border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface)] transition-colors group",
-                )}
+                className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface)] transition-colors group"
               >
                 {/* Client */}
                 <td className="px-5 py-4">
@@ -160,10 +159,7 @@ export default function PulsePage() {
                 {/* Net New Reach % */}
                 <td className="px-4 py-4 text-right">
                   <div className="flex flex-col items-end">
-                    <span
-                      className="font-medium"
-                      style={{ fontFamily: "var(--font-mono)" }}
-                    >
+                    <span className="font-medium" style={{ fontFamily: "var(--font-mono)" }}>
                       {row.netNewReachPct}%
                     </span>
                     <span className="text-xs text-[rgba(9,10,8,0.35)]">
