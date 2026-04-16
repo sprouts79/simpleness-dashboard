@@ -23,7 +23,7 @@ import {
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
-  const { clientId, months, lookbackDays = 90, syncType = "all" } = await req.json();
+  const { clientId, months, lookbackDays = 0, syncType = "all" } = await req.json();
   if (!clientId) {
     return NextResponse.json({ error: "clientId required" }, { status: 400 });
   }
@@ -142,7 +142,10 @@ export async function POST(req: NextRequest) {
   try {
     const reachDays = months ? Math.ceil(months * 30.44) + 14 : 91;
     const reachSince = daysAgoInTz(reachDays, tz);
-    const weeklyRows = await fetchWeeklyReachRows(accountId, reachSince, until, lookbackDays);
+    // windowStart: fixed for all weeks. lookbackDays = extension BEFORE the display period.
+    // 0 = no extension (windowStart = periodStart, first week ≈ 100% net new)
+    const windowStart = daysAgoInTz(reachDays + lookbackDays, tz);
+    const weeklyRows = await fetchWeeklyReachRows(accountId, reachSince, until, windowStart);
 
     const upsertRows = weeklyRows.map((r) => {
       const netNew = Math.max(0, r.cumulativeReach - r.prevWindowReach);

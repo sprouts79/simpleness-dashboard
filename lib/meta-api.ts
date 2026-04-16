@@ -273,22 +273,29 @@ export interface WeeklyReachRow {
 }
 
 /**
- * Fetches weekly reach data using the correct Foxwell/ricky-mba methodology.
+ * Fetches weekly reach data using a fixed-window-start methodology.
  *
- * For each week, two API calls with the SAME window start date:
- *   R_full = unique reach over [weekEnd - (lookbackDays-1), weekEnd]  — includes this week
- *   R_prev = unique reach over [weekEnd - (lookbackDays-1), weekStart - 1] — excludes this week
- *   net_new = R_full - R_prev  (always ≥ 0, always ≤ weeklyReach)
+ * windowStart: fixed for ALL weeks in the period.
  *
- * This correctly answers: "how many of this week's viewers haven't seen the ad in the past ~90 days?"
- * The sliding-window diff (comparing two different 90d windows) produces false negatives when audiences
- * are stable because people aging out of the trailing end cancel out new entrants.
+ * Setting windowStart = since (period start, 0 extension):
+ *   - First week ≈ 100% net new (no one is "previously reached" before the period)
+ *   - Each week: net_new = people this week not seen since period start
+ *   This is the "Monthly Rolling Reach" default — pure period-based incremental reach.
+ *
+ * Setting windowStart earlier (extended lookback):
+ *   - First week will already have "previously reached" from before the display period
+ *   - Net new = truly new vs a longer historical window
+ *
+ * For each week:
+ *   R_full = unique reach over [windowStart, weekEnd]
+ *   R_prev = unique reach over [windowStart, weekStart − 1]
+ *   net_new = R_full − R_prev  (always ≥ 0)
  */
 export async function fetchWeeklyReachRows(
   accountId: string,
-  since: string,
+  since: string,       // start of display period (fetch weekly metrics from here)
   until: string,
-  lookbackDays = 90
+  windowStart: string, // fixed window start for all reach calculations (= since or earlier)
 ): Promise<WeeklyReachRow[]> {
   // One bulk call for per-week metrics
   const fields = "reach,impressions,spend,frequency";
@@ -297,19 +304,15 @@ export async function fetchWeeklyReachRows(
   const rows = await paginate<any>(url);
 
   // Fan out all R_full + R_prev calls in parallel — avoids sequential await per week
-  // (13 weeks × 2 calls sequential = ~30s; parallel = ~2-3s)
   return Promise.all(
     rows.map(async (r) => {
       const weekStart: string = r.date_start;
       const weekEnd: string = r.date_stop;
-
-      // Both calls share the same window start date
-      const windowStart = subtractDays(weekEnd, lookbackDays - 1);
       const prevWindowEnd = subtractDays(weekStart, 1);
 
       const [fullData, prevData] = await Promise.all([
-        fetchReach(accountId, windowStart, weekEnd),           // R_full: includes this week
-        fetchReach(accountId, windowStart, prevWindowEnd),     // R_prev: excludes this week
+        fetchReach(accountId, windowStart, weekEnd),          // R_full: includes this week
+        fetchReach(accountId, windowStart, prevWindowEnd),    // R_prev: excludes this week
       ]);
 
       return {

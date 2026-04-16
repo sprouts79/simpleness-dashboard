@@ -12,7 +12,7 @@ export default async function ReachPage({
 }) {
   const { client: clientId } = await params;
   const { lookback: lookbackStr } = await searchParams;
-  const lookback = parseInt(lookbackStr ?? "90");
+  const lookback = parseInt(lookbackStr ?? "0");
   const data = await getMonthlyReachData(clientId, lookback);
   return <ReachClient clientId={clientId} data={data} currentLookback={lookback} />;
 }

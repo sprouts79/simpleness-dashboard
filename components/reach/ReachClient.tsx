@@ -17,11 +17,13 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import ReachCompositionChart from "@/components/charts/ReachCompositionChart";
 import { MonthlyReachRow } from "@/lib/types";
 
-// Lookback window options — 3M is the default (90d)
+// Extension options — how far before the 6M display period to extend the window start
+// 0 = standard (no extension; first month ≈ 100% net new)
 const LOOKBACK_OPTIONS = [
-  { label: "3M", days: 90 },
-  { label: "6M", days: 180 },
-  { label: "12M", days: 360 },
+  { label: "Standard", days: 0 },
+  { label: "+3M", days: 90 },
+  { label: "+6M", days: 180 },
+  { label: "+12M", days: 360 },
 ];
 
 function formatReach(n: number) {
@@ -86,6 +88,7 @@ export default function ReachClient({
   }));
 
   const activeOption = LOOKBACK_OPTIONS.find((o) => o.days === currentLookback) ?? LOOKBACK_OPTIONS[0];
+  const lookbackLabel = currentLookback === 0 ? "standard (ingen)" : `+${currentLookback}d`;
 
   const netNewStatus =
     !kpis ? "" :
@@ -134,7 +137,7 @@ export default function ReachClient({
       {/* Controls: lookback selector + Hent data */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-xs font-medium text-[rgba(9,10,8,0.45)]">Lookback vindu</span>
+          <span className="text-xs font-medium text-[rgba(9,10,8,0.45)]">Utvid lookback med:</span>
           <div className="flex bg-[var(--color-surface)] rounded-lg p-1 gap-1">
             {LOOKBACK_OPTIONS.map(({ label, days }) => (
               <button
@@ -151,7 +154,7 @@ export default function ReachClient({
               </button>
             ))}
           </div>
-          {currentLookback !== 90 && filtered.length === 0 && (
+          {currentLookback !== 0 && filtered.length === 0 && (
             <span className="text-xs text-[rgba(9,10,8,0.35)]">
               Ingen data — trykk Hent data
             </span>
@@ -181,7 +184,7 @@ export default function ReachClient({
       {filtered.length === 0 && (
         <div className="rounded-xl border border-[var(--color-border)] p-12 text-center">
           <p className="text-sm text-[rgba(9,10,8,0.4)] mb-2">
-            Ingen reach-data for {activeOption.label} lookback ({currentLookback}d).
+            Ingen reach-data for lookback {activeOption.label}.
           </p>
           <p className="text-xs text-[rgba(9,10,8,0.3)] mb-6">
             Trykk Hent data for å synkronisere fra Meta.
@@ -203,7 +206,7 @@ export default function ReachClient({
             <div>
               <SectionHeader
                 title="Reach-nøkkeltall"
-                subtitle={`Siste 6 måneder · ${currentLookback}d lookback · ${filtered.length} mnd data`}
+                subtitle={`Siste 6 måneder · lookback ${lookbackLabel} · ${filtered.length} mnd data`}
               />
               <div className="grid grid-cols-4 gap-3">
                 <KpiCard
@@ -214,7 +217,7 @@ export default function ReachClient({
                 <KpiCard
                   label="Total Reach"
                   value={formatReach(kpis.totalReach)}
-                  note={`${currentLookback}d rullerende vindu`}
+                  note={`6M vindu · lookback ${lookbackLabel}`}
                   size="large"
                 />
                 <KpiCard
@@ -304,7 +307,7 @@ export default function ReachClient({
           <div>
             <SectionHeader
               title="Monthly Breakdown"
-              subtitle={`${currentLookback}d lookback · siste ${filtered.length} måneder`}
+              subtitle={`Lookback ${lookbackLabel} · siste ${filtered.length} måneder`}
             />
             <div className="rounded-xl border border-[var(--color-border)] overflow-x-auto">
               <table className="w-full text-sm">
