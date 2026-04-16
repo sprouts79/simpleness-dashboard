@@ -33,12 +33,13 @@ export async function GET(req: NextRequest) {
   }
 
   const creativeId = adJson.creative?.id;
-  if (!creativeId) return NextResponse.json({});
+  console.log("[preview] adId:", adId, "creativeId:", creativeId);
+  if (!creativeId) return NextResponse.json({ _debug: { step: 1, error: "no creativeId", adJson } });
 
   // Step 2: Get video_id from the creative.
   // It can live at the top level (video_id) or nested in object_story_spec.video_data.
   const creativeRes = await fetch(
-    `${BASE}/${creativeId}?fields=video_id,object_story_spec&access_token=${token}`,
+    `${BASE}/${creativeId}?fields=video_id,object_story_spec,asset_feed_spec&access_token=${token}`,
     { cache: "no-store" }
   );
   const creativeJson: any = await creativeRes.json();
@@ -46,13 +47,13 @@ export async function GET(req: NextRequest) {
   const videoId =
     creativeJson.video_id ??
     creativeJson.object_story_spec?.video_data?.video_id ??
+    creativeJson.asset_feed_spec?.videos?.[0]?.video_id ??
     null;
 
-  if (!videoId) return NextResponse.json({});
+  console.log("[preview] creativeId:", creativeId, "videoId:", videoId, "creativeKeys:", Object.keys(creativeJson));
+  if (!videoId) return NextResponse.json({ _debug: { step: 2, error: "no videoId", creativeId, creativeJson } });
 
   // Step 3: Fetch video source URL.
-  // `source` is a direct CDN MP4 URL. `format` is an array of per-resolution URLs.
-  // We try source first; if empty, fall back to the highest-resolution format entry.
   const videoRes = await fetch(
     `${BASE}/${videoId}?fields=source,format&access_token=${token}`,
     { cache: "no-store" }
@@ -62,12 +63,13 @@ export async function GET(req: NextRequest) {
   const videoUrl =
     videoJson.source ||
     (Array.isArray(videoJson.format) && videoJson.format.length > 0
-      ? videoJson.format[videoJson.format.length - 1].url  // last entry = highest res
+      ? videoJson.format[videoJson.format.length - 1].url
       : null);
 
+  console.log("[preview] videoId:", videoId, "source:", videoJson.source ? "found" : "null", "formats:", videoJson.format?.length ?? 0);
   if (videoUrl) {
     return NextResponse.json({ videoUrl });
   }
 
-  return NextResponse.json({});
+  return NextResponse.json({ _debug: { step: 3, error: "no source/format", videoId, videoJson } });
 }
