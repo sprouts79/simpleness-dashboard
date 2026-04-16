@@ -310,9 +310,13 @@ export async function fetchWeeklyReachRows(
       const weekEnd: string = r.date_stop;
       const prevWindowEnd = subtractDays(weekStart, 1);
 
+      // R_prev is invalid if prevWindowEnd < windowStart (first week — no one reached yet)
+      const hasPrevWindow = prevWindowEnd >= windowStart;
       const [fullData, prevData] = await Promise.all([
-        fetchReach(accountId, windowStart, weekEnd),          // R_full: includes this week
-        fetchReach(accountId, windowStart, prevWindowEnd),    // R_prev: excludes this week
+        fetchReach(accountId, windowStart, weekEnd),
+        hasPrevWindow
+          ? fetchReach(accountId, windowStart, prevWindowEnd)
+          : Promise.resolve({ reach: 0, impressions: 0, spend: 0, frequency: 0 }),
       ]);
 
       return {
