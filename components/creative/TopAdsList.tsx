@@ -75,7 +75,7 @@ function PreviewModal({
       {/* No overflow-hidden on the wrapper — border-radius clips image corners otherwise */}
       <div
         className="relative shadow-2xl"
-        style={{ maxWidth: "min(420px, calc(100vw - 32px))" }}
+        style={{ width: "min(420px, calc(100vw - 32px))" }}
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -90,14 +90,14 @@ function PreviewModal({
             autoPlay
             controls
             playsInline
-            className="rounded-2xl block"
-            style={{ maxWidth: "min(420px, calc(100vw - 32px))", maxHeight: "92vh" }}
+            className="rounded-2xl block w-full"
+            style={{ maxHeight: "92vh" }}
           />
         ) : imageUrl ? (
           <img
             src={imageUrl}
-            className="rounded-2xl block"
-            style={{ maxWidth: "min(420px, calc(100vw - 32px))", maxHeight: "92vh", width: "auto", height: "auto" }}
+            className="rounded-2xl block w-full h-auto"
+            style={{ maxHeight: "92vh" }}
           />
         ) : null}
       </div>
