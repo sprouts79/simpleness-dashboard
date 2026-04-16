@@ -22,7 +22,6 @@ const METRIC_OPTIONS: { value: CohortMetric; label: string }[] = [
   { value: "holdRate", label: "Hold Rate" },
 ];
 
-// Lower is better for these metrics
 const LOWER_IS_BETTER = new Set<CohortMetric>(["cpa", "cpm"]);
 
 function getMetricValue(ad: Ad, metric: CohortMetric): number {
@@ -57,80 +56,83 @@ function sortAds(ads: Ad[], metric: CohortMetric): Ad[] {
   );
 }
 
-function AdRow({
-  ad,
-  rank,
-  metric,
-}: {
-  ad: Ad;
-  rank: number;
-  metric: CohortMetric;
-}) {
-  const [imgError, setImgError] = useState(false);
-  const hasThumbnail = !!ad.thumbnailUrl && !imgError;
-  const primaryValue = getMetricValue(ad, metric);
-
+function MetricCell({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface)] transition-colors">
-      {/* Rank */}
-      <span
-        className="w-6 text-center text-xs font-semibold flex-shrink-0"
-        style={{ fontFamily: "var(--font-mono)", color: rank <= 3 ? "var(--color-black)" : "rgba(9,10,8,0.3)" }}
-      >
-        {rank}
-      </span>
-
-      {/* Thumbnail */}
-      <div className="w-9 h-9 rounded-md overflow-hidden flex-shrink-0 bg-[var(--color-surface)] border border-[var(--color-border)]">
-        {hasThumbnail ? (
-          <img
-            src={ad.thumbnailUrl}
-            alt=""
-            onError={() => setImgError(true)}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-xs text-[rgba(9,10,8,0.2)]">
-            {ad.format === "video" ? "▶" : "▣"}
-          </div>
-        )}
-      </div>
-
-      {/* Name */}
-      <span className="flex-1 text-xs truncate text-[rgba(9,10,8,0.7)] min-w-0">{ad.name}</span>
-
-      {/* Secondary metrics */}
-      <div className="flex items-center gap-4 flex-shrink-0">
-        {metric !== "spend" && (
-          <MetricPill label="Spend" value={ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : `${Math.round(ad.spend)}`} />
-        )}
-        {metric !== "roas" && ad.roas > 0 && (
-          <MetricPill label="ROAS" value={`${ad.roas.toFixed(1)}×`} />
-        )}
-        {metric !== "hookRate" && ad.format === "video" && ad.hookRate > 0 && (
-          <MetricPill label="Hook" value={`${ad.hookRate.toFixed(0)}%`} />
-        )}
-        {metric !== "ctr" && (
-          <MetricPill label="CTR" value={`${ad.ctr.toFixed(1)}%`} />
-        )}
-      </div>
-
-      {/* Primary metric — highlighted */}
-      <span
-        className="w-16 text-right text-sm font-semibold flex-shrink-0"
-        style={{ fontFamily: "var(--font-mono)" }}
-      >
-        {formatMetricValue(primaryValue, metric)}
-      </span>
+    <div>
+      <p className="text-[10px] text-[rgba(9,10,8,0.35)] uppercase tracking-wide leading-none mb-0.5">{label}</p>
+      <p className="text-xs font-semibold" style={{ fontFamily: "var(--font-mono)" }}>{value}</p>
     </div>
   );
 }
 
-function MetricPill({ label, value }: { label: string; value: string }) {
+function AdCard({ ad, rank, metric }: { ad: Ad; rank: number; metric: CohortMetric }) {
+  const [imgError, setImgError] = useState(false);
+  const hasThumbnail = !!ad.thumbnailUrl && !imgError;
+
   return (
-    <div className="text-right">
-      <p className="text-[10px] text-[rgba(9,10,8,0.3)] uppercase tracking-wide leading-none mb-0.5">{label}</p>
-      <p className="text-xs font-medium" style={{ fontFamily: "var(--font-mono)" }}>{value}</p>
+    <div className="rounded-xl border border-[var(--color-border)] overflow-hidden bg-white">
+      {/* Thumbnail */}
+      <div className="aspect-[4/5] bg-[var(--color-surface)] relative overflow-hidden">
+        {hasThumbnail ? (
+          <img
+            src={ad.thumbnailUrl}
+            alt={ad.name}
+            onError={() => setImgError(true)}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-3xl mb-1">{ad.format === "video" ? "▶" : "▣"}</p>
+              <p className="text-xs text-[rgba(9,10,8,0.3)] capitalize">{ad.format}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Rank badge */}
+        <span
+          className="absolute top-2 left-2 w-6 h-6 rounded-full bg-black/60 text-white text-xs font-bold flex items-center justify-center"
+          style={{ fontFamily: "var(--font-mono)" }}
+        >
+          {rank}
+        </span>
+
+        {/* Primary metric badge */}
+        <span
+          className="absolute bottom-2 right-2 bg-black/60 text-white text-xs font-semibold px-2 py-1 rounded-md"
+          style={{ fontFamily: "var(--font-mono)" }}
+        >
+          {formatMetricValue(getMetricValue(ad, metric), metric)}
+        </span>
+      </div>
+
+      {/* Metrics */}
+      <div className="p-3">
+        <p className="text-xs font-medium leading-tight mb-3 line-clamp-2 h-8">{ad.name}</p>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+          {metric !== "spend" && (
+            <MetricCell
+              label="Spend"
+              value={ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : `${Math.round(ad.spend)}`}
+            />
+          )}
+          {metric !== "roas" && ad.roas > 0 && (
+            <MetricCell label="ROAS" value={`${ad.roas.toFixed(1)}×`} />
+          )}
+          {ad.format === "video" && ad.hookRate > 0 && metric !== "hookRate" && (
+            <MetricCell label="Hook" value={`${ad.hookRate.toFixed(0)}%`} />
+          )}
+          {metric !== "ctr" && (
+            <MetricCell label="CTR" value={`${ad.ctr.toFixed(1)}%`} />
+          )}
+          {metric !== "cpa" && ad.cpa > 0 && (
+            <MetricCell label="CPA" value={`${Math.round(ad.cpa)} kr`} />
+          )}
+          {metric !== "cpm" && ad.cpm > 0 && (
+            <MetricCell label="CPM" value={`${Math.round(ad.cpm)} kr`} />
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -147,16 +149,10 @@ export default function TopAdsList({
   const [period, setPeriod] = useState<TopPeriod>("month");
   const [metric, setMetric] = useState<CohortMetric>("spend");
 
-  const adsMap: Record<TopPeriod, Ad[]> = {
-    week: topWeek,
-    month: topMonth,
-    quarter: topQuarter,
-  };
+  const adsMap: Record<TopPeriod, Ad[]> = { week: topWeek, month: topMonth, quarter: topQuarter };
+  const sorted = sortAds(adsMap[period], metric).slice(0, 12);
 
-  const rawAds = adsMap[period];
-  const sorted = sortAds(rawAds, metric).slice(0, 10);
-
-  if (!rawAds.length) {
+  if (!adsMap[period].length) {
     return (
       <div className="rounded-xl border border-[var(--color-border)] p-8 text-center">
         <p className="text-sm text-[rgba(9,10,8,0.4)]">Ingen annonsedata for perioden.</p>
@@ -191,24 +187,15 @@ export default function TopAdsList({
           className="text-xs font-semibold bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-[var(--color-black)] cursor-pointer"
         >
           {METRIC_OPTIONS.map((m) => (
-            <option key={m.value} value={m.value}>{m.label}</option>
+            <option key={m.value} value={m.value}>Sorter: {m.label}</option>
           ))}
         </select>
       </div>
 
-      {/* List */}
-      <div className="rounded-xl border border-[var(--color-border)] overflow-hidden bg-white">
-        {/* Header */}
-        <div className="flex items-center gap-3 px-4 py-2 border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-          <span className="w-6" />
-          <span className="w-9 flex-shrink-0" />
-          <span className="flex-1 text-[10px] font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.4)]">Annonse</span>
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.4)] w-16 text-right flex-shrink-0">
-            {METRIC_OPTIONS.find(m => m.value === metric)?.label}
-          </span>
-        </div>
+      {/* Card grid */}
+      <div className="grid grid-cols-3 gap-4">
         {sorted.map((ad, i) => (
-          <AdRow key={ad.id} ad={ad} rank={i + 1} metric={metric} />
+          <AdCard key={ad.id} ad={ad} rank={i + 1} metric={metric} />
         ))}
       </div>
     </div>

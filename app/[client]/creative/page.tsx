@@ -12,9 +12,9 @@ export default async function CreativePage({
     getAds(clientId),
     getCohorts(clientId),
     getCreativeChurn(clientId),
-    getTopAds(clientId, 7),
-    getTopAds(clientId, 30),
-    getTopAds(clientId, 90),
+    getTopAds(clientId, 7, 12),
+    getTopAds(clientId, 30, 12),
+    getTopAds(clientId, 90, 12),
   ]);
 
   return (
