@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   ResponsiveContainer,
@@ -97,6 +97,14 @@ export default function ReachClient({
     "Høy metning";
 
   // Switching lookback navigates to new URL — server fetches the right data
+  // Auto-sync Standard (0) lookback on first load if no data exists
+  useEffect(() => {
+    if (currentLookback === 0 && data.length === 0 && !syncing) {
+      handleSync();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function handleLookbackClick(days: number) {
     if (days !== currentLookback) {
       router.push(`?lookback=${days}`);

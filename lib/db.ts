@@ -500,14 +500,18 @@ function formatMonthLabel(monthKey: string): string {
 
 export async function getMonthlyReachData(
   clientId: string,
-  lookbackDays = 90
+  lookbackDays = 0
 ): Promise<MonthlyReachRow[]> {
+  // Exclude current calendar month (incomplete) and weeks started < 7 days ago
+  const currentMonthStart = new Date().toISOString().substring(0, 7) + "-01";
+
   const { data, error } = await supabase
     .from("meta_reach_weekly")
     .select("week_start,weekly_reach,cumulative_reach,net_new_reach,pct_net_new,spend,cpm,cpm_net_new,frequency")
     .eq("client_id", clientId)
     .eq("lookback_days", lookbackDays)
-    .lte("week_start", daysAgo(6)) // only complete weeks (started ≥7 days ago)
+    .lt("week_start", currentMonthStart)    // exclude current month entirely
+    .lte("week_start", daysAgo(6))          // only complete weeks (started ≥7 days ago)
     .order("week_start", { ascending: true }); // oldest first for grouping
 
   if (error || !data?.length) return [];
