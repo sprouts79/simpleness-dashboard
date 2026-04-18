@@ -243,7 +243,7 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
   for (let i = 0; i < creativeIds.length; i += 50) {
     const ids = creativeIds.slice(i, i + 50).join(",");
     const res = await fetch(
-      `${BASE}/?ids=${ids}&fields=thumbnail_url,image_url,object_type&thumbnail_width=500&thumbnail_height=500&access_token=${token()}`,
+      `${BASE}/?ids=${ids}&fields=thumbnail_url,image_url,object_type&thumbnail_width=500&thumbnail_height=889&access_token=${token()}`,
       { cache: "no-store" }
     );
     const json: any = await res.json();
