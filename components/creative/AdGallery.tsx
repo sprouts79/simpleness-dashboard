@@ -68,7 +68,8 @@ function AdTile({ ad }: { ad: Ad }) {
   return (
     <>
       <div
-        className="rounded-xl border border-[var(--color-border)] bg-white cursor-pointer hover:border-[var(--color-link)] transition-colors overflow-hidden"
+        className="rounded-xl border border-[var(--color-border)] bg-white cursor-pointer hover:border-[var(--color-link)] transition-colors"
+        style={{ overflow: "hidden" }}
         onClick={() => setOpen(true)}
       >
         {/* Image at native aspect ratio — no forced crop */}
@@ -107,11 +108,9 @@ function AdTile({ ad }: { ad: Ad }) {
 
 export default function AdGallery({ ads }: { ads: Ad[] }) {
   return (
-    <div style={{ columns: 4, columnGap: 16 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
       {ads.map((ad) => (
-        <div key={ad.id} style={{ breakInside: "avoid", marginBottom: 16 }}>
-          <AdTile ad={ad} />
-        </div>
+        <AdTile key={ad.id} ad={ad} />
       ))}
     </div>
   );
