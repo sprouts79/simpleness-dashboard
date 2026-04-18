@@ -229,28 +229,68 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
   const url = `${BASE}/${accountId}/ads?fields=${fields}&limit=500&access_token=${token()}`;
   const rows = await paginate<any>(url);
 
-  // Step 2: Batch fetch thumbnail_url + image_url + object_type per creative ID (50 at a time).
-  // image_url = the original uploaded image at native ratio (PHOTO creatives only).
-  // thumbnail_url = Meta-generated thumbnail (often 9:16 for video, but can be any ratio).
-  // We prefer image_url for static ads so we get the actual creative image, not a cropped thumb.
+  // Step 2: Batch fetch creative metadata in two passes.
+  //
+  // Pass 1: fetch object_type + image_url (no thumbnail — we need the type first to pick dimensions).
+  // Pass 2: fetch thumbnail_url with correct dimensions per type:
+  //   - VIDEO  → 500×889 (9:16 portrait — matches vertical video format)
+  //   - SHARE  → 500×500 (square — carousel cards are always square)
+  //   - PHOTO/STATUS → skip thumbnail; use image_url (native ratio original)
+  //
+  // We must specify both width AND height. Without height, Meta returns a 800×64 filmstrip.
   const creativeIds = [...new Set(
     rows.map((r: any) => r.creative?.id as string | undefined).filter(Boolean)
   )] as string[];
 
-  const creativeMap = new Map<string, { thumbnail_url?: string; image_url?: string; object_type?: string }>();
+  type CreativeData = { thumbnail_url?: string; image_url?: string; object_type?: string };
+  const creativeMap = new Map<string, CreativeData>();
+
+  // Pass 1: object_type + image_url
   for (let i = 0; i < creativeIds.length; i += 50) {
     const ids = creativeIds.slice(i, i + 50).join(",");
     const res = await fetch(
-      `${BASE}/?ids=${ids}&fields=thumbnail_url,image_url,object_type&thumbnail_width=800&access_token=${token()}`,
+      `${BASE}/?ids=${ids}&fields=object_type,image_url&access_token=${token()}`,
       { cache: "no-store" }
     );
     const json: any = await res.json();
     if (!json.error) {
       for (const [id, data] of Object.entries(json)) {
-        creativeMap.set(id, data as { thumbnail_url?: string; image_url?: string; object_type?: string });
+        creativeMap.set(id, data as CreativeData);
       }
     }
   }
+
+  // Pass 2: thumbnail_url with per-type dimensions
+  // Group IDs by type so we make the fewest requests
+  const videoIds = creativeIds.filter((id) => creativeMap.get(id)?.object_type === "VIDEO");
+  const carouselIds = creativeIds.filter((id) => creativeMap.get(id)?.object_type === "SHARE");
+  const otherIds = creativeIds.filter((id) => {
+    const t = creativeMap.get(id)?.object_type;
+    return t && t !== "VIDEO" && t !== "SHARE" && t !== "PHOTO" && t !== "STATUS";
+  });
+
+  async function fetchThumbnails(ids: string[], w: number, h: number) {
+    for (let i = 0; i < ids.length; i += 50) {
+      const batch = ids.slice(i, i + 50).join(",");
+      const res = await fetch(
+        `${BASE}/?ids=${batch}&fields=thumbnail_url&thumbnail_width=${w}&thumbnail_height=${h}&access_token=${token()}`,
+        { cache: "no-store" }
+      );
+      const json: any = await res.json();
+      if (!json.error) {
+        for (const [id, data] of Object.entries(json)) {
+          const existing = creativeMap.get(id) ?? {};
+          creativeMap.set(id, { ...existing, thumbnail_url: (data as any).thumbnail_url });
+        }
+      }
+    }
+  }
+
+  await Promise.all([
+    fetchThumbnails(videoIds, 500, 889),   // 9:16 portrait
+    fetchThumbnails(carouselIds, 500, 500), // 1:1 square
+    fetchThumbnails(otherIds, 500, 500),    // 1:1 square (unknown types)
+  ]);
 
   return rows.map((r: any) => {
     const creative = creativeMap.get(r.creative?.id);
@@ -260,8 +300,9 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
     else if (objectType === "SHARE") format = "carousel";
     else if (objectType === "PHOTO" || objectType === "STATUS") format = "static";
 
-    // For static image ads: image_url is the original creative at native ratio (1:1, 4:5, etc.)
-    // For video/carousel: fall back to thumbnail_url (video thumbnail is correctly 9:16)
+    // PHOTO/STATUS: image_url is the original uploaded creative at native ratio (1:1, 4:5, etc.)
+    // VIDEO: thumbnail_url at 9:16 (matches vertical video format)
+    // SHARE/other: thumbnail_url at 1:1 square
     const isStatic = objectType === "PHOTO" || objectType === "STATUS";
     const thumbnailUrl = (isStatic && creative?.image_url)
       ? creative.image_url
