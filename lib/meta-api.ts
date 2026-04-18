@@ -233,108 +233,32 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
     rows.map((r: any) => r.creative?.id as string | undefined).filter(Boolean)
   )] as string[];
 
-  // Step 2: Pass 1 — fetch object_type for all creatives (lightweight, no thumbnail processing)
-  const typeMap = new Map<string, string>(); // creativeId → object_type
+  // Fetch thumbnail_url + object_type for all creatives.
+  // thumbnail_width=500&thumbnail_height=889 requests the 9:16 stories format.
+  // All ads have a stories (9:16) version — that is always the one shown in the gallery.
+  // Both dimensions must be specified; omitting either causes Meta to return wrong sizes.
+  const creativeMap = new Map<string, { thumbnail_url?: string; object_type?: string }>();
   for (let i = 0; i < creativeIds.length; i += 50) {
     const ids = creativeIds.slice(i, i + 50).join(",");
     const res = await fetch(
-      `${BASE}/?ids=${ids}&fields=object_type&access_token=${token()}`,
+      `${BASE}/?ids=${ids}&fields=thumbnail_url,object_type&thumbnail_width=500&thumbnail_height=889&access_token=${token()}`,
       { cache: "no-store" }
     );
     const json: any = await res.json();
     if (!json.error) {
-      for (const [id, data] of Object.entries<any>(json)) {
-        typeMap.set(id, (data as any).object_type ?? "");
-      }
-    }
-  }
-
-  // Step 3: Pass 2 — fetch thumbnails with format-appropriate dimensions.
-  //
-  // Both width AND height must be specified — Meta ignores or mangles single-dimension requests.
-  // VIDEO: portrait 9:16 (500×889) — video thumbnails are portrait frames from the video
-  // SHARE (carousel): square 1:1 (500×500) — carousel cards are square
-  // PHOTO/STATUS: image_url at native ratio — original upload, no CDN letterboxing
-  const creativeMap = new Map<string, { thumbnail_url?: string; image_url?: string }>();
-
-  const videoIds   = creativeIds.filter(id => typeMap.get(id) === "VIDEO");
-  const shareIds   = creativeIds.filter(id => typeMap.get(id) === "SHARE");
-  const staticIds  = creativeIds.filter(id => ["PHOTO", "STATUS"].includes(typeMap.get(id) ?? ""));
-  const unknownIds = creativeIds.filter(id => !typeMap.has(id) || !typeMap.get(id));
-
-  // VIDEO: portrait thumbnail 9:16
-  for (let i = 0; i < videoIds.length; i += 50) {
-    const ids = videoIds.slice(i, i + 50).join(",");
-    const res = await fetch(
-      `${BASE}/?ids=${ids}&fields=thumbnail_url,image_url&thumbnail_width=500&thumbnail_height=889&access_token=${token()}`,
-      { cache: "no-store" }
-    );
-    const json: any = await res.json();
-    if (!json.error) {
-      for (const [id, data] of Object.entries<any>(json)) {
-        creativeMap.set(id, { thumbnail_url: (data as any).thumbnail_url, image_url: (data as any).image_url });
-      }
-    }
-  }
-
-  // SHARE/carousel: square thumbnail 1:1
-  for (let i = 0; i < shareIds.length; i += 50) {
-    const ids = shareIds.slice(i, i + 50).join(",");
-    const res = await fetch(
-      `${BASE}/?ids=${ids}&fields=thumbnail_url,image_url&thumbnail_width=500&thumbnail_height=500&access_token=${token()}`,
-      { cache: "no-store" }
-    );
-    const json: any = await res.json();
-    if (!json.error) {
-      for (const [id, data] of Object.entries<any>(json)) {
-        creativeMap.set(id, { thumbnail_url: (data as any).thumbnail_url, image_url: (data as any).image_url });
-      }
-    }
-  }
-
-  // PHOTO/STATUS: image_url at native ratio (no CDN letterboxing)
-  for (let i = 0; i < staticIds.length; i += 50) {
-    const ids = staticIds.slice(i, i + 50).join(",");
-    const res = await fetch(
-      `${BASE}/?ids=${ids}&fields=image_url&access_token=${token()}`,
-      { cache: "no-store" }
-    );
-    const json: any = await res.json();
-    if (!json.error) {
-      for (const [id, data] of Object.entries<any>(json)) {
-        creativeMap.set(id, { image_url: (data as any).image_url });
-      }
-    }
-  }
-
-  // Unknown types: fall back to square thumbnail
-  for (let i = 0; i < unknownIds.length; i += 50) {
-    const ids = unknownIds.slice(i, i + 50).join(",");
-    const res = await fetch(
-      `${BASE}/?ids=${ids}&fields=thumbnail_url,image_url&thumbnail_width=500&thumbnail_height=500&access_token=${token()}`,
-      { cache: "no-store" }
-    );
-    const json: any = await res.json();
-    if (!json.error) {
-      for (const [id, data] of Object.entries<any>(json)) {
-        creativeMap.set(id, { thumbnail_url: (data as any).thumbnail_url, image_url: (data as any).image_url });
+      for (const [id, data] of Object.entries(json)) {
+        creativeMap.set(id, data as { thumbnail_url?: string; object_type?: string });
       }
     }
   }
 
   return rows.map((r: any) => {
-    const objectType = typeMap.get(r.creative?.id) ?? "";
     const creative = creativeMap.get(r.creative?.id);
-
+    const objectType = creative?.object_type ?? "";
     let format: AdMeta["format"] = null;
     if (objectType === "VIDEO") format = "video";
     else if (objectType === "SHARE") format = "carousel";
     else if (objectType === "PHOTO" || objectType === "STATUS") format = "static";
-
-    const isStatic = objectType === "PHOTO" || objectType === "STATUS";
-    const thumbnailUrl = (isStatic && creative?.image_url)
-      ? creative.image_url
-      : creative?.thumbnail_url ?? "";
 
     return {
       adId: r.id,
@@ -343,7 +267,7 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
       campaignId: r.campaign_id ?? "",
       status: (r.status ?? "").toLowerCase(),
       createdTime: r.created_time ?? "",
-      thumbnailUrl,
+      thumbnailUrl: creative?.thumbnail_url ?? "",
       format,
     };
   });
