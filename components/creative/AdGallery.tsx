@@ -72,19 +72,21 @@ function AdTile({ ad }: { ad: Ad }) {
         style={{ overflow: "hidden" }}
         onClick={() => setOpen(true)}
       >
-        {/* Image at native aspect ratio — no forced crop */}
-        {ad.thumbnailUrl && !imgError ? (
-          <img
-            src={ad.thumbnailUrl}
-            alt={ad.name}
-            onError={() => setImgError(true)}
-            style={{ width: "100%", height: "auto", display: "block" }}
-          />
-        ) : (
-          <div style={{ aspectRatio: "1/1", background: "#f8f8f7", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontSize: 28, opacity: 0.35 }}>{ad.format === "video" ? "▶" : "▣"}</span>
-          </div>
-        )}
+        {/* Fixed 9:16 container — image fills without distortion */}
+        <div style={{ position: "relative", aspectRatio: "9/16", background: "#f0f0ee", overflow: "hidden" }}>
+          {ad.thumbnailUrl && !imgError ? (
+            <img
+              src={ad.thumbnailUrl}
+              alt={ad.name}
+              onError={() => setImgError(true)}
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: 28, opacity: 0.35 }}>{ad.format === "video" ? "▶" : "▣"}</span>
+            </div>
+          )}
+        </div>
 
         {/* Minimal metrics */}
         <div style={{ padding: "10px 12px" }}>
