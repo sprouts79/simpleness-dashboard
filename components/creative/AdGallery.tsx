@@ -186,10 +186,13 @@ function MetricCell({ label, value }: { label: string; value: string }) {
 }
 
 export default function AdGallery({ ads }: Props) {
+  // CSS columns = true masonry: cards stack top-to-bottom, no forced equal heights
   return (
-    <div className="grid grid-cols-4 gap-4 items-start">
+    <div className="columns-4 gap-4">
       {ads.map((ad) => (
-        <AdCard key={ad.id} ad={ad} />
+        <div key={ad.id} className="break-inside-avoid mb-4">
+          <AdCard ad={ad} />
+        </div>
       ))}
     </div>
   );

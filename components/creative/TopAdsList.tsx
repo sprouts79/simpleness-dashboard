@@ -296,17 +296,18 @@ export default function TopAdsList({
         </select>
       </div>
 
-      {/* Card grid — 4 columns */}
-      <div className="grid grid-cols-4 gap-3 items-start">
+      {/* Card grid — masonry 4 columns */}
+      <div className="columns-4 gap-3">
         {sorted.map((ad, i) => (
-          <AdCard
-            key={ad.id}
-            ad={ad}
-            rank={i + 1}
-            metric={metric}
-            onOpen={() => openPreview(ad)}
-            isLoading={loadingAdId === ad.id}
-          />
+          <div key={ad.id} className="break-inside-avoid mb-3">
+            <AdCard
+              ad={ad}
+              rank={i + 1}
+              metric={metric}
+              onOpen={() => openPreview(ad)}
+              isLoading={loadingAdId === ad.id}
+            />
+          </div>
         ))}
       </div>
 
