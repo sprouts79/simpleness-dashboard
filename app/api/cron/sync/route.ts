@@ -15,6 +15,7 @@ import {
   fetchAdInsights,
   fetchAdMeta,
   fetchWeeklyReachRows,
+  fetchAdWeeklyInsights,
   fetchAccountTimezone,
   daysAgoInTz,
   dateInTz,
@@ -39,7 +40,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "No clients found" }, { status: 500 });
   }
 
-  const results: Record<string, { ok: boolean; adsSynced?: number; performanceSynced?: number; reachSynced?: number; error?: string }> = {};
+  const results: Record<string, { ok: boolean; adsSynced?: number; performanceSynced?: number; reachSynced?: number; cohortSynced?: number; error?: string }> = {};
 
   for (const client of clients) {
     try {
@@ -143,11 +144,42 @@ export async function GET(req: NextRequest) {
         .from("meta_reach_weekly")
         .upsert(reachUpsert, { onConflict: "client_id,week_start,lookback_days" });
 
+      // ── Cohort (weekly ad-level insights for cohort table + top ads) ──────────
+      const cohortSince = daysAgoInTz(84, tz); // 12 weeks
+      const weeklyInsights = await fetchAdWeeklyInsights(client.meta_account_id, cohortSince, until);
+      const cohortUpsert = weeklyInsights.map((ins) => {
+        const hookRate = ins.impressions > 0 ? (ins.videoViews3s / ins.impressions) * 100 : null;
+        const holdRate = ins.impressions > 0 ? (ins.videoViewsThruplays / ins.impressions) * 100 : null;
+        return {
+          ad_id: ins.adId,
+          client_id: client.id,
+          week_start: ins.weekStart,
+          spend: ins.spend,
+          impressions: ins.impressions,
+          clicks: ins.clicks,
+          purchases: ins.purchases,
+          purchase_value: ins.purchaseValue,
+          video_views_3s: ins.videoViews3s,
+          video_views_thruplays: ins.videoViewsThruplays,
+          hook_rate: hookRate,
+          hold_rate: holdRate,
+          ctr: ins.impressions > 0 ? ins.clicks / ins.impressions : null,
+          cpm: ins.impressions > 0 ? (ins.spend / ins.impressions) * 1000 : null,
+          cpa: ins.purchases > 0 ? ins.spend / ins.purchases : null,
+          roas: ins.purchaseValue > 0 && ins.spend > 0 ? ins.purchaseValue / ins.spend : null,
+          synced_at: new Date().toISOString(),
+        };
+      });
+      await supabase
+        .from("meta_ad_weekly")
+        .upsert(cohortUpsert, { onConflict: "ad_id,week_start" });
+
       results[client.id] = {
         ok: true,
         performanceSynced: perfUpsert.length,
         adsSynced: adsUpsert.length,
         reachSynced: reachUpsert.length,
+        cohortSynced: cohortUpsert.length,
       };
     } catch (e: any) {
       results[client.id] = { ok: false, error: e.message };

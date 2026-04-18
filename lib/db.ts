@@ -449,8 +449,9 @@ export async function getAds(clientId: string): Promise<Ad[]> {
     id: r.ad_id,
     name: r.ad_name,
     cohortDate: r.cohort_date ?? r.created_date ?? "",
-    // Derive format from video signal — stored object_type is unreliable (SHARE = link post, not necessarily carousel)
-    format: (r.video_views_3s ?? 0) > 0 ? "video" : "static",
+    // Use the format stored during sync (from Meta object_type: VIDEO/SHARE/PHOTO/STATUS).
+    // Falls back to video signal if format column is NULL (old rows before format was stored).
+    format: (r.format ?? ((r.video_views_3s ?? 0) > 0 ? "video" : "static")) as Ad["format"],
     // Active = actually getting spend (most reliable signal — bypasses parent campaign/adset status)
     status: (r.spend ?? 0) > 0 ? "active" : "paused",
     thumbnailUrl: r.thumbnail_url ?? "",
@@ -499,7 +500,7 @@ export async function getTopAds(clientId: string, days: number, limit = 10): Pro
   const adIds = Array.from(adMap.keys());
   const { data: adMeta } = await supabase
     .from("meta_ads")
-    .select("ad_id, ad_name, thumbnail_url, cohort_date, created_date")
+    .select("ad_id, ad_name, format, thumbnail_url, cohort_date, created_date")
     .in("ad_id", adIds);
 
   const metaByAdId = new Map((adMeta ?? []).map((r) => [r.ad_id, r]));
@@ -512,7 +513,7 @@ export async function getTopAds(clientId: string, days: number, limit = 10): Pro
         id: adId,
         name: meta?.ad_name ?? adId,
         cohortDate: meta?.cohort_date ?? meta?.created_date ?? "",
-        format: agg.v3s > 0 ? "video" as const : "static" as const,
+        format: (meta?.format ?? (agg.v3s > 0 ? "video" : "static")) as Ad["format"],
         status: agg.spend > 0 ? "active" as const : "paused" as const,
         thumbnailUrl: meta?.thumbnail_url ?? "",
         hookRate: imp > 0 ? (agg.v3s / imp) * 100 : 0,

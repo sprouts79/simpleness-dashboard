@@ -231,11 +231,9 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
 
   // Step 2: Batch fetch thumbnail_url + image_url + object_type per creative ID (50 at a time).
   //
-  // We request thumbnail_width=500&thumbnail_height=500 (square) for all creatives.
-  // You MUST specify both dimensions — without height, Meta returns a broken 800×64 filmstrip.
-  // For PHOTO/STATUS creatives we override with image_url (original upload at native ratio).
-  // For VIDEO we get a square thumbnail (acceptable and consistent).
-  // For SHARE (carousel) we get a square crop of the first card (correct for carousel).
+  // No dimension params — we take whatever Meta returns (native ratio).
+  // image_url is used for PHOTO/STATUS creatives: the original uploaded image, always native ratio.
+  // thumbnail_url is used for everything else: Meta's default thumbnail at natural ratio.
   const creativeIds = [...new Set(
     rows.map((r: any) => r.creative?.id as string | undefined).filter(Boolean)
   )] as string[];
@@ -244,7 +242,7 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
   for (let i = 0; i < creativeIds.length; i += 50) {
     const ids = creativeIds.slice(i, i + 50).join(",");
     const res = await fetch(
-      `${BASE}/?ids=${ids}&fields=thumbnail_url,image_url,object_type&thumbnail_width=500&thumbnail_height=500&access_token=${token()}`,
+      `${BASE}/?ids=${ids}&fields=thumbnail_url,image_url,object_type&access_token=${token()}`,
       { cache: "no-store" }
     );
     const json: any = await res.json();
@@ -264,7 +262,7 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
     else if (objectType === "PHOTO" || objectType === "STATUS") format = "static";
 
     // PHOTO/STATUS: image_url is the original uploaded creative at native ratio (1:1, 4:5, etc.)
-    // VIDEO/SHARE/other: thumbnail_url at 500×500 square
+    // VIDEO/SHARE/other: thumbnail_url at Meta's natural default ratio
     const isStatic = objectType === "PHOTO" || objectType === "STATUS";
     const thumbnailUrl = (isStatic && creative?.image_url)
       ? creative.image_url

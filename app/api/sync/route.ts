@@ -186,7 +186,7 @@ export async function POST(req: NextRequest) {
   }
 
   // ── 4. Cohort (weekly ad-level insights) ─────────────────────────────────────
-  if (syncType === "cohort") try {
+  if (syncType === "all" || syncType === "cohort") try {
     const cohortSince = daysAgoInTz(84, tz); // 12 weeks back
     const weeklyInsights = await fetchAdWeeklyInsights(accountId, cohortSince, until);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Ad } from "@/lib/types";
 
 // ─── Per-card modal ───────────────────────────────────────────────────────────
@@ -9,15 +9,15 @@ function Modal({ ad, onClose }: { ad: Ad; onClose: () => void }) {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Auto-fetch video URL when opened for video ads
-  useState(() => {
-    if (ad.format !== "video" || !ad.thumbnailUrl) return;
+  // Fetch video source URL once when modal opens (video ads only)
+  useEffect(() => {
+    if (ad.format !== "video") return;
     setLoading(true);
     fetch(`/api/preview?adId=${ad.id}`)
       .then((r) => r.json())
       .then((d) => { if (d.videoUrl) setVideoUrl(d.videoUrl); })
       .finally(() => setLoading(false));
-  });
+  }, []);
 
   return (
     <div

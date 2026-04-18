@@ -2,6 +2,10 @@ import { getClient } from "@/lib/db";
 import ClientTabNav from "@/components/layout/ClientTabNav";
 import { notFound } from "next/navigation";
 
+// Force all client pages (performance, reach, creative) to be server-rendered
+// on every request so they always show the latest data from Supabase.
+export const dynamic = "force-dynamic";
+
 export default async function ClientLayout({
   children,
   params,
