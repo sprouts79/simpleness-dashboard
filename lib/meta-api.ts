@@ -224,23 +224,25 @@ export interface AdMeta {
 }
 
 export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
-  // Step 1: Fetch ads with creative IDs only
+  // Step 1: Fetch ads including archived (they may still have spend in the insight window).
   const fields = ["id", "name", "adset_id", "campaign_id", "status", "created_time", "creative"].join(",");
-  const url = `${BASE}/${accountId}/ads?fields=${fields}&limit=500&access_token=${token()}`;
+  const effectiveStatus = encodeURIComponent(JSON.stringify(["ACTIVE", "PAUSED", "ARCHIVED", "CAMPAIGN_PAUSED", "ADSET_PAUSED"]));
+  const url = `${BASE}/${accountId}/ads?fields=${fields}&effective_status=${effectiveStatus}&limit=500&access_token=${token()}`;
   const rows = await paginate<any>(url);
 
   const creativeIds = [...new Set(
     rows.map((r: any) => r.creative?.id as string | undefined).filter(Boolean)
   )] as string[];
 
-  // Step 2: Fetch creative data with asset_feed_spec to find the portrait (9:16 stories) image.
-  // Multi-format ads store placement-specific assets in asset_feed_spec.images, labelled
-  // "portrait" for stories/reels and "default" for feed. We prefer the portrait image.
+  // Step 2: Fetch creative data with asset_feed_spec to find the portrait (9:16 stories) asset.
+  // Multi-format ads store placement-specific assets in asset_feed_spec, labelled
+  // "portrait" for stories/reels and "default" for feed.
   // thumbnail_url is the CDN fallback (center-cropped to requested dimensions).
   const creativeMap = new Map<string, {
     thumbnail_url?: string;
     object_type?: string;
-    portrait_hash?: string;
+    portrait_hash?: string;   // image hash for static portrait ads
+    portrait_video_id?: string; // video ID for video portrait ads
   }>();
 
   for (let i = 0; i < creativeIds.length; i += 50) {
@@ -253,25 +255,35 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
     if (!json.error) {
       for (const [id, data] of Object.entries(json)) {
         const d = data as any;
-        // Look for the portrait (9:16) image in asset_feed_spec
         let portraitHash: string | undefined;
+        let portraitVideoId: string | undefined;
+        // Look for portrait-labelled image asset
         for (const img of (d.asset_feed_spec?.images ?? [])) {
           const isPortrait = (img.adlabels ?? []).some(
             (l: any) => l.name === "portrait" || l.name === "stories" || l.name === "vertical"
           );
           if (isPortrait && img.hash) { portraitHash = img.hash; break; }
         }
+        // Look for portrait-labelled video asset (if no portrait image found)
+        if (!portraitHash) {
+          for (const vid of (d.asset_feed_spec?.videos ?? [])) {
+            const isPortrait = (vid.adlabels ?? []).some(
+              (l: any) => l.name === "portrait" || l.name === "stories" || l.name === "vertical"
+            );
+            if (isPortrait && vid.video_id) { portraitVideoId = vid.video_id; break; }
+          }
+        }
         creativeMap.set(id, {
           thumbnail_url: d.thumbnail_url,
           object_type: d.object_type,
           portrait_hash: portraitHash,
+          portrait_video_id: portraitVideoId,
         });
       }
     }
   }
 
-  // Step 3: Resolve portrait hashes → native image URLs via adimages endpoint.
-  // These are the full-resolution uploaded assets (1080×1920 for stories), no cropping.
+  // Step 3a: Resolve portrait image hashes → native URLs via adimages endpoint.
   const portraitHashes = [...new Set(
     [...creativeMap.values()].map((c) => c.portrait_hash).filter(Boolean)
   )] as string[];
@@ -292,6 +304,27 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
     }
   }
 
+  // Step 3b: Resolve portrait video IDs → thumbnail picture URLs.
+  const portraitVideoIds = [...new Set(
+    [...creativeMap.values()].map((c) => c.portrait_video_id).filter(Boolean)
+  )] as string[];
+
+  const videoToThumb = new Map<string, string>();
+  for (let i = 0; i < portraitVideoIds.length; i += 50) {
+    const ids = portraitVideoIds.slice(i, i + 50).join(",");
+    const res = await fetch(
+      `${BASE}/?ids=${ids}&fields=picture&access_token=${token()}`,
+      { cache: "no-store" }
+    );
+    const json: any = await res.json();
+    if (!json.error) {
+      for (const [vid, data] of Object.entries(json)) {
+        const d = data as any;
+        if (d.picture) videoToThumb.set(vid, d.picture);
+      }
+    }
+  }
+
   return rows.map((r: any) => {
     const creative = creativeMap.get(r.creative?.id);
     const objectType = creative?.object_type ?? "";
@@ -300,9 +333,10 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
     else if (objectType === "SHARE") format = "carousel";
     else if (objectType === "PHOTO" || objectType === "STATUS") format = "static";
 
-    // Prefer native portrait image (9:16 stories), fall back to CDN thumbnail_url
+    // Priority: native portrait image → portrait video thumbnail → CDN thumbnail_url
     const portraitUrl = creative?.portrait_hash ? hashToUrl.get(creative.portrait_hash) : undefined;
-    const thumbnailUrl = portraitUrl || creative?.thumbnail_url || "";
+    const portraitVideoThumb = creative?.portrait_video_id ? videoToThumb.get(creative.portrait_video_id) : undefined;
+    const thumbnailUrl = portraitUrl || portraitVideoThumb || creative?.thumbnail_url || "";
 
     return {
       adId: r.id,
