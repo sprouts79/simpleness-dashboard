@@ -41,24 +41,32 @@ function getMetric(
   return parseFloat(arr?.find((a) => a.action_type === type)?.value ?? "0");
 }
 
+// Rate limit codes that trigger a back-off retry.
+// 4 = application-level; 80004 = per-account ads management rate limit.
+const RATE_LIMIT_CODES = new Set([4, 80004]);
+
+// Fetch a single URL with up to 2 retries on rate-limit errors.
+async function fetchWithRetry(url: string): Promise<any> {
+  let attempts = 0;
+  while (true) {
+    const res = await fetch(url, { cache: "no-store" });
+    const json = await res.json();
+    if (json.error && RATE_LIMIT_CODES.has(json.error.code) && attempts < 2) {
+      attempts++;
+      await new Promise((r) => setTimeout(r, 30_000 * attempts));
+      continue;
+    }
+    return json;
+  }
+}
+
 // Paginate through all cursor pages and return every item.
-// Retries up to 2 times on rate-limit errors (code 4) with 30s back-off.
+// Retries up to 2 times on rate-limit errors with 30s back-off.
 async function paginate<T>(initialUrl: string): Promise<T[]> {
   const results: T[] = [];
   let next: string | null = initialUrl;
   while (next) {
-    let json: any;
-    let attempts = 0;
-    while (true) {
-      const res = await fetch(next, { cache: "no-store" });
-      json = await res.json();
-      if (json.error?.code === 4 && attempts < 2) {
-        attempts++;
-        await new Promise((r) => setTimeout(r, 30_000 * attempts));
-        continue;
-      }
-      break;
-    }
+    const json = await fetchWithRetry(next);
     if (json.error) {
       throw new Error(`Meta API error: ${json.error.message} (code ${json.error.code})`);
     }
@@ -247,11 +255,9 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
 
   for (let i = 0; i < creativeIds.length; i += 50) {
     const ids = creativeIds.slice(i, i + 50).join(",");
-    const res = await fetch(
-      `${BASE}/?ids=${ids}&fields=object_type,thumbnail_url,asset_feed_spec&thumbnail_width=500&thumbnail_height=889&access_token=${token()}`,
-      { cache: "no-store" }
+    const json = await fetchWithRetry(
+      `${BASE}/?ids=${ids}&fields=object_type,thumbnail_url,asset_feed_spec&thumbnail_width=500&thumbnail_height=889&access_token=${token()}`
     );
-    const json: any = await res.json();
     if (!json.error) {
       for (const [id, data] of Object.entries(json)) {
         const d = data as any;
@@ -284,6 +290,7 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
   }
 
   // Step 3a: Resolve portrait image hashes → native URLs via adimages endpoint.
+  // Uses fetchWithRetry so rate-limit errors back off rather than silently returning empty.
   const portraitHashes = [...new Set(
     [...creativeMap.values()].map((c) => c.portrait_hash).filter(Boolean)
   )] as string[];
@@ -292,11 +299,9 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
   for (let i = 0; i < portraitHashes.length; i += 50) {
     const batch = portraitHashes.slice(i, i + 50);
     const hashParam = encodeURIComponent(JSON.stringify(batch));
-    const res = await fetch(
-      `${BASE}/${accountId}/adimages?hashes=${hashParam}&fields=hash,url&access_token=${token()}`,
-      { cache: "no-store" }
+    const json = await fetchWithRetry(
+      `${BASE}/${accountId}/adimages?hashes=${hashParam}&fields=hash,url&access_token=${token()}`
     );
-    const json: any = await res.json();
     if (!json.error && json.data) {
       for (const img of json.data) {
         if (img.hash && img.url) hashToUrl.set(img.hash, img.url);
@@ -304,7 +309,8 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
     }
   }
 
-  // Step 3b: Resolve portrait video IDs → thumbnail picture URLs.
+  // Step 3b: Resolve portrait video IDs → thumbnail picture URLs (best-effort, permission
+  // may be denied by the System User Token — falls back silently to thumbnail_url).
   const portraitVideoIds = [...new Set(
     [...creativeMap.values()].map((c) => c.portrait_video_id).filter(Boolean)
   )] as string[];
@@ -312,11 +318,9 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
   const videoToThumb = new Map<string, string>();
   for (let i = 0; i < portraitVideoIds.length; i += 50) {
     const ids = portraitVideoIds.slice(i, i + 50).join(",");
-    const res = await fetch(
-      `${BASE}/?ids=${ids}&fields=picture&access_token=${token()}`,
-      { cache: "no-store" }
+    const json = await fetchWithRetry(
+      `${BASE}/?ids=${ids}&fields=picture&access_token=${token()}`
     );
-    const json: any = await res.json();
     if (!json.error) {
       for (const [vid, data] of Object.entries(json)) {
         const d = data as any;
