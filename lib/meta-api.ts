@@ -233,21 +233,61 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
     rows.map((r: any) => r.creative?.id as string | undefined).filter(Boolean)
   )] as string[];
 
-  // Fetch image_url + thumbnail_url + object_type for all creatives.
-  // image_url = the actual uploaded creative at native resolution — no CDN processing, no cropping.
-  // thumbnail_url is a fallback when image_url is unavailable (e.g. some VIDEO types).
-  // thumbnail_width/height set to 500×889 so the fallback thumbnail is portrait if needed.
-  const creativeMap = new Map<string, { image_url?: string; thumbnail_url?: string; object_type?: string }>();
+  // Step 2: Fetch creative data with asset_feed_spec to find the portrait (9:16 stories) image.
+  // Multi-format ads store placement-specific assets in asset_feed_spec.images, labelled
+  // "portrait" for stories/reels and "default" for feed. We prefer the portrait image.
+  // thumbnail_url is the CDN fallback (center-cropped to requested dimensions).
+  const creativeMap = new Map<string, {
+    thumbnail_url?: string;
+    object_type?: string;
+    portrait_hash?: string;
+  }>();
+
   for (let i = 0; i < creativeIds.length; i += 50) {
     const ids = creativeIds.slice(i, i + 50).join(",");
     const res = await fetch(
-      `${BASE}/?ids=${ids}&fields=image_url,thumbnail_url,object_type&thumbnail_width=500&thumbnail_height=889&access_token=${token()}`,
+      `${BASE}/?ids=${ids}&fields=object_type,thumbnail_url,asset_feed_spec&thumbnail_width=500&thumbnail_height=889&access_token=${token()}`,
       { cache: "no-store" }
     );
     const json: any = await res.json();
     if (!json.error) {
       for (const [id, data] of Object.entries(json)) {
-        creativeMap.set(id, data as { image_url?: string; thumbnail_url?: string; object_type?: string });
+        const d = data as any;
+        // Look for the portrait (9:16) image in asset_feed_spec
+        let portraitHash: string | undefined;
+        for (const img of (d.asset_feed_spec?.images ?? [])) {
+          const isPortrait = (img.adlabels ?? []).some(
+            (l: any) => l.name === "portrait" || l.name === "stories" || l.name === "vertical"
+          );
+          if (isPortrait && img.hash) { portraitHash = img.hash; break; }
+        }
+        creativeMap.set(id, {
+          thumbnail_url: d.thumbnail_url,
+          object_type: d.object_type,
+          portrait_hash: portraitHash,
+        });
+      }
+    }
+  }
+
+  // Step 3: Resolve portrait hashes → native image URLs via adimages endpoint.
+  // These are the full-resolution uploaded assets (1080×1920 for stories), no cropping.
+  const portraitHashes = [...new Set(
+    [...creativeMap.values()].map((c) => c.portrait_hash).filter(Boolean)
+  )] as string[];
+
+  const hashToUrl = new Map<string, string>();
+  for (let i = 0; i < portraitHashes.length; i += 50) {
+    const batch = portraitHashes.slice(i, i + 50);
+    const hashParam = encodeURIComponent(JSON.stringify(batch));
+    const res = await fetch(
+      `${BASE}/${accountId}/adimages?hashes=${hashParam}&fields=hash,url&access_token=${token()}`,
+      { cache: "no-store" }
+    );
+    const json: any = await res.json();
+    if (!json.error && json.data) {
+      for (const img of json.data) {
+        if (img.hash && img.url) hashToUrl.set(img.hash, img.url);
       }
     }
   }
@@ -260,8 +300,9 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
     else if (objectType === "SHARE") format = "carousel";
     else if (objectType === "PHOTO" || objectType === "STATUS") format = "static";
 
-    // Prefer image_url (native uploaded asset, no CDN crop/letterbox) over thumbnail_url
-    const thumbnailUrl = creative?.image_url || creative?.thumbnail_url || "";
+    // Prefer native portrait image (9:16 stories), fall back to CDN thumbnail_url
+    const portraitUrl = creative?.portrait_hash ? hashToUrl.get(creative.portrait_hash) : undefined;
+    const thumbnailUrl = portraitUrl || creative?.thumbnail_url || "";
 
     return {
       adId: r.id,
