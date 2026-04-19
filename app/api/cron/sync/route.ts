@@ -74,10 +74,9 @@ export async function GET(req: NextRequest) {
         .upsert(perfUpsert, { onConflict: "client_id,date,campaign_id,adset_id", ignoreDuplicates: false });
 
       // ── Ads + creatives ────────────────────────────────────────────────────
-      const [insights, meta] = await Promise.all([
-        fetchAdInsights(client.meta_account_id, since, until),
-        fetchAdMeta(client.meta_account_id),
-      ]);
+      const insights = await fetchAdInsights(client.meta_account_id, since, until);
+      const adIds = insights.map((ins) => ins.adId);
+      const meta = await fetchAdMeta(client.meta_account_id, adIds);
       const metaMap = new Map(meta.map((m) => [m.adId, m]));
       const adsUpsert = insights.map((ins) => {
         const m = metaMap.get(ins.adId);

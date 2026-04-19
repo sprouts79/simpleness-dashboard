@@ -231,12 +231,32 @@ export interface AdMeta {
   format: "video" | "static" | "carousel" | "story" | null;
 }
 
-export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
-  // Step 1: Fetch ads including archived (they may still have spend in the insight window).
+export async function fetchAdMeta(accountId: string, adIds?: string[]): Promise<AdMeta[]> {
+  // Step 1: Get ad data (name, status, created_time, creative_id).
+  // When adIds are provided (from insights), fetch only those ads directly — this avoids
+  // fetching all account ads (which includes archived ads and could be 200+), reducing
+  // API calls and the chance of rate-limit failures mid-batch.
   const fields = ["id", "name", "adset_id", "campaign_id", "status", "created_time", "creative"].join(",");
-  const effectiveStatus = encodeURIComponent(JSON.stringify(["ACTIVE", "PAUSED", "ARCHIVED", "CAMPAIGN_PAUSED", "ADSET_PAUSED"]));
-  const url = `${BASE}/${accountId}/ads?fields=${fields}&effective_status=${effectiveStatus}&limit=500&access_token=${token()}`;
-  const rows = await paginate<any>(url);
+  let rows: any[];
+
+  if (adIds && adIds.length > 0) {
+    // Batch-fetch specific ad IDs (50 at a time)
+    rows = [];
+    for (let i = 0; i < adIds.length; i += 50) {
+      const ids = adIds.slice(i, i + 50).join(",");
+      const json = await fetchWithRetry(
+        `${BASE}/?ids=${ids}&fields=${fields}&access_token=${token()}`
+      );
+      if (!json.error) {
+        rows.push(...Object.values(json).filter((v) => typeof v === "object"));
+      }
+    }
+  } else {
+    // Fallback: fetch all ads from account (active + paused + archived)
+    const effectiveStatus = encodeURIComponent(JSON.stringify(["ACTIVE", "PAUSED", "ARCHIVED", "CAMPAIGN_PAUSED", "ADSET_PAUSED"]));
+    const url = `${BASE}/${accountId}/ads?fields=${fields}&effective_status=${effectiveStatus}&limit=500&access_token=${token()}`;
+    rows = await paginate<any>(url);
+  }
 
   const creativeIds = [...new Set(
     rows.map((r: any) => r.creative?.id as string | undefined).filter(Boolean)

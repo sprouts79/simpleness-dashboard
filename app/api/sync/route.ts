@@ -97,10 +97,12 @@ export async function POST(req: NextRequest) {
   // ── 2. Ads + creatives ───────────────────────────────────────────────────────
   if (syncType === "all" || syncType === "ads") {
     try {
-      const [insights, meta] = await Promise.all([
-        fetchAdInsights(accountId, since, until),
-        fetchAdMeta(accountId),
-      ]);
+      // Fetch insights first, then pass ad IDs to fetchAdMeta so it only looks up
+      // metadata for ads with spend — avoids fetching all 200+ account ads and
+      // reduces the chance of rate-limit failures mid-batch.
+      const insights = await fetchAdInsights(accountId, since, until);
+      const adIds = insights.map((ins) => ins.adId);
+      const meta = await fetchAdMeta(accountId, adIds);
       const metaMap = new Map(meta.map((m) => [m.adId, m]));
       const upsertRows = insights.map((ins) => {
         const m = metaMap.get(ins.adId);
