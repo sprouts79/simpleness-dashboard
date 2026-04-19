@@ -247,9 +247,8 @@ export async function fetchAdMeta(accountId: string, adIds?: string[]): Promise<
       const json = await fetchWithRetry(
         `${BASE}/?ids=${ids}&fields=${fields}&access_token=${token()}`
       );
-      if (!json.error) {
-        rows.push(...Object.values(json).filter((v) => typeof v === "object"));
-      }
+      if (json.error) throw new Error(`ad meta fetch: ${json.error.message} (code ${json.error.code})`);
+      rows.push(...Object.values(json).filter((v) => typeof v === "object" && !("error" in (v as any))));
     }
   } else {
     // Fallback: fetch all ads from account (active + paused + archived)
@@ -278,7 +277,10 @@ export async function fetchAdMeta(accountId: string, adIds?: string[]): Promise<
     const json = await fetchWithRetry(
       `${BASE}/?ids=${ids}&fields=object_type,thumbnail_url,asset_feed_spec&thumbnail_width=500&thumbnail_height=889&access_token=${token()}`
     );
-    if (!json.error) {
+    // Throw on error so the ads sync fails cleanly rather than silently writing
+    // empty thumbnail URLs that overwrite correct values in the database.
+    if (json.error) throw new Error(`creative fetch: ${json.error.message} (code ${json.error.code})`);
+    {
       for (const [id, data] of Object.entries(json)) {
         const d = data as any;
         let portraitHash: string | undefined;
