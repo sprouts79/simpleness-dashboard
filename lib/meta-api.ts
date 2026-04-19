@@ -272,8 +272,10 @@ export async function fetchAdMeta(accountId: string, adIds?: string[]): Promise<
     portrait_video_id?: string; // video ID for video portrait ads
   }>();
 
-  for (let i = 0; i < creativeIds.length; i += 50) {
-    const ids = creativeIds.slice(i, i + 50).join(",");
+  // Batch size of 20 for creative calls — asset_feed_spec is large JSON and
+  // causes code 1 "response too large" errors when batching 50 at a time.
+  for (let i = 0; i < creativeIds.length; i += 20) {
+    const ids = creativeIds.slice(i, i + 20).join(",");
     const json = await fetchWithRetry(
       `${BASE}/?ids=${ids}&fields=object_type,thumbnail_url,asset_feed_spec&thumbnail_width=500&thumbnail_height=889&access_token=${token()}`
     );
