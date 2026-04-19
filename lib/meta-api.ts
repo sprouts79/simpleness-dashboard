@@ -233,21 +233,21 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
     rows.map((r: any) => r.creative?.id as string | undefined).filter(Boolean)
   )] as string[];
 
-  // Fetch thumbnail_url + object_type for all creatives.
-  // thumbnail_width=500&thumbnail_height=889 requests the 9:16 stories format.
-  // All ads have a stories (9:16) version — that is always the one shown in the gallery.
-  // Both dimensions must be specified; omitting either causes Meta to return wrong sizes.
-  const creativeMap = new Map<string, { thumbnail_url?: string; object_type?: string }>();
+  // Fetch image_url + thumbnail_url + object_type for all creatives.
+  // image_url = the actual uploaded creative at native resolution — no CDN processing, no cropping.
+  // thumbnail_url is a fallback when image_url is unavailable (e.g. some VIDEO types).
+  // thumbnail_width/height set to 500×889 so the fallback thumbnail is portrait if needed.
+  const creativeMap = new Map<string, { image_url?: string; thumbnail_url?: string; object_type?: string }>();
   for (let i = 0; i < creativeIds.length; i += 50) {
     const ids = creativeIds.slice(i, i + 50).join(",");
     const res = await fetch(
-      `${BASE}/?ids=${ids}&fields=thumbnail_url,object_type&thumbnail_width=500&thumbnail_height=889&access_token=${token()}`,
+      `${BASE}/?ids=${ids}&fields=image_url,thumbnail_url,object_type&thumbnail_width=500&thumbnail_height=889&access_token=${token()}`,
       { cache: "no-store" }
     );
     const json: any = await res.json();
     if (!json.error) {
       for (const [id, data] of Object.entries(json)) {
-        creativeMap.set(id, data as { thumbnail_url?: string; object_type?: string });
+        creativeMap.set(id, data as { image_url?: string; thumbnail_url?: string; object_type?: string });
       }
     }
   }
@@ -260,6 +260,9 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
     else if (objectType === "SHARE") format = "carousel";
     else if (objectType === "PHOTO" || objectType === "STATUS") format = "static";
 
+    // Prefer image_url (native uploaded asset, no CDN crop/letterbox) over thumbnail_url
+    const thumbnailUrl = creative?.image_url || creative?.thumbnail_url || "";
+
     return {
       adId: r.id,
       adName: r.name,
@@ -267,7 +270,7 @@ export async function fetchAdMeta(accountId: string): Promise<AdMeta[]> {
       campaignId: r.campaign_id ?? "",
       status: (r.status ?? "").toLowerCase(),
       createdTime: r.created_time ?? "",
-      thumbnailUrl: creative?.thumbnail_url ?? "",
+      thumbnailUrl,
       format,
     };
   });
