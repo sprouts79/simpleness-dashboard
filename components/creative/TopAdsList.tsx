@@ -163,7 +163,7 @@ function AdCard({
           {rank}
         </span>
 
-        {/* Primary metric */}
+        {/* Active sort metric badge */}
         <span
           className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded"
           style={{ fontFamily: "var(--font-mono)" }}
@@ -185,28 +185,17 @@ function AdCard({
         </div>
       </div>
 
-      {/* Metrics */}
+      {/* KPIs — always Spend · ROAS · CTR · CPA */}
       <div className="p-2.5">
         <p className="text-[11px] font-medium leading-tight mb-2 line-clamp-2 h-7">{ad.name}</p>
         <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
-          {metric !== "spend" && (
-            <MetricCell
-              label="Spend"
-              value={ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : `${Math.round(ad.spend)}`}
-            />
-          )}
-          {metric !== "roas" && ad.roas > 0 && (
-            <MetricCell label="ROAS" value={`${ad.roas.toFixed(1)}×`} />
-          )}
-          {ad.format === "video" && ad.hookRate > 0 && metric !== "hookRate" && (
-            <MetricCell label="Hook" value={`${ad.hookRate.toFixed(0)}%`} />
-          )}
-          {metric !== "ctr" && (
-            <MetricCell label="CTR" value={`${ad.ctr.toFixed(1)}%`} />
-          )}
-          {metric !== "cpa" && ad.cpa > 0 && (
-            <MetricCell label="CPA" value={`${Math.round(ad.cpa)} kr`} />
-          )}
+          <MetricCell
+            label="Spend"
+            value={ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : `${Math.round(ad.spend)}`}
+          />
+          <MetricCell label="ROAS" value={ad.roas > 0 ? `${ad.roas.toFixed(1)}×` : "—"} />
+          <MetricCell label="CTR" value={`${ad.ctr.toFixed(1)}%`} />
+          <MetricCell label="CPA" value={ad.cpa > 0 ? `${Math.round(ad.cpa)} kr` : "—"} />
         </div>
       </div>
     </div>
@@ -296,18 +285,17 @@ export default function TopAdsList({
         </select>
       </div>
 
-      {/* Card grid — masonry 4 columns */}
-      <div className="columns-4 gap-3">
+      {/* Card grid — horizontal, left to right: #1 · #2 · #3 … */}
+      <div className="grid grid-cols-4 gap-3 items-start">
         {sorted.map((ad, i) => (
-          <div key={ad.id} className="break-inside-avoid mb-3">
-            <AdCard
-              ad={ad}
-              rank={i + 1}
-              metric={metric}
-              onOpen={() => openPreview(ad)}
-              isLoading={loadingAdId === ad.id}
-            />
-          </div>
+          <AdCard
+            key={ad.id}
+            ad={ad}
+            rank={i + 1}
+            metric={metric}
+            onOpen={() => openPreview(ad)}
+            isLoading={loadingAdId === ad.id}
+          />
         ))}
       </div>
 
