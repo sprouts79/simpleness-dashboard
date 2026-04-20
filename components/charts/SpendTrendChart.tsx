@@ -37,9 +37,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       <div className="flex gap-5">
         {spend !== undefined && (
           <div>
-            <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-[var(--color-surface)] text-[rgba(9,10,8,0.6)] mb-1">
-              Spend
-            </span>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: CHART_BAR_COLOR }} />
+              <span className="text-xs font-semibold text-[rgba(9,10,8,0.6)]">Spend</span>
+            </div>
             <p className="font-bold text-xl" style={{ fontFamily: "var(--font-mono)" }}>
               {spend.toLocaleString("no-NO")} kr
             </p>
@@ -47,9 +48,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         )}
         {roas !== undefined && (
           <div>
-            <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-[var(--color-surface)] text-[rgba(9,10,8,0.6)] mb-1">
-              ROAS
-            </span>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: CHART_LINE_COLOR }} />
+              <span className="text-xs font-semibold text-[rgba(9,10,8,0.6)]">ROAS</span>
+            </div>
             <p className="font-bold text-xl" style={{ fontFamily: "var(--font-mono)" }}>
               {roas.toFixed(1)}x
             </p>

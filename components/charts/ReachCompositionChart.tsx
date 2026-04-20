@@ -36,17 +36,19 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       <p className="font-semibold text-base mb-3">{label}</p>
       <div className="space-y-2">
         <div>
-          <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-[var(--color-accent)] text-[var(--color-black)] mb-1">
-            Nye
-          </span>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: CHART_BAR_COLOR }} />
+            <span className="text-xs font-semibold text-[rgba(9,10,8,0.6)]">Nye</span>
+          </div>
           <p className="font-bold text-lg" style={{ fontFamily: "var(--font-mono)" }}>
             {formatReach(netNew)} <span className="text-sm font-medium text-[rgba(9,10,8,0.5)]">({pct}%)</span>
           </p>
         </div>
         <div>
-          <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-[var(--color-surface)] text-[rgba(9,10,8,0.6)] mb-1">
-            Tidligere nadd
-          </span>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "#e8dcc8" }} />
+            <span className="text-xs font-semibold text-[rgba(9,10,8,0.6)]">Tidligere nådd</span>
+          </div>
           <p className="font-bold text-lg" style={{ fontFamily: "var(--font-mono)" }}>{formatReach(prevReached)}</p>
         </div>
         <div className="pt-2 border-t border-[var(--color-border)]">

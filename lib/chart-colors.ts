@@ -17,4 +17,4 @@ export const CHART_COLORS = [
 
 // For bar/line charts that need a single accent color
 export const CHART_BAR_COLOR = "#96723d"; // Mid-brown
-export const CHART_LINE_COLOR = "#654925"; // Darker brown
+export const CHART_LINE_COLOR = "#41BD0E"; // Strong green (accent from design system)

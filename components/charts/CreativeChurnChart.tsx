@@ -55,7 +55,23 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function CreativeChurnChart({ data, cohortLabels }: Props) {
   return (
-    <ResponsiveContainer width="100%" height={260}>
+    <div>
+      {/* Legend */}
+      <div className="flex flex-wrap gap-x-4 gap-y-2 mb-4">
+        {[...cohortLabels].reverse().map((label, idx) => {
+          const colorIdx = cohortLabels.length - 1 - idx;
+          return (
+            <div key={label} className="flex items-center gap-2">
+              <div 
+                className="w-3 h-3 rounded-sm flex-shrink-0" 
+                style={{ backgroundColor: COHORT_COLORS[colorIdx % COHORT_COLORS.length] }}
+              />
+              <span className="text-xs text-[rgba(9,10,8,0.7)]">{label}</span>
+            </div>
+          );
+        })}
+      </div>
+      <ResponsiveContainer width="100%" height={260}>
       <AreaChart data={data} margin={{ top: 4, right: 12, bottom: 0, left: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e8e8e6" vertical={false} />
         <XAxis
@@ -86,5 +102,6 @@ export default function CreativeChurnChart({ data, cohortLabels }: Props) {
         ))}
       </AreaChart>
     </ResponsiveContainer>
+    </div>
   );
 }
