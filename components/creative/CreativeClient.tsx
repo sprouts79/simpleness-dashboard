@@ -211,134 +211,164 @@ export default function CreativeClient({
         <KpiCard label="Snitt CTR" value={`${kpis.avgCtr.toFixed(1)}%`} />
       </div>
 
-      {/* Cohort Performance Table */}
+      {/* Cohort Cards */}
       {cohorts.length > 0 && (
         <div>
           <SectionHeader
-            title="Kohort-ytelse over tid"
-            subtitle={`${selectedMetricInfo.label} per uke etter lansering - farge viser prestasjon relativt til andre kohorter`}
+            title="Kohorter"
+            subtitle="Annonser gruppert etter lanseringsuke - klikk for a se alle annonser"
           />
-          <div className="rounded-xl bg-[var(--color-surface)] overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[var(--color-border)]">
-                  <th className="text-left px-5 py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)]">
-                    Kohort
-                  </th>
-                  <th className="text-center px-3 py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)]">
-                    Ads
-                  </th>
-                  <th className="text-right px-3 py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)]">
-                    Spend
-                  </th>
-                  {weekColumns.map(w => (
-                    <th key={w} className="text-center px-2 py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)]">
-                      W{w}
-                    </th>
-                  ))}
-                  <th className="px-3 py-3.5"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {cohorts.map((cohort) => {
-                  const totalSpend = cohort.weeks.reduce((s, w) => s + (w.spend ?? 0), 0);
-                  const cohortAds = adsByCohort[cohort.cohortDate] || [];
-                  const isExpanded = expandedCohort === cohort.cohortDate;
-                  
-                  return (
-                    <tr key={cohort.cohortDate} className="group">
-                      <td colSpan={11 + weekColumns.length} className="p-0">
-                        {/* Main row */}
-                        <div 
-                          className={clsx(
-                            "flex items-center border-b border-[var(--color-border)] hover:bg-white transition-colors cursor-pointer",
-                            isExpanded && "bg-white"
-                          )}
-                          onClick={() => setExpandedCohort(isExpanded ? null : cohort.cohortDate)}
-                        >
-                          <div className="w-[120px] px-5 py-3 font-medium">
-                            {cohort.label}
-                          </div>
-                          <div className="w-[60px] px-3 py-3 text-center text-[rgba(9,10,8,0.6)]">
-                            {cohort.adCount}
-                          </div>
-                          <div className="w-[80px] px-3 py-3 text-right font-mono text-[rgba(9,10,8,0.6)]">
-                            {totalSpend >= 1000 ? `${Math.round(totalSpend / 1000)}k` : totalSpend}
-                          </div>
-                          {weekColumns.map(weekNum => {
-                            const weekData = cohort.weeks.find(w => w.weekNumber === weekNum);
-                            const value = weekData?.[metric] ?? 0;
-                            const { min, max } = weekMinMax[weekNum];
-                            const hasData = weekData && value > 0;
-                            
-                            return (
-                              <div 
-                                key={weekNum} 
-                                className="w-[56px] px-1 py-2 text-center"
-                              >
-                                {hasData ? (
-                                  <span
-                                    className="inline-block px-2 py-1 rounded text-sm font-medium font-mono min-w-[44px]"
-                                    style={{
-                                      backgroundColor: getHeatmapColor(value, min, max, selectedMetricInfo.higherIsBetter),
-                                      color: getHeatmapTextColor(value, min, max, selectedMetricInfo.higherIsBetter),
-                                    }}
-                                  >
-                                    {formatValue(value, metric)}
-                                  </span>
-                                ) : (
-                                  <span className="text-[rgba(9,10,8,0.2)]">-</span>
-                                )}
+          <div className="space-y-4">
+            {cohorts.map((cohort) => {
+              const totalSpend = cohort.weeks.reduce((s, w) => s + (w.spend ?? 0), 0);
+              const cohortAds = adsByCohort[cohort.cohortDate] || [];
+              const isExpanded = expandedCohort === cohort.cohortDate;
+              const w0 = cohort.weeks.find(w => w.weekNumber === 0);
+              const latestWeek = cohort.weeks.reduce((latest, w) => 
+                (w.spend ?? 0) > 0 && w.weekNumber > (latest?.weekNumber ?? -1) ? w : latest, 
+                null as typeof cohort.weeks[0] | null
+              );
+              
+              // Calculate fatigue (change from W0 to latest)
+              const startValue = w0?.[metric] ?? 0;
+              const currentValue = latestWeek?.[metric] ?? 0;
+              const change = startValue > 0 ? ((currentValue - startValue) / startValue) * 100 : 0;
+              
+              return (
+                <div 
+                  key={cohort.cohortDate}
+                  className={clsx(
+                    "rounded-xl bg-[var(--color-surface)] overflow-hidden transition-all",
+                    isExpanded && "ring-2 ring-[var(--color-black)]"
+                  )}
+                >
+                  {/* Card header - always visible */}
+                  <div 
+                    className="p-5 cursor-pointer hover:bg-white transition-colors"
+                    onClick={() => setExpandedCohort(isExpanded ? null : cohort.cohortDate)}
+                  >
+                    <div className="flex items-start gap-5">
+                      {/* Thumbnails preview */}
+                      <div className="flex -space-x-2 flex-shrink-0">
+                        {cohortAds.slice(0, 4).map((ad, i) => (
+                          <div 
+                            key={ad.id}
+                            className="w-12 h-12 rounded-lg bg-[rgba(9,10,8,0.1)] border-2 border-[var(--color-surface)] overflow-hidden"
+                            style={{ zIndex: 4 - i }}
+                          >
+                            {ad.thumbnailUrl ? (
+                              <img src={ad.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-xs text-[rgba(9,10,8,0.3)]">
+                                {ad.format?.charAt(0) || "?"}
                               </div>
-                            );
-                          })}
-                          <div className="w-[40px] px-3 py-3 text-center text-[rgba(9,10,8,0.3)] group-hover:text-[var(--color-black)]">
-                            {isExpanded ? "−" : "+"}
-                          </div>
-                        </div>
-                        
-                        {/* Expanded gallery */}
-                        {isExpanded && cohortAds.length > 0 && (
-                          <div className="px-5 py-4 bg-white border-b border-[var(--color-border)]">
-                            <p className="text-xs text-[rgba(9,10,8,0.5)] mb-3">
-                              {cohortAds.length} annonser i denne kohorten
-                            </p>
-                            <div className="grid grid-cols-6 gap-3">
-                              {cohortAds.slice(0, 12).map((ad) => (
-                                <div key={ad.id} className="group/ad">
-                                  <div className="aspect-square rounded-lg bg-[rgba(9,10,8,0.06)] overflow-hidden mb-2">
-                                    {ad.thumbnailUrl ? (
-                                      <img
-                                        src={ad.thumbnailUrl}
-                                        alt=""
-                                        className="w-full h-full object-cover"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center text-xs text-[rgba(9,10,8,0.3)]">
-                                        {ad.format}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <p className="text-xs text-[rgba(9,10,8,0.6)] truncate">{ad.name}</p>
-                                  <p className="text-xs font-mono text-[rgba(9,10,8,0.4)]">
-                                    {ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : ad.spend} · {ad.ctr.toFixed(1)}%
-                                  </p>
-                                </div>
-                              ))}
-                            </div>
-                            {cohortAds.length > 12 && (
-                              <p className="text-xs text-[rgba(9,10,8,0.4)] mt-3">
-                                +{cohortAds.length - 12} flere annonser
-                              </p>
                             )}
                           </div>
+                        ))}
+                        {cohortAds.length > 4 && (
+                          <div 
+                            className="w-12 h-12 rounded-lg bg-[rgba(9,10,8,0.08)] border-2 border-[var(--color-surface)] flex items-center justify-center text-xs font-medium text-[rgba(9,10,8,0.5)]"
+                            style={{ zIndex: 0 }}
+                          >
+                            +{cohortAds.length - 4}
+                          </div>
                         )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                      </div>
+                      
+                      {/* Cohort info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-1">
+                          <h3 className="text-base font-semibold">{cohort.label}</h3>
+                          <span className="text-sm text-[rgba(9,10,8,0.5)]">
+                            {cohort.adCount} annonser
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm">
+                          <span className="font-mono">
+                            <span className="text-[rgba(9,10,8,0.5)]">Spend:</span>{" "}
+                            <span className="font-semibold">{totalSpend >= 1000 ? `${Math.round(totalSpend / 1000)}k` : totalSpend}</span>
+                          </span>
+                          <span className="font-mono">
+                            <span className="text-[rgba(9,10,8,0.5)]">{selectedMetricInfo.label}:</span>{" "}
+                            <span className="font-semibold">{formatValue(currentValue, metric)}{selectedMetricInfo.unit !== "kr" ? selectedMetricInfo.unit : ""}</span>
+                          </span>
+                          {change !== 0 && (
+                            <span 
+                              className={clsx(
+                                "text-xs font-semibold px-2 py-0.5 rounded",
+                                (selectedMetricInfo.higherIsBetter ? change >= 0 : change <= 0)
+                                  ? "bg-[rgba(34,140,34,0.12)] text-[#228b22]"
+                                  : "bg-[rgba(200,50,50,0.12)] text-[#c83232]"
+                              )}
+                            >
+                              {change > 0 ? "+" : ""}{change.toFixed(0)}%
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Expand indicator */}
+                      <div className="text-[rgba(9,10,8,0.3)] text-lg">
+                        {isExpanded ? "−" : "+"}
+                      </div>
+                    </div>
+                    
+                    {/* Mini heatmap row */}
+                    <div className="flex items-center gap-1 mt-4">
+                      <span className="text-xs text-[rgba(9,10,8,0.4)] w-8">W0</span>
+                      {weekColumns.map(weekNum => {
+                        const weekData = cohort.weeks.find(w => w.weekNumber === weekNum);
+                        const value = weekData?.[metric] ?? 0;
+                        const { min, max } = weekMinMax[weekNum];
+                        const hasData = weekData && value > 0;
+                        
+                        return (
+                          <div 
+                            key={weekNum}
+                            className="flex-1 h-2 rounded-full"
+                            style={{
+                              backgroundColor: hasData 
+                                ? getHeatmapColor(value, min, max, selectedMetricInfo.higherIsBetter)
+                                : "rgba(9,10,8,0.06)"
+                            }}
+                          />
+                        );
+                      })}
+                      <span className="text-xs text-[rgba(9,10,8,0.4)] w-8 text-right">W7</span>
+                    </div>
+                  </div>
+                  
+                  {/* Expanded gallery */}
+                  {isExpanded && cohortAds.length > 0 && (
+                    <div className="px-5 pb-5 border-t border-[var(--color-border)] pt-4">
+                      <div className="grid grid-cols-6 gap-4">
+                        {cohortAds.map((ad) => (
+                          <div key={ad.id} className="group/ad">
+                            <div className="aspect-square rounded-lg bg-[rgba(9,10,8,0.06)] overflow-hidden mb-2">
+                              {ad.thumbnailUrl ? (
+                                <img
+                                  src={ad.thumbnailUrl}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-xs text-[rgba(9,10,8,0.3)]">
+                                  {ad.format}
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-xs text-[rgba(9,10,8,0.7)] truncate font-medium">{ad.name}</p>
+                            <p className="text-xs font-mono text-[rgba(9,10,8,0.45)]">
+                              {ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : ad.spend} · {ad.ctr.toFixed(1)}%
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
