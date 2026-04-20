@@ -265,7 +265,7 @@ export default function ReachClient({
                   Previously reached
                 </span>
                 <span className="flex items-center gap-2">
-                  <span className="w-3.5 h-3.5 rounded-sm bg-[var(--color-green-mint)] inline-block" />
+                  <span className="w-3.5 h-3.5 rounded-sm bg-[var(--color-black)] inline-block" />
                   Net New
                 </span>
                 <span className="flex items-center gap-2">

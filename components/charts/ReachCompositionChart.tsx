@@ -95,12 +95,12 @@ export default function ReachCompositionChart({ data }: Props) {
           maxBarSize={32}
         />
 
-        {/* Net New — green */}
+        {/* Net New — dark, the important metric */}
         <Bar
           yAxisId="reach"
           dataKey="netNew"
           stackId="reach"
-          fill="var(--color-green-mint)"
+          fill="var(--color-black)"
           name="Net New"
           maxBarSize={32}
           radius={[3, 3, 0, 0]}

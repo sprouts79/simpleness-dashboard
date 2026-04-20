@@ -34,12 +34,15 @@ export default function KpiCard({
       className={clsx(
         "rounded-2xl px-6 py-5",
         highlight 
-          ? "bg-[var(--color-green-pale)]" 
+          ? "bg-white border-2 border-[var(--color-black)]" 
           : "bg-[var(--color-surface)]"
       )}
     >
       {/* Badge label */}
-      <span className="inline-block px-2.5 py-1 rounded-full text-xs font-semibold bg-white text-[rgba(9,10,8,0.6)] mb-3 shadow-sm">
+      <span className={clsx(
+        "inline-block px-2.5 py-1 rounded-full text-xs font-semibold mb-3 shadow-sm",
+        highlight ? "bg-[var(--color-accent)] text-[var(--color-black)]" : "bg-white text-[rgba(9,10,8,0.6)]"
+      )}>
         {label}
       </span>
 

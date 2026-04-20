@@ -29,11 +29,11 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
           className={clsx(
             "flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5",
             isPulse
-              ? "bg-[var(--color-green-pale)] text-[var(--color-link)]"
-              : "text-[rgba(9,10,8,0.55)] hover:text-[var(--color-black)] hover:bg-[var(--color-border)]"
+              ? "bg-white text-[var(--color-black)] shadow-sm"
+              : "text-[rgba(9,10,8,0.55)] hover:text-[var(--color-black)] hover:bg-white"
           )}
         >
-          <span className={clsx("w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[var(--color-accent)]", !isPulse && "opacity-30")} />
+          <span className={clsx("w-1.5 h-1.5 rounded-full flex-shrink-0", isPulse ? "bg-[var(--color-accent)]" : "bg-[rgba(9,10,8,0.2)]")} />
           Puls
         </Link>
 
@@ -52,11 +52,11 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
               className={clsx(
                 "flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors mb-0.5",
                 isActive
-                  ? "bg-[var(--color-green-pale)] text-[var(--color-link)] font-semibold"
-                  : "text-[rgba(9,10,8,0.55)] hover:text-[var(--color-black)] hover:bg-[var(--color-border)]"
+                  ? "bg-white text-[var(--color-black)] font-semibold shadow-sm"
+                  : "text-[rgba(9,10,8,0.55)] hover:text-[var(--color-black)] hover:bg-white"
               )}
             >
-              <span className={clsx("w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[var(--color-accent)]", !isActive && "opacity-30")} />
+              <span className={clsx("w-1.5 h-1.5 rounded-full flex-shrink-0", isActive ? "bg-[var(--color-accent)]" : "bg-[rgba(9,10,8,0.2)]")} />
               <span className="truncate">{client.name}</span>
             </Link>
           );
@@ -70,8 +70,8 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
           className={clsx(
             "flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors",
             pathname === "/admin"
-              ? "bg-[var(--color-green-pale)] text-[var(--color-link)] font-semibold"
-              : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)] hover:bg-[var(--color-border)]"
+              ? "bg-white text-[var(--color-black)] font-semibold shadow-sm"
+              : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)] hover:bg-white"
           )}
         >
           <span className="text-xs">＋</span>
