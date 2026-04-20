@@ -206,7 +206,7 @@ export default function PerformanceClient({
           <SpendTrendChart data={trend} days={365} />
           <div className="flex gap-6 mt-4 text-sm text-[rgba(9,10,8,0.6)]">
             <span className="flex items-center gap-2">
-              <span className="w-3.5 h-3 rounded-sm bg-[var(--color-green-mint)] inline-block" />
+              <span className="w-3.5 h-3 rounded-sm bg-[rgba(9,10,8,0.12)] inline-block" />
               Spend
             </span>
             <span className="flex items-center gap-2">

@@ -100,11 +100,11 @@ export default function SpendTrendChart({ data }: Props) {
           domain={[0, "auto"]}
           width={48}
         />
-        <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(137,255,88,0.08)" }} />
+        <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(9,10,8,0.03)" }} />
         <Bar
           yAxisId="spend"
           dataKey="spend"
-          fill="var(--color-green-mint)"
+          fill="rgba(9,10,8,0.12)"
           radius={[3, 3, 0, 0]}
           name="Spend"
           maxBarSize={28}
@@ -115,8 +115,8 @@ export default function SpendTrendChart({ data }: Props) {
           dataKey="roas"
           stroke="var(--color-black)"
           strokeWidth={2}
-          dot={{ fill: "var(--color-black)", strokeWidth: 0, r: 4 }}
-          activeDot={{ fill: "var(--color-accent)", stroke: "var(--color-black)", strokeWidth: 2, r: 6 }}
+          dot={{ fill: "var(--color-black)", strokeWidth: 0, r: 3 }}
+          activeDot={{ fill: "#89FF58", stroke: "var(--color-black)", strokeWidth: 2, r: 5 }}
           name="ROAS"
         />
       </ComposedChart>
