@@ -19,8 +19,8 @@ const PERIOD_OPTIONS: { value: PeriodKey; label: string }[] = [
 ];
 
 const COMPARE_OPTIONS: { value: CompareKey; label: string }[] = [
-  { value: "period", label: "Samme periode for" },
-  { value: "year", label: "I fjor" },
+  { value: "period", label: "Forrige periode" },
+  { value: "year", label: "Forrige ar" },
 ];
 
 function formatNok(n: number) {
@@ -153,21 +153,23 @@ export default function PerformanceClient({
         <SectionHeader title="Oppsummering" />
         <div className="grid grid-cols-3 gap-4 mb-4">
           <KpiCard
-            label="Brukt"
+            label="Spend"
             value={formatNok(kpis.spend)}
             delta={kpis.spendDelta}
             deltaLabel={deltaLabel}
+            note="Pengebruk"
             size="large"
           />
           <KpiCard
-            label="Avkastning"
+            label="ROAS"
             value={`${kpis.roas.toFixed(1)}x`}
             delta={kpis.roasDelta}
             deltaLabel={deltaLabel}
+            note="Avkastning"
             size="large"
           />
           <KpiCard
-            label="Pris per salg"
+            label="Kost per kjop"
             value={`${Math.round(kpis.cpa)} kr`}
             delta={kpis.cpaDelta}
             deltaLabel={deltaLabel}
@@ -177,25 +179,27 @@ export default function PerformanceClient({
         </div>
         <div className="grid grid-cols-3 gap-4">
           <KpiCard
-            label="Pris per 1000 nye"
+            label="CPMn"
             value={kpis.cpmn > 0 ? `${Math.round(kpis.cpmn)} kr` : "-"}
             delta={kpis.cpmn > 0 ? kpis.cpmnDelta : undefined}
             deltaLabel={deltaLabel}
             invertDelta
+            note="Per 1000 nye personer"
           />
           <KpiCard
-            label="Ganger vist per person"
+            label="Frekvens"
             value={kpis.frequency.toFixed(1)}
             delta={kpis.frequencyDelta}
             deltaLabel={deltaLabel}
             invertDelta
-            note={kpis.frequency > 8 ? "Sliten malgruppe" : kpis.frequency > 6 ? "Moderat" : ""}
+            note={kpis.frequency > 8 ? "Sliten malgruppe" : kpis.frequency > 6 ? "Ganger vist per person" : "Ganger vist per person"}
           />
           <KpiCard
-            label="Klikkrate"
+            label="CTR"
             value={`${kpis.ctr.toFixed(1)}%`}
             delta={kpis.ctrDelta}
             deltaLabel={deltaLabel}
+            note="Klikkrate"
           />
         </div>
       </div>
@@ -208,11 +212,11 @@ export default function PerformanceClient({
           <div className="flex gap-6 mt-4 text-sm text-[rgba(9,10,8,0.5)]">
             <span className="flex items-center gap-2">
               <span className="w-3.5 h-3 rounded-sm bg-[#e8e8e6] inline-block" />
-              Pengebruk
+              Spend
             </span>
             <span className="flex items-center gap-2">
               <span className="w-5 h-0.5 bg-[var(--color-link)] inline-block" />
-              Avkastning
+              ROAS
             </span>
           </div>
         </div>
@@ -225,7 +229,7 @@ export default function PerformanceClient({
           <table className="w-full text-base">
             <thead>
               <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-                {["Kampanje", "Brukt", "Avkast.", "Per salg", "Per 1000", "Vist", "Klikk", "Nadd"].map((h) => (
+                {["Kampanje", "Spend", "ROAS", "Kost/kjop", "CPM", "Frekvens", "CTR", "Reach"].map((h) => (
                   <th
                     key={h}
                     className={clsx(
