@@ -584,20 +584,13 @@ function getMondayOf(dateStr: string): string {
 
 function formatWeekRangeLabel(weekStart: string): string {
   const start = new Date(weekStart + "T00:00:00Z");
-  const end = new Date(weekStart + "T00:00:00Z");
-  end.setUTCDate(end.getUTCDate() + 6);
-
-  const months = ["jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "des"];
-  const startDay = start.getUTCDate();
-  const endDay = end.getUTCDate();
-  const endMonth = months[end.getUTCMonth()];
-  const year = end.getUTCFullYear();
-
-  if (start.getUTCMonth() === end.getUTCMonth()) {
-    return `${startDay}–${endDay} ${endMonth} ${year}`;
-  }
-  const startMonth = months[start.getUTCMonth()];
-  return `${startDay} ${startMonth}–${endDay} ${endMonth} ${year}`;
+  // Calculate ISO week number
+  const tempDate = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
+  const dayNum = tempDate.getUTCDay() || 7;
+  tempDate.setUTCDate(tempDate.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(tempDate.getUTCFullYear(), 0, 1));
+  const weekNum = Math.ceil((((tempDate.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return `Uke ${weekNum}`;
 }
 
 export async function getCohorts(clientId: string): Promise<AdCohort[]> {
