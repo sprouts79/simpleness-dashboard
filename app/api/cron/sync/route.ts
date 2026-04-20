@@ -115,7 +115,7 @@ export async function GET(req: NextRequest) {
         .upsert(adsUpsert, { onConflict: "ad_id,client_id" });
 
       // ── Reach ──────────────────────────────────────────────────────────────
-      const reachSince = daysAgoInTz(91, tz);
+      const reachSince = daysAgoInTz(196, tz); // ~6.5 months — reach page shows 6
       const windowStart = reachSince;
       const weeklyRows = await fetchWeeklyReachRows(client.meta_account_id, reachSince, until, windowStart);
       const reachUpsert = weeklyRows.map((r) => {
