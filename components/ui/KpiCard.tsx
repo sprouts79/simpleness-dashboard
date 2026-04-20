@@ -32,8 +32,8 @@ export default function KpiCard({
   return (
     <div
       className={clsx(
-        "border-2 border-[var(--color-black)] p-4 flex flex-col gap-1 shadow-[3px_3px_0_0_rgba(9,10,8,1)]",
-        highlight ? "bg-[var(--color-green-pale)]" : "bg-white"
+        "rounded-lg border p-4 flex flex-col gap-1",
+        highlight ? "border-[var(--color-accent)] bg-[var(--color-green-pale)]" : "border-[var(--color-border)] bg-white"
       )}
     >
       <p className="text-xs font-medium text-[rgba(9,10,8,0.45)] uppercase tracking-wide">

@@ -112,16 +112,16 @@ export default function PerformanceClient({
       {/* Period selector + compare toggle */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         {/* Period */}
-        <div className="flex gap-2">
+        <div className="flex bg-[var(--color-surface)] rounded-lg p-1 gap-1">
           {PERIOD_OPTIONS.map(({ value, label }) => (
             <button
               key={value}
               onClick={() => navigate(value, compare)}
               className={clsx(
-                "text-xs font-bold px-3 py-1.5 border-2 border-[var(--color-black)] transition-all whitespace-nowrap",
+                "text-xs font-semibold px-3 py-1.5 rounded-md transition-colors whitespace-nowrap",
                 period === value
-                  ? "bg-[var(--color-accent)] text-[var(--color-black)] shadow-[2px_2px_0_0_rgba(9,10,8,1)]"
-                  : "bg-white text-[rgba(9,10,8,0.5)] hover:shadow-[2px_2px_0_0_rgba(9,10,8,1)]"
+                  ? "bg-white text-[var(--color-black)] shadow-sm"
+                  : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)]"
               )}
             >
               {label}
@@ -130,16 +130,16 @@ export default function PerformanceClient({
         </div>
 
         {/* Compare */}
-        <div className="flex gap-2">
+        <div className="flex bg-[var(--color-surface)] rounded-lg p-1 gap-1">
           {COMPARE_OPTIONS.map(({ value, label }) => (
             <button
               key={value}
               onClick={() => navigate(period, value)}
               className={clsx(
-                "text-xs font-bold px-3 py-1.5 border-2 border-[var(--color-black)] transition-all whitespace-nowrap",
+                "text-xs font-semibold px-3 py-1.5 rounded-md transition-colors whitespace-nowrap",
                 compare === value
-                  ? "bg-[var(--color-accent)] text-[var(--color-black)] shadow-[2px_2px_0_0_rgba(9,10,8,1)]"
-                  : "bg-white text-[rgba(9,10,8,0.5)] hover:shadow-[2px_2px_0_0_rgba(9,10,8,1)]"
+                  ? "bg-white text-[var(--color-black)] shadow-sm"
+                  : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)]"
               )}
             >
               {label}
@@ -204,7 +204,7 @@ export default function PerformanceClient({
       {/* Trend chart */}
       <div>
         <SectionHeader title="Spend & ROAS — trend" subtitle={kpis.periodLabel} />
-        <div className="border-2 border-[var(--color-black)] p-4 bg-white shadow-[3px_3px_0_0_rgba(9,10,8,1)]">
+        <div className="rounded-xl border border-[var(--color-border)] p-4 bg-white">
           <SpendTrendChart data={trend} days={365} />
           <div className="flex gap-6 mt-3 text-xs text-[rgba(9,10,8,0.4)]">
             <span className="flex items-center gap-1.5">
@@ -225,15 +225,15 @@ export default function PerformanceClient({
           title="Kampanjer"
           subtitle="Klikk ▸ for å se ad sets"
         />
-        <div className="border-2 border-[var(--color-black)] overflow-hidden shadow-[3px_3px_0_0_rgba(9,10,8,1)]">
+        <div className="rounded-xl border border-[var(--color-border)] overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b-2 border-[var(--color-black)] bg-[var(--color-surface)]">
+              <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
                 {["Kampanje", "Spend", "ROAS", "CPA", "CPM", "Freq.", "CTR", "Reach"].map((h) => (
                   <th
                     key={h}
                     className={clsx(
-                      "py-3 text-xs font-black uppercase tracking-widest text-[var(--color-black)]",
+                      "py-3 text-xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.45)]",
                       h === "Kampanje" ? "text-left px-5" : "text-right px-4"
                     )}
                   >

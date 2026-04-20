@@ -8,7 +8,7 @@ export default function SectionHeader({ title, subtitle, action }: SectionHeader
   return (
     <div className="flex items-baseline justify-between mb-4">
       <div>
-        <h2 className="text-sm font-black text-[var(--color-black)] uppercase tracking-widest">
+        <h2 className="text-sm font-semibold text-[rgba(9,10,8,0.45)] uppercase tracking-widest">
           {title}
         </h2>
         {subtitle && (
