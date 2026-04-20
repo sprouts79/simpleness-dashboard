@@ -5,10 +5,14 @@ import ReachClient from "@/components/reach/ReachClient";
 
 export default async function ReachPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ client: string }>;
+  searchParams: Promise<{ lookback?: string }>;
 }) {
   const { client: clientId } = await params;
-  const data = await getMonthlyReachData(clientId, 0);
-  return <ReachClient clientId={clientId} data={data} />;
+  const { lookback: lookbackStr } = await searchParams;
+  const lookback = parseInt(lookbackStr ?? "0", 10);
+  const data = await getMonthlyReachData(clientId, lookback);
+  return <ReachClient clientId={clientId} data={data} currentLookback={lookback} />;
 }

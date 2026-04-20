@@ -67,9 +67,11 @@ const CpmTooltip = ({ active, payload, label }: any) => {
 export default function ReachClient({
   clientId,
   data,
+  currentLookback,
 }: {
   clientId: string;
   data: MonthlyReachRow[];
+  currentLookback: number;
 }) {
   const router = useRouter();
   const [syncing, setSyncing] = useState(false);
@@ -77,9 +79,19 @@ export default function ReachClient({
   const [period, setPeriod] = useState<"3m" | "6m">("6m");
   const [compare, setCompare] = useState<"same" | "previous">("same");
 
-  // Filter data based on selected period
+  // Calculate required lookback based on period + compare
   const periodMonths = PERIOD_OPTIONS.find(p => p.value === period)?.months ?? 6;
+  const requiredLookback = compare === "previous" ? periodMonths * 30 : 0;
+
+  // Filter data based on selected period
   const filtered = data.slice(0, periodMonths);
+
+  // Navigate to fetch new data when lookback requirement changes
+  useEffect(() => {
+    if (requiredLookback !== currentLookback) {
+      router.push(`?lookback=${requiredLookback}`);
+    }
+  }, [requiredLookback, currentLookback, router]);
 
   const kpis = filtered.length === 0 ? null : {
     totalSpend: filtered.reduce((s, r) => s + r.spend, 0),
@@ -121,7 +133,7 @@ export default function ReachClient({
         body: JSON.stringify({
           clientId,
           months: 6,
-          lookbackDays: 0,
+          lookbackDays: requiredLookback,
           syncType: "reach",
         }),
       });
