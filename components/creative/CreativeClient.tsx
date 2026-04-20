@@ -95,12 +95,14 @@ export default function CreativeClient({
       const values = cohorts
         .map(c => c.weeks.find(w => w.weekNumber === weekNum))
         .filter(Boolean)
-        .map(w => w![metric] ?? 0);
+        .map(w => w![metric] ?? 0)
+        .filter(v => v > 0); // Only include non-zero values
       result[weekNum] = {
         min: values.length > 0 ? Math.min(...values) : 0,
         max: values.length > 0 ? Math.max(...values) : 0,
       };
     });
+    console.log("[v0] weekMinMax for", metric, ":", result);
     return result;
   }, [cohorts, metric]);
 
