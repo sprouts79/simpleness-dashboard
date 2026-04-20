@@ -120,31 +120,30 @@ export default function CreativeClient({
     return { activeAds, activeCohorts, totalSpend, avgCtr };
   }, [ads, cohorts]);
 
-  // Group ads by cohort - match ads to cohort by week number (label)
+  // Group ads by cohort - use cohortDate from ads to match
   const adsByCohort = useMemo(() => {
-    // Helper to get ISO week number from a date string
-    const getWeekNumber = (dateStr: string): number => {
-      if (!dateStr) return 0;
-      const d = new Date(dateStr + "T00:00:00Z");
-      const tempDate = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-      const dayNum = tempDate.getUTCDay() || 7;
-      tempDate.setUTCDate(tempDate.getUTCDate() + 4 - dayNum);
-      const yearStart = new Date(Date.UTC(tempDate.getUTCFullYear(), 0, 1));
-      return Math.ceil((((tempDate.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-    };
-    
     const grouped: Record<string, Ad[]> = {};
-    cohorts.forEach(c => {
-      // Extract week number from cohort label (e.g., "Uke 10" -> 10)
-      const cohortWeekMatch = c.label.match(/Uke\s*(\d+)/i);
-      const cohortWeek = cohortWeekMatch ? parseInt(cohortWeekMatch[1], 10) : 0;
-      
-      grouped[c.cohortDate] = ads.filter(ad => {
-        if (!ad.cohortDate) return false;
-        const adWeek = getWeekNumber(ad.cohortDate);
-        return adWeek === cohortWeek;
-      });
+    
+    // Sort cohorts by date to assign ads in order
+    const sortedCohorts = [...cohorts].sort((a, b) => 
+      new Date(b.cohortDate).getTime() - new Date(a.cohortDate).getTime()
+    );
+    
+    // Sort ads by cohortDate (or createdAt as fallback)
+    const sortedAds = [...ads].sort((a, b) => {
+      const dateA = a.cohortDate || a.createdAt || "";
+      const dateB = b.cohortDate || b.createdAt || "";
+      return new Date(dateB).getTime() - new Date(dateA).getTime();
     });
+    
+    // Assign ads to cohorts based on their position/count
+    let adIndex = 0;
+    sortedCohorts.forEach(c => {
+      const count = c.adCount || 0;
+      grouped[c.cohortDate] = sortedAds.slice(adIndex, adIndex + count);
+      adIndex += count;
+    });
+    
     return grouped;
   }, [cohorts, ads]);
 
