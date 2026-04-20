@@ -324,9 +324,9 @@ export default function ReachClient({
                     type="monotone"
                     dataKey="cpmNetNew"
                     stroke="var(--color-link)"
-                    strokeWidth={2.5}
-                    dot={{ r: 3, fill: "#515B12", strokeWidth: 0 }}
-                    activeDot={{ fill: "#41BD0E", stroke: "#515B12", strokeWidth: 2, r: 6 }}
+                    strokeWidth={3}
+                    dot={false}
+                    activeDot={false}
                   />
                 </LineChart>
               </ResponsiveContainer>
