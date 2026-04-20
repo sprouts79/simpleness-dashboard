@@ -146,7 +146,7 @@ export default function ReachClient({
       {/* Controls: lookback selector + Hent data */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <span className="text-sm font-medium text-[rgba(9,10,8,0.55)]">Utvid lookback med:</span>
+          <span className="text-sm font-medium text-[rgba(9,10,8,0.55)]">Se lenger tilbake:</span>
           <div className="flex bg-[var(--color-surface)] rounded-lg p-1 gap-1">
             {LOOKBACK_OPTIONS.map(({ label, days }) => (
               <button
@@ -165,7 +165,7 @@ export default function ReachClient({
           </div>
           {currentLookback !== 0 && filtered.length === 0 && (
             <span className="text-sm text-[rgba(9,10,8,0.45)]">
-              Ingen data - trykk Hent data
+              Ingen data enna
             </span>
           )}
         </div>
@@ -184,7 +184,7 @@ export default function ReachClient({
                 : "bg-[var(--color-accent)] text-[var(--color-black)] hover:opacity-90"
             )}
           >
-            {syncing ? "Henter..." : "Hent data"}
+            {syncing ? "Henter..." : "Oppdater"}
           </button>
         </div>
       </div>
@@ -193,17 +193,17 @@ export default function ReachClient({
       {filtered.length === 0 && (
         <div className="rounded-xl border border-[var(--color-border)] p-12 text-center">
           <p className="text-base text-[rgba(9,10,8,0.5)] mb-2">
-            Ingen reach-data for lookback {activeOption.label}.
+            Ingen data enna for denne perioden.
           </p>
           <p className="text-sm text-[rgba(9,10,8,0.4)] mb-6">
-            Trykk Hent data for a synkronisere fra Meta.
+            Trykk Oppdater for a hente fra Meta.
           </p>
           <button
             onClick={handleSync}
             disabled={syncing}
             className="text-sm font-semibold px-5 py-2.5 rounded-lg bg-[var(--color-accent)] text-[var(--color-black)] hover:opacity-90 transition-colors"
           >
-            {syncing ? "Henter..." : "Hent data"}
+            {syncing ? "Henter..." : "Oppdater"}
           </button>
         </div>
       )}

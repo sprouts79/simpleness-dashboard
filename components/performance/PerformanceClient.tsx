@@ -9,18 +9,18 @@ import clsx from "clsx";
 import { useState } from "react";
 
 const PERIOD_OPTIONS: { value: PeriodKey; label: string }[] = [
-  { value: "today", label: "I går" },
-  { value: "7d", label: "7 dager" },
-  { value: "30d", label: "30 dager" },
-  { value: "prev_month", label: "Forrige mnd" },
-  { value: "3m", label: "3 mnd" },
-  { value: "6m", label: "6 mnd" },
-  { value: "12m", label: "12 mnd" },
+  { value: "today", label: "I gar" },
+  { value: "7d", label: "Siste 7 dager" },
+  { value: "30d", label: "Siste 30 dager" },
+  { value: "prev_month", label: "Forrige maned" },
+  { value: "3m", label: "Siste 3 maneder" },
+  { value: "6m", label: "Siste 6 maneder" },
+  { value: "12m", label: "Siste ar" },
 ];
 
 const COMPARE_OPTIONS: { value: CompareKey; label: string }[] = [
-  { value: "period", label: "Forrige periode" },
-  { value: "year", label: "Forrige år" },
+  { value: "period", label: "Samme periode for" },
+  { value: "year", label: "I fjor" },
 ];
 
 function formatNok(n: number) {
@@ -150,24 +150,24 @@ export default function PerformanceClient({
 
       {/* Primary KPIs */}
       <div>
-        <SectionHeader title="Nokkeltall" subtitle={kpis.periodLabel} />
+        <SectionHeader title="Oppsummering" />
         <div className="grid grid-cols-3 gap-4 mb-4">
           <KpiCard
-            label="Spend"
+            label="Brukt"
             value={formatNok(kpis.spend)}
             delta={kpis.spendDelta}
             deltaLabel={deltaLabel}
             size="large"
           />
           <KpiCard
-            label="ROAS"
+            label="Avkastning"
             value={`${kpis.roas.toFixed(1)}x`}
             delta={kpis.roasDelta}
             deltaLabel={deltaLabel}
             size="large"
           />
           <KpiCard
-            label="CPA"
+            label="Pris per salg"
             value={`${Math.round(kpis.cpa)} kr`}
             delta={kpis.cpaDelta}
             deltaLabel={deltaLabel}
@@ -177,23 +177,22 @@ export default function PerformanceClient({
         </div>
         <div className="grid grid-cols-3 gap-4">
           <KpiCard
-            label="CPMn"
+            label="Pris per 1000 nye"
             value={kpis.cpmn > 0 ? `${Math.round(kpis.cpmn)} kr` : "-"}
             delta={kpis.cpmn > 0 ? kpis.cpmnDelta : undefined}
             deltaLabel={deltaLabel}
             invertDelta
-            note="per 1k net new reach"
           />
           <KpiCard
-            label="Frekvens"
+            label="Ganger vist per person"
             value={kpis.frequency.toFixed(1)}
             delta={kpis.frequencyDelta}
             deltaLabel={deltaLabel}
             invertDelta
-            note={kpis.frequency > 8 ? "For hoy - audience fatigue" : kpis.frequency > 6 ? "Moderat" : "Frisk"}
+            note={kpis.frequency > 8 ? "Sliten malgruppe" : kpis.frequency > 6 ? "Moderat" : ""}
           />
           <KpiCard
-            label="CTR (Link)"
+            label="Klikkrate"
             value={`${kpis.ctr.toFixed(1)}%`}
             delta={kpis.ctrDelta}
             deltaLabel={deltaLabel}
@@ -203,17 +202,17 @@ export default function PerformanceClient({
 
       {/* Trend chart */}
       <div>
-        <SectionHeader title="Spend & ROAS — trend" subtitle={kpis.periodLabel} />
+        <SectionHeader title="Utvikling over tid" />
         <div className="rounded-xl border border-[var(--color-border)] p-4 bg-white">
           <SpendTrendChart data={trend} days={365} />
           <div className="flex gap-6 mt-4 text-sm text-[rgba(9,10,8,0.5)]">
             <span className="flex items-center gap-2">
               <span className="w-3.5 h-3 rounded-sm bg-[#e8e8e6] inline-block" />
-              Spend (NOK)
+              Pengebruk
             </span>
             <span className="flex items-center gap-2">
               <span className="w-5 h-0.5 bg-[var(--color-link)] inline-block" />
-              ROAS
+              Avkastning
             </span>
           </div>
         </div>
@@ -221,15 +220,12 @@ export default function PerformanceClient({
 
       {/* Campaign table */}
       <div>
-        <SectionHeader
-          title="Kampanjer"
-          subtitle="Klikk for a se ad sets"
-        />
+        <SectionHeader title="Kampanjer" />
         <div className="rounded-xl border border-[var(--color-border)] overflow-hidden">
           <table className="w-full text-base">
             <thead>
               <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-                {["Kampanje", "Spend", "ROAS", "CPA", "CPM", "Freq.", "CTR", "Reach"].map((h) => (
+                {["Kampanje", "Brukt", "Avkast.", "Per salg", "Per 1000", "Vist", "Klikk", "Nadd"].map((h) => (
                   <th
                     key={h}
                     className={clsx(
