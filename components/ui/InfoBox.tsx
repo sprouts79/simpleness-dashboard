@@ -1,21 +1,23 @@
 interface Props {
   children: React.ReactNode;
+  title?: string;
 }
 
-/**
- * "Hvordan lese denne rapporten"-boks.
- * Grønn bakgrunn fra Simpleness designsystem (--color-accent @ lav opacity).
- */
-export default function InfoBox({ children }: Props) {
+export default function InfoBox({ children, title }: Props) {
   return (
     <div
-      className="rounded-xl px-5 py-4 text-sm leading-relaxed"
+      className="max-w-xl rounded-xl px-5 py-4 text-sm"
       style={{
-        background: "rgba(137, 255, 88, 0.10)",
-        border: "1px solid rgba(137, 255, 88, 0.30)",
+        background: "rgba(137, 255, 88, 0.08)",
+        border: "1px solid rgba(137, 255, 88, 0.25)",
         color: "var(--color-black)",
       }}
     >
+      {title && (
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.4)] mb-3">
+          {title}
+        </p>
+      )}
       {children}
     </div>
   );

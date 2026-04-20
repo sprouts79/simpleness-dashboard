@@ -224,7 +224,7 @@ export default function ReachClient({
                   note="siste 6 mnd"
                 />
                 <KpiCard
-                  label="Total Reach"
+                  label="Rolling Reach"
                   value={formatReach(kpis.totalReach)}
                   note={`6M vindu · lookback ${lookbackLabel}`}
                   size="large"
@@ -382,18 +382,32 @@ export default function ReachClient({
           </div>
 
           {/* Hvordan lese denne rapporten */}
-          <InfoBox>
-            <p className="font-semibold mb-1">Hvordan lese denne rapporten</p>
-            <p className="mb-2">
-              <strong>Rolling Reach</strong> viser det totale antallet unike personer kontoen har nådd siden kampanjestart (kumulativt).
-              <strong> Net New Reach</strong> er de <em>nye</em> personene som ble nådd den måneden — folk som ikke hadde sett annonsene dine før.
-              <strong> % Net New</strong> er andelen av den månedlige rekkevidden som er nye folk.
-            </p>
-            <p>
-              <strong>Hva du ser etter:</strong> En sunn konto har jevnlig 30 %+ Net New Reach — det betyr at budsjettet når nye folk, ikke bare banker på samme dør igjen og igjen.
-              Under 18 % er et varseltegn: publikum er mettet, frekvensen er for høy, og du betaler for lite effekt. Vurder da å utvide målgruppen, lage nytt kreativt innhold, eller justere budsjettet ned.
-              <strong> Lookback</strong>-knappene lar deg se reach beregnet med lengre historikk — nyttig for å forstå reell rekkevidde over tid.
-            </p>
+          <InfoBox title="Forklaring">
+            <dl className="space-y-2.5">
+              {[
+                {
+                  term: "Rolling Reach",
+                  def: "Totalt antall unike personer nådd kumulativt. Teller alle som har sett annonsene dine i det valgte vinduet.",
+                },
+                {
+                  term: "Net New Reach",
+                  def: "Nye folk nådd denne måneden — personer som ikke har sett annonsene dine de siste 3 månedene.",
+                },
+                {
+                  term: "% Net New",
+                  def: "Andel av månedlig rekkevidde som er nye folk. Over 30 % = frisk målgruppe. Under 18 % = vurder kreativ refresh eller utvidelse av målgruppe.",
+                },
+                {
+                  term: "Lookback",
+                  def: "Utvid historikken bakover for å se reell rekkevidde over lengre tid. Standard betyr ingen utvidelse.",
+                },
+              ].map(({ term, def }) => (
+                <div key={term} className="grid grid-cols-[140px_1fr] gap-3">
+                  <dt className="font-semibold text-[rgba(9,10,8,0.75)] leading-snug pt-px">{term}</dt>
+                  <dd className="text-[rgba(9,10,8,0.6)] leading-snug">{def}</dd>
+                </div>
+              ))}
+            </dl>
           </InfoBox>
         </>
       )}

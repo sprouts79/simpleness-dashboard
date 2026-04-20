@@ -161,10 +161,9 @@ export default async function PulsePage() {
 
       {/* Info */}
       <div className="mt-6">
-        <InfoBox>
-          <p className="font-semibold mb-1">Hvordan lese denne oversikten</p>
-          <p>
-            <strong>Net New %</strong> er andelen av ukens rekkevidde som er nye personer — folk som ikke har sett annonsene dine i løpet av de siste 3 månedene.
+        <InfoBox title="Forklaring">
+          <p className="text-[rgba(9,10,8,0.6)] leading-snug">
+            <span className="font-semibold text-[rgba(9,10,8,0.75)]">Net New %</span> er andelen av ukens rekkevidde som er nye personer — folk som ikke har sett annonsene dine de siste 3 månedene.
           </p>
         </InfoBox>
       </div>
