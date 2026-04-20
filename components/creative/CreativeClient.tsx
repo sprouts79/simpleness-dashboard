@@ -75,6 +75,7 @@ export default function CreativeClient({
 }) {
   const router = useRouter();
   const [metric, setMetric] = useState<MetricKey>("spend");
+  const [period, setPeriod] = useState<"3m" | "6m">("3m");
   const [syncing, setSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
   const [expandedCohort, setExpandedCohort] = useState<string | null>(null);
@@ -122,11 +123,8 @@ export default function CreativeClient({
     const totalSpend = cohorts.reduce((sum, c) => 
       sum + c.weeks.reduce((s, w) => s + (w.spend ?? 0), 0), 0
     );
-    const avgCtr = ads.length > 0 
-      ? ads.reduce((sum, a) => sum + a.ctr, 0) / ads.length 
-      : 0;
     
-    return { activeAds, activeCohorts, totalSpend, avgCtr };
+    return { activeAds, activeCohorts, totalSpend };
   }, [ads, cohorts]);
 
   // Group ads by cohort - use cohortDate from ads to match
@@ -194,8 +192,32 @@ export default function CreativeClient({
 
   return (
     <div className="space-y-10">
-      {/* Header with sync button */}
-      <div className="flex items-center justify-end">
+      {/* Header with period selector and sync button */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setPeriod("3m")}
+            className={clsx(
+              "text-sm font-semibold px-4 py-2 rounded-lg transition-colors",
+              period === "3m"
+                ? "bg-[var(--color-black)] text-white"
+                : "bg-[var(--color-surface)] text-[rgba(9,10,8,0.6)] hover:text-[var(--color-black)]"
+            )}
+          >
+            3 mnd
+          </button>
+          <button
+            onClick={() => setPeriod("6m")}
+            className={clsx(
+              "text-sm font-semibold px-4 py-2 rounded-lg transition-colors",
+              period === "6m"
+                ? "bg-[var(--color-black)] text-white"
+                : "bg-[var(--color-surface)] text-[rgba(9,10,8,0.6)] hover:text-[var(--color-black)]"
+            )}
+          >
+            6 mnd
+          </button>
+        </div>
         <div className="flex items-center gap-4">
           {syncStatus && (
             <span className="text-sm text-[rgba(9,10,8,0.55)]">{syncStatus}</span>
@@ -216,11 +238,10 @@ export default function CreativeClient({
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <KpiCard label="Aktive annonser" value={String(kpis.activeAds)} />
         <KpiCard label="Aktive kohorter" value={String(kpis.activeCohorts)} />
         <KpiCard label="Total Spend" value={`${Math.round(kpis.totalSpend / 1000)}k`} />
-        <KpiCard label="Snitt CTR" value={`${kpis.avgCtr.toFixed(1)}%`} />
       </div>
 
       {/* Cohort Heatmap Table with Thumbnails */}
