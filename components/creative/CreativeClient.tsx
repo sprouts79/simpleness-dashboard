@@ -19,12 +19,10 @@ const METRIC_OPTIONS: { value: MetricKey; label: string; unit: string; higherIsB
   { value: "cpa", label: "CPA", unit: "kr", higherIsBetter: false },
 ];
 
-// Get color based on value relative to min/max (for heatmap)
+// Get color based on percentile (0 to 1) for heatmap
 // Uses a smooth continuous spectrum from red to green
-function getHeatmapColor(value: number, min: number, max: number, higherIsBetter: boolean): string {
-  if (max === min) return "hsla(60, 60%, 75%, 0.9)"; // Neutral yellow when no range
-  const normalized = (value - min) / (max - min);
-  const t = higherIsBetter ? normalized : 1 - normalized;
+function getHeatmapColor(percentile: number, higherIsBetter: boolean): string {
+  const t = higherIsBetter ? percentile : 1 - percentile;
   
   // Smooth HSL interpolation: red (0) -> orange (30) -> yellow (55) -> lime (90) -> green (120)
   const hue = t * 120; // 0 = red, 60 = yellow, 120 = green
@@ -34,10 +32,8 @@ function getHeatmapColor(value: number, min: number, max: number, higherIsBetter
   return `hsla(${hue}, ${saturation}%, ${lightness}%, 1)`;
 }
 
-function getHeatmapTextColor(value: number, min: number, max: number, higherIsBetter: boolean): string {
-  if (max === min) return "hsl(45, 60%, 30%)";
-  const normalized = (value - min) / (max - min);
-  const t = higherIsBetter ? normalized : 1 - normalized;
+function getHeatmapTextColor(percentile: number, higherIsBetter: boolean): string {
+  const t = higherIsBetter ? percentile : 1 - percentile;
   
   // Darker text matching the hue
   const hue = t * 120;
@@ -89,22 +85,33 @@ export default function CreativeClient({
   const weekColumns = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
   // Calculate min/max for each week column for heatmap
-  const weekMinMax = useMemo(() => {
-    const result: Record<number, { min: number; max: number }> = {};
+  // Store sorted values per week for percentile-based coloring
+  const weekValues = useMemo(() => {
+    const result: Record<number, number[]> = {};
     weekColumns.forEach(weekNum => {
       const values = cohorts
         .map(c => c.weeks.find(w => w.weekNumber === weekNum))
         .filter(Boolean)
         .map(w => w![metric] ?? 0)
-        .filter(v => v > 0); // Only include non-zero values
-      result[weekNum] = {
-        min: values.length > 0 ? Math.min(...values) : 0,
-        max: values.length > 0 ? Math.max(...values) : 0,
-      };
+        .filter(v => v > 0)
+        .sort((a, b) => a - b); // Sort ascending
+      result[weekNum] = values;
     });
-    console.log("[v0] weekMinMax for", metric, ":", result);
     return result;
   }, [cohorts, metric]);
+  
+  // Get percentile rank of a value within a week (0 to 1)
+  const getPercentile = (value: number, weekNum: number): number => {
+    const values = weekValues[weekNum] || [];
+    if (values.length <= 1) return 0.5; // Single value = middle
+    const index = values.indexOf(value);
+    if (index === -1) {
+      // Value not found exactly, find where it would fit
+      const lowerCount = values.filter(v => v < value).length;
+      return lowerCount / (values.length - 1);
+    }
+    return index / (values.length - 1);
+  };
 
   // KPIs
   const kpis = useMemo(() => {
@@ -313,8 +320,8 @@ export default function CreativeClient({
                       {weekColumns.map(weekNum => {
                         const weekData = cohort.weeks.find(w => w.weekNumber === weekNum);
                         const value = weekData?.[metric] ?? 0;
-                        const { min, max } = weekMinMax[weekNum];
                         const hasData = weekData && value > 0;
+                        const percentile = hasData ? getPercentile(value, weekNum) : 0.5;
                         
                         return (
                           <div key={weekNum} className="flex-1 text-center">
@@ -331,8 +338,8 @@ export default function CreativeClient({
                               <div
                                 className="px-1 py-1.5 rounded text-[11px] font-bold font-mono"
                                 style={{
-                                  backgroundColor: getHeatmapColor(value, min, max, selectedMetricInfo.higherIsBetter),
-                                  color: getHeatmapTextColor(value, min, max, selectedMetricInfo.higherIsBetter),
+                                  backgroundColor: getHeatmapColor(percentile, selectedMetricInfo.higherIsBetter),
+                                  color: getHeatmapTextColor(percentile, selectedMetricInfo.higherIsBetter),
                                 }}
                               >
                                 {formatValue(value, metric)}
