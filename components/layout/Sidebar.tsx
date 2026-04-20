@@ -78,6 +78,22 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
           );
         })}
       </nav>
+
+      {/* Admin */}
+      <div className="px-2.5 pb-4 border-t border-[var(--color-border)] pt-3 mt-2">
+        <Link
+          href="/admin"
+          className={clsx(
+            "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors",
+            pathname === "/admin"
+              ? "bg-[var(--color-green-pale)] text-[var(--color-link)] font-semibold"
+              : "text-[rgba(9,10,8,0.35)] hover:text-[var(--color-black)] hover:bg-[var(--color-border)]"
+          )}
+        >
+          <span className="text-[10px]">＋</span>
+          Legg til kunde
+        </Link>
+      </div>
     </aside>
   );
 }
