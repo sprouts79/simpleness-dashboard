@@ -21,7 +21,6 @@ import {
   fetchAdWeeklyInsights,
   fetchAccountTimezone,
   daysAgoInTz,
-  dateInTz,
 } from "@/lib/meta-api";
 
 export const maxDuration = 300;
@@ -54,7 +53,7 @@ export async function POST(req: NextRequest) {
 
   const tz = await fetchAccountTimezone(accountId);
   const since = daysAgoInTz(90, tz);
-  const until = dateInTz(new Date(), tz);
+  const until = daysAgoInTz(1, tz);
   const errors: string[] = [];
 
   let performanceSynced = 0;

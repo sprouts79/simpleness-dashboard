@@ -18,7 +18,6 @@ import {
   fetchAdWeeklyInsights,
   fetchAccountTimezone,
   daysAgoInTz,
-  dateInTz,
 } from "@/lib/meta-api";
 
 export const maxDuration = 300;
@@ -46,7 +45,7 @@ export async function GET(req: NextRequest) {
     try {
       const tz = await fetchAccountTimezone(client.meta_account_id);
       const since = daysAgoInTz(90, tz);
-      const until = dateInTz(new Date(), tz);
+      const until = daysAgoInTz(1, tz);
 
       // ── Performance ────────────────────────────────────────────────────────
       const perfRows = await fetchDailyInsights(client.meta_account_id, since, until, "campaign");
