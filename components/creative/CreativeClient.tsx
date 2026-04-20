@@ -142,11 +142,25 @@ export default function CreativeClient({
     return { activeAds, activeCohorts, totalSpend, avgCtr };
   }, [ads, cohorts]);
 
-  // Group ads by cohort - match on exact cohortDate
+  // Group ads by cohort - match ads to cohort by week start date
   const adsByCohort = useMemo(() => {
+    // Helper to get Monday of a given date
+    const getMondayOf = (dateStr: string): string => {
+      if (!dateStr) return "";
+      const d = new Date(dateStr + "T00:00:00Z");
+      const day = d.getUTCDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      d.setUTCDate(d.getUTCDate() + diff);
+      return d.toISOString().split("T")[0];
+    };
+    
     const grouped: Record<string, Ad[]> = {};
     cohorts.forEach(c => {
-      grouped[c.cohortDate] = ads.filter(ad => ad.cohortDate === c.cohortDate);
+      const cohortWeekStart = getMondayOf(c.cohortDate);
+      grouped[c.cohortDate] = ads.filter(ad => {
+        const adWeekStart = getMondayOf(ad.cohortDate || "");
+        return adWeekStart === cohortWeekStart;
+      });
     });
     return grouped;
   }, [cohorts, ads]);
