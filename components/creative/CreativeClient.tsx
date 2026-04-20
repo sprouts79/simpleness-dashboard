@@ -142,14 +142,11 @@ export default function CreativeClient({
     return { activeAds, activeCohorts, totalSpend, avgCtr };
   }, [ads, cohorts]);
 
-  // Group ads by cohort
+  // Group ads by cohort - match on exact cohortDate
   const adsByCohort = useMemo(() => {
     const grouped: Record<string, Ad[]> = {};
     cohorts.forEach(c => {
-      grouped[c.cohortDate] = ads.filter(ad => {
-        const adMonth = ad.cohortDate?.substring(0, 7);
-        return adMonth === c.cohortDate?.substring(0, 7);
-      });
+      grouped[c.cohortDate] = ads.filter(ad => ad.cohortDate === c.cohortDate);
     });
     return grouped;
   }, [cohorts, ads]);
