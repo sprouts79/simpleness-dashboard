@@ -12,6 +12,7 @@ import {
   Legend,
 } from "recharts";
 import { SpendTrendPoint } from "@/lib/types";
+import { CHART_BAR_COLOR, CHART_LINE_COLOR } from "@/lib/chart-colors";
 import { format, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
 
@@ -104,7 +105,7 @@ export default function SpendTrendChart({ data }: Props) {
         <Bar
           yAxisId="spend"
           dataKey="spend"
-          fill="rgba(9,10,8,0.15)"
+          fill={CHART_BAR_COLOR}
           radius={[3, 3, 0, 0]}
           name="Spend"
           maxBarSize={28}
@@ -113,10 +114,10 @@ export default function SpendTrendChart({ data }: Props) {
           yAxisId="roas"
           type="monotone"
           dataKey="roas"
-          stroke="var(--color-link)"
+          stroke={CHART_LINE_COLOR}
           strokeWidth={3}
-          dot={{ fill: "var(--color-link)", strokeWidth: 0, r: 4 }}
-          activeDot={{ fill: "var(--color-link)", strokeWidth: 0, r: 5 }}
+          dot={{ fill: CHART_LINE_COLOR, strokeWidth: 0, r: 4 }}
+          activeDot={{ fill: CHART_LINE_COLOR, strokeWidth: 0, r: 5 }}
           name="ROAS"
         />
       </ComposedChart>

@@ -17,17 +17,10 @@ interface Props {
   cohortLabels: string[];
 }
 
-// Cohort colors — cycling through a palette inspired by the withadinsights screenshots
-const COHORT_COLORS = [
-  "#41BD0E", // accent green
-  "#515B12", // moss green
-  "#41BD0E", // deep green
-  "#DFF7CC", // mint
-  "#d97706", // amber
-  "#7c3aed", // purple
-  "#0ea5e9", // sky blue
-  "#ec4899", // pink
-];
+import { CHART_COLORS } from "@/lib/chart-colors";
+
+// Use shared brown/earth color palette
+const COHORT_COLORS = CHART_COLORS;
 
 function formatNok(v: number) {
   if (v >= 1000) return `${Math.round(v / 1000)}k`;

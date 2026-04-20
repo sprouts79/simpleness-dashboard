@@ -12,6 +12,7 @@ import {
   Cell,
 } from "recharts";
 import { ReachCompositionPoint } from "@/lib/types";
+import { CHART_BAR_COLOR, CHART_LINE_COLOR } from "@/lib/chart-colors";
 
 interface Props {
   data: ReachCompositionPoint[];
@@ -90,36 +91,36 @@ export default function ReachCompositionChart({ data }: Props) {
         />
         <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(9,10,8,0.03)" }} />
 
-        {/* Previously reached — gray */}
+        {/* Previously reached — light brown */}
         <Bar
           yAxisId="reach"
           dataKey="previouslyReached"
           stackId="reach"
-          fill="rgba(9,10,8,0.15)"
+          fill="#e8dcc8"
           name="Prev. reached"
           maxBarSize={32}
         />
 
-        {/* Net New — signal green */}
+        {/* Net New — dark brown */}
         <Bar
           yAxisId="reach"
           dataKey="netNew"
           stackId="reach"
-          fill="var(--color-accent)"
+          fill={CHART_BAR_COLOR}
           name="Nye"
           maxBarSize={32}
           radius={[3, 3, 0, 0]}
         />
 
-        {/* Net New % line — green from design system */}
+        {/* Net New % line — dark brown */}
         <Line
           yAxisId="pct"
           type="monotone"
           dataKey="netNewPct"
-          stroke="var(--color-link)"
+          stroke={CHART_LINE_COLOR}
           strokeWidth={3}
-          dot={{ fill: "var(--color-link)", strokeWidth: 0, r: 4 }}
-          activeDot={{ fill: "var(--color-link)", strokeWidth: 0, r: 5 }}
+          dot={{ fill: CHART_LINE_COLOR, strokeWidth: 0, r: 4 }}
+          activeDot={{ fill: CHART_LINE_COLOR, strokeWidth: 0, r: 5 }}
           name="Net New %"
         />
       </ComposedChart>
