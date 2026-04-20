@@ -10,10 +10,10 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
   const isPulse = pathname === "/";
 
   return (
-    <aside className="flex flex-col w-[210px] flex-shrink-0 h-full overflow-y-auto bg-[var(--color-surface)] border-r border-[var(--color-border)]">
+    <aside className="flex flex-col w-[210px] flex-shrink-0 h-full overflow-y-auto bg-white border-r-2 border-[var(--color-black)]">
 
       {/* Logo */}
-      <div className="px-5 pt-5 pb-4 border-b border-[var(--color-border)]">
+      <div className="px-5 pt-5 pb-4 border-b-2 border-[var(--color-black)]">
         <img
           src="https://simpleness-design-system.vercel.app/logo-standard.png"
           alt="simpleness"
@@ -29,8 +29,8 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
           className={clsx(
             "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors mb-0.5",
             isPulse
-              ? "bg-[var(--color-green-pale)] text-[var(--color-link)]"
-              : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)] hover:bg-[var(--color-border)]"
+              ? "bg-[var(--color-accent)] text-[var(--color-black)] font-bold border-2 border-[var(--color-black)] shadow-[2px_2px_0_0_rgba(9,10,8,1)]"
+              : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)]"
           )}
         >
           <span className={clsx("w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[var(--color-accent)]", !isPulse && "opacity-30")} />
@@ -52,8 +52,8 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
               className={clsx(
                 "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors mb-0.5",
                 isActive
-                  ? "bg-[var(--color-green-pale)] text-[var(--color-link)] font-semibold"
-                  : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)] hover:bg-[var(--color-border)]"
+                  ? "bg-[var(--color-accent)] text-[var(--color-black)] font-bold border-2 border-[var(--color-black)] shadow-[2px_2px_0_0_rgba(9,10,8,1)]"
+                  : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)]"
               )}
             >
               <span className={clsx("w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[var(--color-accent)]", !isActive && "opacity-30")} />
@@ -64,14 +64,14 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
       </nav>
 
       {/* Admin */}
-      <div className="px-2.5 pb-4 border-t border-[var(--color-border)] pt-3 mt-2">
+      <div className="px-2.5 pb-4 border-t-2 border-[var(--color-black)] pt-3 mt-2">
         <Link
           href="/admin"
           className={clsx(
             "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors",
             pathname === "/admin"
-              ? "bg-[var(--color-green-pale)] text-[var(--color-link)] font-semibold"
-              : "text-[rgba(9,10,8,0.35)] hover:text-[var(--color-black)] hover:bg-[var(--color-border)]"
+              ? "bg-[var(--color-accent)] text-[var(--color-black)] font-bold border-2 border-[var(--color-black)] shadow-[2px_2px_0_0_rgba(9,10,8,1)]"
+              : "text-[rgba(9,10,8,0.35)] hover:text-[var(--color-black)]"
           )}
         >
           <span className="text-[10px]">＋</span>
