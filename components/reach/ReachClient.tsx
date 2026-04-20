@@ -46,6 +46,23 @@ function formatNokShort(n: number) {
   return `NOK ${Math.round(n)}`;
 }
 
+// Smooth gradient from red to green based on percentage (0-25%+ scale)
+function getNetNewColor(pct: number): { bg: string; text: string } {
+  // Clamp between 0 and 25, then normalize to 0-1
+  const normalized = Math.min(Math.max(pct, 0), 25) / 25;
+  
+  // Interpolate from red (0) to green (1)
+  // Red: rgb(180, 60, 60) -> Green: rgb(45, 122, 10)
+  const r = Math.round(180 - (180 - 45) * normalized);
+  const g = Math.round(60 + (122 - 60) * normalized);
+  const b = Math.round(60 - (60 - 10) * normalized);
+  
+  return {
+    bg: `rgba(${r}, ${g}, ${b}, 0.12)`,
+    text: `rgb(${Math.round(r * 0.7)}, ${Math.round(g * 0.7)}, ${Math.round(b * 0.7)})`
+  };
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CpmTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
@@ -371,20 +388,8 @@ export default function ReachClient({
                           className="text-sm px-2 py-1 rounded font-medium"
                           style={{ 
                             fontFamily: "var(--font-mono)",
-                            backgroundColor: row.netNewPct >= 30 
-                              ? "rgba(65, 189, 14, 0.15)" 
-                              : row.netNewPct >= 20 
-                                ? "rgba(65, 189, 14, 0.08)" 
-                                : row.netNewPct >= 10 
-                                  ? "rgba(9, 10, 8, 0.06)"
-                                  : "rgba(180, 60, 60, 0.1)",
-                            color: row.netNewPct >= 30 
-                              ? "#2d7a0a" 
-                              : row.netNewPct >= 20 
-                                ? "#3d8a12" 
-                                : row.netNewPct >= 10 
-                                  ? "rgba(9,10,8,0.6)"
-                                  : "#9a3c3c"
+                            backgroundColor: getNetNewColor(row.netNewPct).bg,
+                            color: getNetNewColor(row.netNewPct).text
                           }}
                         >
                           {row.netNewPct.toFixed(1)}%
