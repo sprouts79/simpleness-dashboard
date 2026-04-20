@@ -127,22 +127,10 @@ export default function ReachClient({
   }));
 
   const reachStatus = !kpis ? null : kpis.avgNetNewPct >= 25 
-    ? { 
-        level: "good" as const, 
-        label: "Frisk malgruppe", 
-        description: "God andel nye brukere. Annonseringen nar stadig nye folk." 
-      }
+    ? { level: "good" as const, label: "Frisk malgruppe" }
     : kpis.avgNetNewPct >= 15 
-    ? { 
-        level: "warning" as const, 
-        label: "Moderat metning", 
-        description: "Andelen nye synker. Vurder kreativ refresh eller utvidet malgruppe." 
-      }
-    : { 
-        level: "critical" as const, 
-        label: "Hoy metning", 
-        description: "Lave nye-tall. Malgruppen er mettet. Handling anbefales." 
-      };
+    ? { level: "warning" as const, label: "Moderat metning" }
+    : { level: "critical" as const, label: "Hoy metning" };
 
   // Auto-sync on first load if no data exists
   useEffect(() => {
