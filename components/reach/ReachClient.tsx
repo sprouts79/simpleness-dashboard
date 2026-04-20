@@ -329,7 +329,7 @@ export default function ReachClient({
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-[var(--color-border)]">
-                    {["Maned", "Reach", "Nye", "Spend", "CPM", "Frekvens", "CPM Nye", "%"].map((h) => (
+                    {["Maned", "Reach", "Nye", "Spend", "Frekvens", "CPM Nye", "% Nye"].map((h) => (
                       <th
                         key={h}
                         className={clsx(
@@ -361,9 +361,6 @@ export default function ReachClient({
                         {formatNok(row.spend)}
                       </td>
                       <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
-                        {Math.round(row.cpm)} kr
-                      </td>
-                      <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
                         {row.frequency.toFixed(1)}x
                       </td>
                       <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
@@ -371,12 +368,24 @@ export default function ReachClient({
                       </td>
                       <td className="px-4 py-3 text-right">
                         <span
-                          className={clsx("text-sm px-2 py-1 rounded", {
-                            "font-semibold bg-[var(--color-black)] text-white": row.netNewPct >= 30,
-                            "text-[rgba(9,10,8,0.7)]": row.netNewPct >= 18 && row.netNewPct < 30,
-                            "text-[rgba(9,10,8,0.4)]": row.netNewPct < 18,
-                          })}
-                          style={{ fontFamily: "var(--font-mono)" }}
+                          className="text-sm px-2 py-1 rounded font-medium"
+                          style={{ 
+                            fontFamily: "var(--font-mono)",
+                            backgroundColor: row.netNewPct >= 30 
+                              ? "rgba(65, 189, 14, 0.15)" 
+                              : row.netNewPct >= 20 
+                                ? "rgba(65, 189, 14, 0.08)" 
+                                : row.netNewPct >= 10 
+                                  ? "rgba(9, 10, 8, 0.06)"
+                                  : "rgba(180, 60, 60, 0.1)",
+                            color: row.netNewPct >= 30 
+                              ? "#2d7a0a" 
+                              : row.netNewPct >= 20 
+                                ? "#3d8a12" 
+                                : row.netNewPct >= 10 
+                                  ? "rgba(9,10,8,0.6)"
+                                  : "#9a3c3c"
+                          }}
                         >
                           {row.netNewPct.toFixed(1)}%
                         </span>
