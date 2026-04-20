@@ -211,146 +211,119 @@ export default function CreativeClient({
         <KpiCard label="Snitt CTR" value={`${kpis.avgCtr.toFixed(1)}%`} />
       </div>
 
-      {/* Cohort Cards */}
+      {/* Cohort Heatmap Table with Thumbnails */}
       {cohorts.length > 0 && (
         <div>
           <SectionHeader
-            title="Kohorter"
-            subtitle="Annonser gruppert etter lanseringsuke - klikk for a se alle annonser"
+            title="Kohort-ytelse"
+            subtitle={`${selectedMetricInfo.label} per uke etter lansering - farge viser prestasjon relativt til andre kohorter`}
           />
-          <div className="space-y-4">
+          <div className="rounded-xl bg-[var(--color-surface)] overflow-hidden">
+            {/* Header row */}
+            <div className="flex items-center border-b border-[var(--color-border)] px-4 py-3">
+              <div className="w-[200px] text-sm font-medium text-[rgba(9,10,8,0.5)]">Kohort</div>
+              <div className="w-[60px] text-center text-sm font-medium text-[rgba(9,10,8,0.5)]">Ads</div>
+              <div className="w-[70px] text-right text-sm font-medium text-[rgba(9,10,8,0.5)]">Spend</div>
+              {weekColumns.map(w => (
+                <div key={w} className="w-[56px] text-center text-sm font-medium text-[rgba(9,10,8,0.5)]">
+                  W{w}
+                </div>
+              ))}
+              <div className="w-[40px]"></div>
+            </div>
+            
+            {/* Cohort rows */}
             {cohorts.map((cohort) => {
               const totalSpend = cohort.weeks.reduce((s, w) => s + (w.spend ?? 0), 0);
               const cohortAds = adsByCohort[cohort.cohortDate] || [];
               const isExpanded = expandedCohort === cohort.cohortDate;
-              const w0 = cohort.weeks.find(w => w.weekNumber === 0);
-              const latestWeek = cohort.weeks.reduce((latest, w) => 
-                (w.spend ?? 0) > 0 && w.weekNumber > (latest?.weekNumber ?? -1) ? w : latest, 
-                null as typeof cohort.weeks[0] | null
-              );
-              
-              // Calculate fatigue (change from W0 to latest)
-              const startValue = w0?.[metric] ?? 0;
-              const currentValue = latestWeek?.[metric] ?? 0;
-              const change = startValue > 0 ? ((currentValue - startValue) / startValue) * 100 : 0;
               
               return (
-                <div 
-                  key={cohort.cohortDate}
-                  className={clsx(
-                    "rounded-xl bg-[var(--color-surface)] overflow-hidden transition-all",
-                    isExpanded && "ring-2 ring-[var(--color-black)]"
-                  )}
-                >
-                  {/* Card header - always visible */}
+                <div key={cohort.cohortDate}>
+                  {/* Main row */}
                   <div 
-                    className="p-5 cursor-pointer hover:bg-white transition-colors"
+                    className={clsx(
+                      "flex items-center px-4 py-3 border-b border-[var(--color-border)] cursor-pointer transition-colors",
+                      isExpanded ? "bg-white" : "hover:bg-white"
+                    )}
                     onClick={() => setExpandedCohort(isExpanded ? null : cohort.cohortDate)}
                   >
-                    <div className="flex items-start gap-5">
-                      {/* Thumbnails preview */}
-                      <div className="flex -space-x-2 flex-shrink-0">
-                        {cohortAds.slice(0, 4).map((ad, i) => (
+                    {/* Thumbnails + label */}
+                    <div className="w-[200px] flex items-center gap-3">
+                      <div className="flex -space-x-1.5 flex-shrink-0">
+                        {cohortAds.slice(0, 3).map((ad, i) => (
                           <div 
                             key={ad.id}
-                            className="w-12 h-12 rounded-lg bg-[rgba(9,10,8,0.1)] border-2 border-[var(--color-surface)] overflow-hidden"
-                            style={{ zIndex: 4 - i }}
+                            className="w-8 h-8 rounded bg-[rgba(9,10,8,0.1)] border-2 border-[var(--color-surface)] overflow-hidden"
+                            style={{ zIndex: 3 - i }}
                           >
                             {ad.thumbnailUrl ? (
                               <img src={ad.thumbnailUrl} alt="" className="w-full h-full object-cover" />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center text-xs text-[rgba(9,10,8,0.3)]">
+                              <div className="w-full h-full flex items-center justify-center text-[10px] text-[rgba(9,10,8,0.3)]">
                                 {ad.format?.charAt(0) || "?"}
                               </div>
                             )}
                           </div>
                         ))}
-                        {cohortAds.length > 4 && (
-                          <div 
-                            className="w-12 h-12 rounded-lg bg-[rgba(9,10,8,0.08)] border-2 border-[var(--color-surface)] flex items-center justify-center text-xs font-medium text-[rgba(9,10,8,0.5)]"
-                            style={{ zIndex: 0 }}
-                          >
-                            +{cohortAds.length - 4}
-                          </div>
-                        )}
                       </div>
-                      
-                      {/* Cohort info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-1">
-                          <h3 className="text-base font-semibold">{cohort.label}</h3>
-                          <span className="text-sm text-[rgba(9,10,8,0.5)]">
-                            {cohort.adCount} annonser
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm">
-                          <span className="font-mono">
-                            <span className="text-[rgba(9,10,8,0.5)]">Spend:</span>{" "}
-                            <span className="font-semibold">{totalSpend >= 1000 ? `${Math.round(totalSpend / 1000)}k` : totalSpend}</span>
-                          </span>
-                          <span className="font-mono">
-                            <span className="text-[rgba(9,10,8,0.5)]">{selectedMetricInfo.label}:</span>{" "}
-                            <span className="font-semibold">{formatValue(currentValue, metric)}{selectedMetricInfo.unit !== "kr" ? selectedMetricInfo.unit : ""}</span>
-                          </span>
-                          {change !== 0 && (
-                            <span 
-                              className={clsx(
-                                "text-xs font-semibold px-2 py-0.5 rounded",
-                                (selectedMetricInfo.higherIsBetter ? change >= 0 : change <= 0)
-                                  ? "bg-[rgba(34,140,34,0.12)] text-[#228b22]"
-                                  : "bg-[rgba(200,50,50,0.12)] text-[#c83232]"
-                              )}
-                            >
-                              {change > 0 ? "+" : ""}{change.toFixed(0)}%
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* Expand indicator */}
-                      <div className="text-[rgba(9,10,8,0.3)] text-lg">
-                        {isExpanded ? "−" : "+"}
-                      </div>
+                      <span className="font-semibold text-sm">{cohort.label}</span>
                     </div>
                     
-                    {/* Mini heatmap row */}
-                    <div className="flex items-center gap-1 mt-4">
-                      <span className="text-xs text-[rgba(9,10,8,0.4)] w-8">W0</span>
-                      {weekColumns.map(weekNum => {
-                        const weekData = cohort.weeks.find(w => w.weekNumber === weekNum);
-                        const value = weekData?.[metric] ?? 0;
-                        const { min, max } = weekMinMax[weekNum];
-                        const hasData = weekData && value > 0;
-                        
-                        return (
-                          <div 
-                            key={weekNum}
-                            className="flex-1 h-2 rounded-full"
-                            style={{
-                              backgroundColor: hasData 
-                                ? getHeatmapColor(value, min, max, selectedMetricInfo.higherIsBetter)
-                                : "rgba(9,10,8,0.06)"
-                            }}
-                          />
-                        );
-                      })}
-                      <span className="text-xs text-[rgba(9,10,8,0.4)] w-8 text-right">W7</span>
+                    {/* Ad count */}
+                    <div className="w-[60px] text-center text-sm text-[rgba(9,10,8,0.6)]">
+                      {cohort.adCount}
+                    </div>
+                    
+                    {/* Total spend */}
+                    <div className="w-[70px] text-right text-sm font-mono text-[rgba(9,10,8,0.6)]">
+                      {totalSpend >= 1000 ? `${Math.round(totalSpend / 1000)}k` : totalSpend}
+                    </div>
+                    
+                    {/* Week cells with heatmap */}
+                    {weekColumns.map(weekNum => {
+                      const weekData = cohort.weeks.find(w => w.weekNumber === weekNum);
+                      const value = weekData?.[metric] ?? 0;
+                      const { min, max } = weekMinMax[weekNum];
+                      const hasData = weekData && value > 0;
+                      
+                      return (
+                        <div key={weekNum} className="w-[56px] px-1 text-center">
+                          {hasData ? (
+                            <span
+                              className="inline-block px-2 py-1 rounded text-xs font-semibold font-mono min-w-[40px]"
+                              style={{
+                                backgroundColor: getHeatmapColor(value, min, max, selectedMetricInfo.higherIsBetter),
+                                color: getHeatmapTextColor(value, min, max, selectedMetricInfo.higherIsBetter),
+                              }}
+                            >
+                              {formatValue(value, metric)}
+                            </span>
+                          ) : (
+                            <span className="text-[rgba(9,10,8,0.2)] text-xs">-</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                    
+                    {/* Expand indicator */}
+                    <div className="w-[40px] text-center text-[rgba(9,10,8,0.3)]">
+                      {isExpanded ? "−" : "+"}
                     </div>
                   </div>
                   
                   {/* Expanded gallery */}
                   {isExpanded && cohortAds.length > 0 && (
-                    <div className="px-5 pb-5 border-t border-[var(--color-border)] pt-4">
+                    <div className="px-5 py-4 bg-white border-b border-[var(--color-border)]">
+                      <p className="text-xs text-[rgba(9,10,8,0.5)] mb-3">
+                        {cohortAds.length} annonser lansert i {cohort.label}
+                      </p>
                       <div className="grid grid-cols-6 gap-4">
                         {cohortAds.map((ad) => (
-                          <div key={ad.id} className="group/ad">
+                          <div key={ad.id}>
                             <div className="aspect-square rounded-lg bg-[rgba(9,10,8,0.06)] overflow-hidden mb-2">
                               {ad.thumbnailUrl ? (
-                                <img
-                                  src={ad.thumbnailUrl}
-                                  alt=""
-                                  className="w-full h-full object-cover"
-                                />
+                                <img src={ad.thumbnailUrl} alt="" className="w-full h-full object-cover" />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-xs text-[rgba(9,10,8,0.3)]">
                                   {ad.format}
