@@ -10,7 +10,7 @@ import clsx from "clsx";
 import { useState } from "react";
 
 const PERIOD_OPTIONS: { value: PeriodKey; label: string }[] = [
-  { value: "today", label: "I dag" },
+  { value: "today", label: "I går" },
   { value: "7d", label: "7 dager" },
   { value: "30d", label: "30 dager" },
   { value: "prev_month", label: "Forrige mnd" },

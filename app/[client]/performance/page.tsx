@@ -3,7 +3,7 @@ import PerformanceClient from "@/components/performance/PerformanceClient";
 import { PeriodKey, CompareKey } from "@/lib/types";
 
 const PERIOD_LABELS: Record<PeriodKey, string> = {
-  today: "I dag",
+  today: "I går",
   "7d": "Siste 7 dager",
   "30d": "Siste 30 dager",
   prev_month: "Forrige måned",

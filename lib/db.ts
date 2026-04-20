@@ -58,7 +58,7 @@ function shiftDays(dateStr: string, days: number): string {
 }
 
 const PERIOD_LABELS: Record<PeriodKey, string> = {
-  today: "I dag",
+  today: "I går",
   "7d": "Siste 7 dager",
   "30d": "Siste 30 dager",
   prev_month: "Forrige måned",
@@ -68,10 +68,10 @@ const PERIOD_LABELS: Record<PeriodKey, string> = {
 };
 
 export function getPeriodRange(period: PeriodKey): { since: string; until: string } {
-  const t = today();
-  if (period === "today") return { since: t, until: t };
-  if (period === "7d") return { since: daysAgo(7), until: t };
-  if (period === "30d") return { since: daysAgo(30), until: t };
+  const yesterday = daysAgo(1); // always use yesterday — today's data is incomplete
+  if (period === "today") return { since: yesterday, until: yesterday };
+  if (period === "7d") return { since: daysAgo(7), until: yesterday };
+  if (period === "30d") return { since: daysAgo(30), until: yesterday };
   if (period === "prev_month") {
     const now = new Date();
     const firstOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -82,9 +82,9 @@ export function getPeriodRange(period: PeriodKey): { since: string; until: strin
       until: lastOfPrevMonth.toISOString().split("T")[0],
     };
   }
-  if (period === "3m") return { since: daysAgo(90), until: t };
-  if (period === "6m") return { since: daysAgo(180), until: t };
-  return { since: daysAgo(365), until: t }; // 12m
+  if (period === "3m") return { since: daysAgo(90), until: yesterday };
+  if (period === "6m") return { since: daysAgo(180), until: yesterday };
+  return { since: daysAgo(365), until: yesterday }; // 12m
 }
 
 export function getCompareRange(
@@ -196,13 +196,14 @@ export async function getPulseData(): Promise<PulseRow[]> {
     .gte("date", since14)
     .lt("date", until14);
 
-  // Latest weekly reach % from meta_reach_weekly — standard window only (lookback_days = 0)
+  // Latest weekly reach % from meta_reach_weekly — standard window only (lookback_days = 0).
+  // Fetch up to 8 weeks per client so we find a row for each even if week_starts differ.
   const { data: reachRows } = await supabase
     .from("meta_reach_weekly")
     .select("client_id,pct_net_new,frequency")
     .eq("lookback_days", 0)
     .order("week_start", { ascending: false })
-    .limit(clients.length);
+    .limit(clients.length * 8);
 
   return clients.map((client) => {
     const cRows = (curr7 ?? []).filter((r) => r.client_id === client.id);
