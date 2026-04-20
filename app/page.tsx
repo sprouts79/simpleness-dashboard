@@ -163,12 +163,8 @@ export default async function PulsePage() {
       <div className="mt-6">
         <InfoBox>
           <p className="font-semibold mb-1">Hvordan lese denne oversikten</p>
-          <p className="mb-2">
-            <strong>Net New %</strong> er andelen av ukens rekkevidde som er nye personer — folk som ikke har sett annonsene dine i løpet av de siste 3 månedene.
-            Høyere er bedre: ≥30 % betyr at budsjettet når nye folk, 18–30 % er moderat, under 18 % tyder på at de samme personene treffes igjen og igjen.
-          </p>
           <p>
-            <strong>Frekvens</strong> over 6–8 er et tegn på publikumsmetning og bør følges opp med kreativ refresh eller utvidet målgruppe.
+            <strong>Net New %</strong> er andelen av ukens rekkevidde som er nye personer — folk som ikke har sett annonsene dine i løpet av de siste 3 månedene.
           </p>
         </InfoBox>
       </div>
