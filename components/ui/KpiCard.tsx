@@ -43,7 +43,7 @@ export default function KpiCard({
       )}
     >
       {/* Label */}
-      <span className="text-sm font-medium text-[rgba(9,10,8,0.5)] mb-2">
+      <span className="inline-block text-xs font-medium text-[rgba(9,10,8,0.55)] mb-2 pb-1 border-b border-[rgba(9,10,8,0.1)]">
         {label}
       </span>
 
