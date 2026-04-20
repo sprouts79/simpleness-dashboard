@@ -1,11 +1,14 @@
 import clsx from "clsx";
 
+type StatusLevel = "good" | "warning" | "critical";
+
 interface KpiCardProps {
   label: string;
   value: string;
   delta?: number;
   deltaLabel?: string;
   note?: string;
+  status?: { level: StatusLevel; label: string; description?: string };
   size?: "default" | "large";
   highlight?: boolean;
   invertDelta?: boolean; // lower is better (CPA, CPMn, Frequency)
@@ -22,6 +25,7 @@ export default function KpiCard({
   delta,
   deltaLabel,
   note,
+  status,
   size = "default",
   highlight = false,
   invertDelta = false,
@@ -57,8 +61,36 @@ export default function KpiCard({
         {value}
       </p>
 
-      {/* Note if present */}
-      {note && (
+      {/* Status badge if present */}
+      {status && (
+        <div className="mt-3">
+          <span
+            className={clsx(
+              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold",
+              {
+                "bg-[rgba(45,122,10,0.12)] text-[#2d7a0a]": status.level === "good",
+                "bg-[rgba(180,120,20,0.12)] text-[#8a6010]": status.level === "warning",
+                "bg-[rgba(180,60,60,0.12)] text-[#9a3c3c]": status.level === "critical",
+              }
+            )}
+          >
+            <span
+              className={clsx("w-1.5 h-1.5 rounded-full", {
+                "bg-[#2d7a0a]": status.level === "good",
+                "bg-[#b47814]": status.level === "warning",
+                "bg-[#b43c3c]": status.level === "critical",
+              })}
+            />
+            {status.label}
+          </span>
+          {status.description && (
+            <p className="text-xs text-[rgba(9,10,8,0.5)] mt-1.5">{status.description}</p>
+          )}
+        </div>
+      )}
+
+      {/* Note if present (simple text) */}
+      {note && !status && (
         <p className="text-sm text-[rgba(9,10,8,0.45)] mt-2">
           {note}
         </p>

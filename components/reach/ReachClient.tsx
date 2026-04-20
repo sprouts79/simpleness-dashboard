@@ -126,11 +126,23 @@ export default function ReachClient({
     cpmNetNew: r.cpmNetNew,
   }));
 
-  const netNewStatus =
-    !kpis ? "" :
-    kpis.avgNetNewPct >= 30 ? "Frisk malgruppe" :
-    kpis.avgNetNewPct >= 18 ? "Moderat metning" :
-    "Hoy metning";
+  const reachStatus = !kpis ? null : kpis.avgNetNewPct >= 25 
+    ? { 
+        level: "good" as const, 
+        label: "Frisk malgruppe", 
+        description: "God andel nye brukere. Annonseringen nar stadig nye folk." 
+      }
+    : kpis.avgNetNewPct >= 15 
+    ? { 
+        level: "warning" as const, 
+        label: "Moderat metning", 
+        description: "Andelen nye synker. Vurder kreativ refresh eller utvidet malgruppe." 
+      }
+    : { 
+        level: "critical" as const, 
+        label: "Hoy metning", 
+        description: "Lave nye-tall. Malgruppen er mettet. Handling anbefales." 
+      };
 
   // Auto-sync on first load if no data exists
   useEffect(() => {
@@ -268,17 +280,12 @@ export default function ReachClient({
                 <KpiCard
                   label="Snitt % Nye per mnd"
                   value={`${kpis.avgNetNewPct.toFixed(1)}%`}
-                  note={netNewStatus}
-                  highlight={kpis.avgNetNewPct < 18}
+                  status={reachStatus ?? undefined}
+                  highlight={kpis.avgNetNewPct < 15}
                 />
               </div>
 
-              {kpis.avgNetNewPct < 20 && (
-                <div className="mt-4 px-5 py-4 rounded-lg border-2 border-[var(--color-black)] bg-white text-sm text-[var(--color-black)]">
-                  <strong>Obs:</strong> Net New Reach er {kpis.avgNetNewPct.toFixed(1)}% - under 30%-terskelen.
-                  Vurder kreativ refresh, utvidelse av malgruppe, eller budsjettreduksjon.
-                </div>
-              )}
+
             </div>
           )}
 
