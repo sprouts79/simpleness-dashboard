@@ -210,7 +210,7 @@ export default function PerformanceClient({
               Spend
             </span>
             <span className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#C2410C] inline-block" />
+              <span className="w-2 h-2 rounded-full bg-[var(--color-link)] inline-block" />
               ROAS
             </span>
           </div>
