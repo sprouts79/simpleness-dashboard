@@ -115,8 +115,8 @@ export default function SpendTrendChart({ data }: Props) {
           dataKey="roas"
           stroke="var(--color-link)"
           strokeWidth={3}
-          dot={false}
-          activeDot={false}
+          dot={{ fill: "var(--color-link)", strokeWidth: 0, r: 2 }}
+          activeDot={{ fill: "var(--color-link)", strokeWidth: 0, r: 3 }}
           name="ROAS"
         />
       </ComposedChart>

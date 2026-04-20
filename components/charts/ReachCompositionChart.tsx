@@ -118,8 +118,8 @@ export default function ReachCompositionChart({ data }: Props) {
           dataKey="netNewPct"
           stroke="var(--color-link)"
           strokeWidth={3}
-          dot={false}
-          activeDot={false}
+          dot={{ fill: "var(--color-link)", strokeWidth: 0, r: 2 }}
+          activeDot={{ fill: "var(--color-link)", strokeWidth: 0, r: 3 }}
           name="Net New %"
         />
       </ComposedChart>
