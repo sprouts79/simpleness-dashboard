@@ -268,8 +268,10 @@ export async function fetchAdMeta(accountId: string, adIds?: string[]): Promise<
   const creativeMap = new Map<string, {
     thumbnail_url?: string;
     object_type?: string;
-    portrait_hash?: string;   // image hash for static portrait ads
+    portrait_hash?: string;   // image hash for portrait-labelled ads
+    fallback_hash?: string;   // any image hash when no portrait label found
     portrait_video_id?: string; // video ID for video portrait ads
+    fallback_video_id?: string; // any video ID when no portrait label found
   }>();
 
   // Batch size of 20 for creative calls — asset_feed_spec is large JSON and
@@ -279,45 +281,53 @@ export async function fetchAdMeta(accountId: string, adIds?: string[]): Promise<
     const json = await fetchWithRetry(
       `${BASE}/?ids=${ids}&fields=object_type,thumbnail_url,asset_feed_spec&thumbnail_width=500&thumbnail_height=889&access_token=${token()}`
     );
-    // Throw on error so the ads sync fails cleanly rather than silently writing
-    // empty thumbnail URLs that overwrite correct values in the database.
     if (json.error) throw new Error(`creative fetch: ${json.error.message} (code ${json.error.code})`);
     {
       for (const [id, data] of Object.entries(json)) {
         const d = data as any;
         let portraitHash: string | undefined;
+        let fallbackHash: string | undefined;
         let portraitVideoId: string | undefined;
+        let fallbackVideoId: string | undefined;
+
         // Look for portrait-labelled image asset
         for (const img of (d.asset_feed_spec?.images ?? [])) {
           const isPortrait = (img.adlabels ?? []).some(
             (l: any) => l.name === "portrait" || l.name === "stories" || l.name === "vertical"
           );
           if (isPortrait && img.hash) { portraitHash = img.hash; break; }
+          if (!fallbackHash && img.hash) { fallbackHash = img.hash; }
         }
-        // Look for portrait-labelled video asset (if no portrait image found)
-        if (!portraitHash) {
+
+        // Look for video assets (portrait-labelled first, then any)
+        if (!portraitHash && !fallbackHash) {
           for (const vid of (d.asset_feed_spec?.videos ?? [])) {
             const isPortrait = (vid.adlabels ?? []).some(
               (l: any) => l.name === "portrait" || l.name === "stories" || l.name === "vertical"
             );
             if (isPortrait && vid.video_id) { portraitVideoId = vid.video_id; break; }
+            if (!fallbackVideoId && vid.video_id) { fallbackVideoId = vid.video_id; }
           }
         }
+
         creativeMap.set(id, {
           thumbnail_url: d.thumbnail_url,
           object_type: d.object_type,
           portrait_hash: portraitHash,
+          fallback_hash: fallbackHash,
           portrait_video_id: portraitVideoId,
+          fallback_video_id: fallbackVideoId,
         });
       }
     }
   }
 
-  // Step 3a: Resolve portrait image hashes → native URLs via adimages endpoint.
-  // Uses fetchWithRetry so rate-limit errors back off rather than silently returning empty.
-  const portraitHashes = [...new Set(
-    [...creativeMap.values()].map((c) => c.portrait_hash).filter(Boolean)
+  // Step 3a: Resolve image hashes → native URLs via adimages endpoint.
+  // Collects both portrait-labelled and fallback hashes.
+  const allHashes = [...new Set(
+    [...creativeMap.values()].flatMap((c) => [c.portrait_hash, c.fallback_hash]).filter(Boolean)
   )] as string[];
+  const portraitHashes = allHashes; // resolve all at once
 
   const hashToUrl = new Map<string, string>();
   for (let i = 0; i < portraitHashes.length; i += 50) {
@@ -336,7 +346,7 @@ export async function fetchAdMeta(accountId: string, adIds?: string[]): Promise<
   // Step 3b: Resolve portrait video IDs → thumbnail picture URLs (best-effort, permission
   // may be denied by the System User Token — falls back silently to thumbnail_url).
   const portraitVideoIds = [...new Set(
-    [...creativeMap.values()].map((c) => c.portrait_video_id).filter(Boolean)
+    [...creativeMap.values()].flatMap((c) => [c.portrait_video_id, c.fallback_video_id]).filter(Boolean)
   )] as string[];
 
   const videoToThumb = new Map<string, string>();
@@ -361,10 +371,12 @@ export async function fetchAdMeta(accountId: string, adIds?: string[]): Promise<
     else if (objectType === "SHARE") format = "carousel";
     else if (objectType === "PHOTO" || objectType === "STATUS") format = "static";
 
-    // Priority: native portrait image → portrait video thumbnail → CDN thumbnail_url
+    // Priority: portrait image → fallback image → portrait video → fallback video → CDN thumbnail
     const portraitUrl = creative?.portrait_hash ? hashToUrl.get(creative.portrait_hash) : undefined;
+    const fallbackUrl = creative?.fallback_hash ? hashToUrl.get(creative.fallback_hash) : undefined;
     const portraitVideoThumb = creative?.portrait_video_id ? videoToThumb.get(creative.portrait_video_id) : undefined;
-    const thumbnailUrl = portraitUrl || portraitVideoThumb || creative?.thumbnail_url || "";
+    const fallbackVideoThumb = creative?.fallback_video_id ? videoToThumb.get(creative.fallback_video_id) : undefined;
+    const thumbnailUrl = portraitUrl || fallbackUrl || portraitVideoThumb || fallbackVideoThumb || creative?.thumbnail_url || "";
 
     return {
       adId: r.id,
