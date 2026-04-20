@@ -36,7 +36,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       <div className="space-y-2">
         <div>
           <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-[var(--color-black)] text-white mb-1">
-            Net New
+            Nye Brukere
           </span>
           <p className="font-bold text-lg" style={{ fontFamily: "var(--font-mono)" }}>
             {formatReach(netNew)} <span className="text-sm font-medium text-[rgba(9,10,8,0.5)]">({pct}%)</span>

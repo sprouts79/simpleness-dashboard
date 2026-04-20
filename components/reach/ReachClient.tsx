@@ -262,11 +262,11 @@ export default function ReachClient({
                   size="large"
                 />
                 <KpiCard
-                  label="Snitt Nye Brukere"
+                  label="Snitt Nye"
                   value={formatReach(kpis.avgNetNewReach)}
                 />
                 <KpiCard
-                  label="Snitt % Nye Brukere"
+                  label="Snitt % Nye"
                   value={`${kpis.avgNetNewPct.toFixed(1)}%`}
                   note={netNewStatus}
                   highlight={kpis.avgNetNewPct < 18}
@@ -294,7 +294,7 @@ export default function ReachClient({
                 </span>
                 <span className="flex items-center gap-2">
                   <span className="w-3.5 h-3.5 rounded-sm bg-[var(--color-black)] inline-block" />
-                  Nye brukere
+                  Nye
                 </span>
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[var(--color-link)] inline-block" />
@@ -371,7 +371,7 @@ export default function ReachClient({
                       <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
                         {formatReach(row.rollingReach)}
                       </td>
-                      <td className="px-4 py-3 text-right text-sm font-medium" style={{ fontFamily: "var(--font-mono)" }}>
+                      <td className="px-4 py-3 text-right text-sm font-medium" style={{ fontFamily: "var(--font-mono)", color: "var(--color-link)" }}>
                         {formatReach(row.netNew)}
                       </td>
                       <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
