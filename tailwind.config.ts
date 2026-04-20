@@ -9,17 +9,24 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        black: "#090A08",
-        accent: "#89FF58",
-        link: "#515B12",
-        "green-moss": "#515B12",
-        "green-deep": "#41BD0E",
-        "green-clear": "#89FF58",
-        "green-mint": "#DFF7CC",
-        "green-pale": "#F6FFEE",
+        black: "#1a1a1a",
+        accent: "#1a1a1a",
+        link: "#6b7280",
+        gray: {
+          50: "#fafafa",
+          100: "#f5f5f5",
+          200: "#e5e5e5",
+          300: "#d4d4d4",
+          400: "#a3a3a3",
+          500: "#737373",
+          600: "#525252",
+          700: "#404040",
+          800: "#262626",
+          900: "#171717",
+        },
       },
       fontFamily: {
-        sans: ["var(--font-jakarta)", "system-ui", "sans-serif"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "monospace"],
       },
       fontSize: {

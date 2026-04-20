@@ -14,7 +14,7 @@ export default function ClientTabNav({ clientSlug }: { clientSlug: string }) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex gap-6">
+    <nav className="flex gap-1">
       {TABS.map((tab) => {
         const href = `/${clientSlug}/${tab.path}`;
         const isActive = pathname.endsWith(tab.path);
@@ -23,10 +23,10 @@ export default function ClientTabNav({ clientSlug }: { clientSlug: string }) {
             key={tab.path}
             href={href}
             className={clsx(
-              "text-sm font-medium pb-3 border-b-2 transition-colors",
+              "text-sm px-3 py-1.5 rounded-md transition-colors",
               isActive
-                ? "border-[var(--color-black)] text-[var(--color-black)]"
-                : "border-transparent text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)]"
+                ? "bg-[var(--color-gray-100)] text-[var(--color-black)] font-medium"
+                : "text-[var(--color-gray-500)] hover:text-[var(--color-black)] hover:bg-[var(--color-gray-50)]"
             )}
           >
             {tab.label}

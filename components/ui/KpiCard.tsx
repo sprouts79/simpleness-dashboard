@@ -8,7 +8,7 @@ interface KpiCardProps {
   note?: string;
   size?: "default" | "large";
   highlight?: boolean;
-  invertDelta?: boolean; // lower is better (CPA, CPMn, Frequency)
+  invertDelta?: boolean;
 }
 
 function formatDelta(delta: number) {
@@ -32,19 +32,18 @@ export default function KpiCard({
   return (
     <div
       className={clsx(
-        "border-2 border-[var(--color-black)] p-4 flex flex-col gap-1 shadow-[3px_3px_0_0_rgba(9,10,8,1)]",
-        highlight ? "bg-[var(--color-green-pale)]" : "bg-white"
+        "rounded-lg border border-[var(--color-border)] p-5 flex flex-col gap-1.5",
+        highlight ? "bg-[var(--color-gray-50)]" : "bg-white"
       )}
     >
-      <p className="text-xs font-medium text-[rgba(9,10,8,0.45)] uppercase tracking-wide">
+      <p className="text-xs font-medium text-[var(--color-gray-500)] tracking-wide">
         {label}
       </p>
       <p
         className={clsx(
-          "font-bold tabular-nums leading-tight",
+          "font-semibold tabular-nums leading-tight tracking-tight",
           size === "large" ? "text-3xl" : "text-2xl"
         )}
-        style={{ fontFamily: "var(--font-mono)" }}
       >
         {value}
       </p>
@@ -57,13 +56,13 @@ export default function KpiCard({
           })}
         >
           {formatDelta(delta)}{" "}
-          <span className="font-normal text-[rgba(9,10,8,0.4)]">
+          <span className="font-normal text-[var(--color-gray-400)]">
             {deltaLabel ?? "vs forrige uke"}
           </span>
         </p>
       )}
       {note && (
-        <p className="text-xs text-[rgba(9,10,8,0.4)] mt-0.5">{note}</p>
+        <p className="text-xs text-[var(--color-gray-400)] mt-0.5">{note}</p>
       )}
     </div>
   );

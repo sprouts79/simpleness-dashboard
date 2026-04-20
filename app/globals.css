@@ -1,34 +1,40 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Simpleness Design Tokens */
+/* Minimalist Design Tokens */
 :root {
   --color-white: #ffffff;
-  --color-black: #090a08;
-  --color-accent: #89ff58;
-  --color-link: #515b12;
-  --color-green-moss: #515b12;
-  --color-green-deep: #41bd0e;
-  --color-green-clear: #89ff58;
-  --color-green-mint: #dff7cc;
-  --color-green-pale: #f6ffee;
+  --color-black: #1a1a1a;
+  --color-accent: #1a1a1a;
+  --color-link: #6b7280;
+  
+  /* Neutral palette */
+  --color-gray-50: #fafafa;
+  --color-gray-100: #f5f5f5;
+  --color-gray-200: #e5e5e5;
+  --color-gray-300: #d4d4d4;
+  --color-gray-400: #a3a3a3;
+  --color-gray-500: #737373;
+  --color-gray-600: #525252;
+  --color-gray-700: #404040;
+  --color-gray-800: #262626;
+  --color-gray-900: #171717;
 
   /* Status */
-  --color-status-green: #16a34a;
-  --color-status-yellow: #d97706;
-  --color-status-red: #dc2626;
+  --color-status-green: #22c55e;
+  --color-status-yellow: #eab308;
+  --color-status-red: #ef4444;
 
   /* Surfaces */
-  --color-surface: #f8f8f7;
-  --color-border: #e8e8e6;
-  --color-sidebar: #090a08;
+  --color-surface: #fafafa;
+  --color-border: #e5e5e5;
+  --color-sidebar: #fafafa;
 
   /* Typography */
-  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-jakarta: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', monospace;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'Inter', system-ui, sans-serif;
 }
 
 * {
@@ -43,13 +49,13 @@ html, body {
   color: var(--color-black);
   font-family: var(--font-sans);
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
 }
 
-/* Number / data values always mono */
+/* Number / data values */
 .mono {
-  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -61,11 +67,11 @@ html, body {
   color: var(--color-status-red);
 }
 .delta-neutral {
-  color: rgba(9,10,8,0.4);
+  color: var(--color-gray-400);
 }
 
 /* Sidebar link active state */
 .sidebar-link-active {
-  background: rgba(137, 255, 88, 0.15);
-  color: var(--color-accent);
+  background: var(--color-gray-100);
+  color: var(--color-black);
 }

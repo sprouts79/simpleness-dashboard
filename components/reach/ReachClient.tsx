@@ -18,8 +18,6 @@ import ReachCompositionChart from "@/components/charts/ReachCompositionChart";
 import InfoBox from "@/components/ui/InfoBox";
 import { MonthlyReachRow } from "@/lib/types";
 
-// Extension options — how far before the 6M display period to extend the window start
-// 0 = standard (no extension; first month ≈ 100% net new)
 const LOOKBACK_OPTIONS = [
   { label: "Standard", days: 0 },
   { label: "+3M", days: 90 },
@@ -48,8 +46,8 @@ const CpmTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-white border border-[var(--color-border)] rounded-lg px-3 py-2 shadow-sm text-xs">
-      <p className="font-semibold mb-1">{label}</p>
-      <p style={{ fontFamily: "var(--font-mono)" }}>
+      <p className="font-medium mb-1">{label}</p>
+      <p className="tabular-nums">
         {formatNok(payload[0]?.value ?? 0)} / 1k net new
       </p>
     </div>
@@ -69,7 +67,6 @@ export default function ReachClient({
   const [syncing, setSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
-  // Fixed 6-month display window, newest-first data
   const filtered = data.slice(0, 6);
 
   const kpis = filtered.length === 0 ? null : {
@@ -79,7 +76,6 @@ export default function ReachClient({
     avgNetNewPct: filtered.reduce((s, r) => s + r.netNewPct, 0) / filtered.length,
   };
 
-  // Chart data: oldest → newest for chronological display
   const chartData = [...filtered].reverse().map((r) => ({
     month: r.monthLabel,
     previouslyReached: Math.max(0, r.rollingReach - r.netNew),
@@ -93,12 +89,10 @@ export default function ReachClient({
 
   const netNewStatus =
     !kpis ? "" :
-    kpis.avgNetNewPct >= 30 ? "Frisk målgruppe" :
+    kpis.avgNetNewPct >= 30 ? "Frisk malgruppe" :
     kpis.avgNetNewPct >= 18 ? "Moderat metning" :
-    "Høy metning";
+    "Hoy metning";
 
-  // Switching lookback navigates to new URL — server fetches the right data
-  // Auto-sync Standard (0) lookback on first load if no data exists
   useEffect(() => {
     if (currentLookback === 0 && data.length === 0 && !syncing) {
       handleSync();
@@ -128,7 +122,7 @@ export default function ReachClient({
       });
       const json = await res.json();
       if (json.ok) {
-        setSyncStatus(`Synkronisert — ${json.reachSynced} uker hentet`);
+        setSyncStatus(`Synkronisert - ${json.reachSynced} uker hentet`);
         router.refresh();
       } else {
         setSyncStatus(`Feil: ${json.errors?.join(", ") || "Ukjent"}`);
@@ -141,22 +135,22 @@ export default function ReachClient({
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
 
-      {/* Controls: lookback selector + Hent data */}
+      {/* Controls */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-xs font-medium text-[rgba(9,10,8,0.45)]">Utvid lookback med:</span>
-          <div className="flex bg-[var(--color-surface)] rounded-lg p-1 gap-1">
+          <span className="text-xs font-medium text-[var(--color-gray-500)]">Utvid lookback med:</span>
+          <div className="flex bg-[var(--color-gray-50)] rounded-lg p-1 gap-1">
             {LOOKBACK_OPTIONS.map(({ label, days }) => (
               <button
                 key={days}
                 onClick={() => handleLookbackClick(days)}
                 className={clsx(
-                  "text-xs font-semibold px-3 py-1.5 rounded-md transition-colors",
+                  "text-xs font-medium px-3 py-1.5 rounded-md transition-colors",
                   currentLookback === days
                     ? "bg-white text-[var(--color-black)] shadow-sm"
-                    : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)]"
+                    : "text-[var(--color-gray-500)] hover:text-[var(--color-black)]"
                 )}
               >
                 {label}
@@ -164,24 +158,24 @@ export default function ReachClient({
             ))}
           </div>
           {currentLookback !== 0 && filtered.length === 0 && (
-            <span className="text-xs text-[rgba(9,10,8,0.35)]">
-              Ingen data — trykk Hent data
+            <span className="text-xs text-[var(--color-gray-400)]">
+              Ingen data - trykk Hent data
             </span>
           )}
         </div>
 
         <div className="flex items-center gap-3">
           {syncStatus && (
-            <span className="text-xs text-[rgba(9,10,8,0.45)]">{syncStatus}</span>
+            <span className="text-xs text-[var(--color-gray-500)]">{syncStatus}</span>
           )}
           <button
             onClick={handleSync}
             disabled={syncing}
             className={clsx(
-              "text-xs font-semibold px-4 py-2 rounded-lg transition-colors",
+              "text-xs font-medium px-4 py-2 rounded-md transition-colors",
               syncing
-                ? "bg-[var(--color-surface)] text-[rgba(9,10,8,0.35)] cursor-not-allowed border border-[var(--color-border)]"
-                : "bg-[var(--color-accent)] text-[var(--color-black)] hover:opacity-90"
+                ? "bg-[var(--color-gray-100)] text-[var(--color-gray-400)] cursor-not-allowed"
+                : "bg-[var(--color-black)] text-white hover:opacity-90"
             )}
           >
             {syncing ? "Henter..." : "Hent data"}
@@ -191,17 +185,17 @@ export default function ReachClient({
 
       {/* Empty state */}
       {filtered.length === 0 && (
-        <div className="rounded-xl border border-[var(--color-border)] p-12 text-center">
-          <p className="text-sm text-[rgba(9,10,8,0.4)] mb-2">
+        <div className="rounded-lg border border-[var(--color-border)] p-12 text-center">
+          <p className="text-sm text-[var(--color-gray-500)] mb-2">
             Ingen reach-data for lookback {activeOption.label}.
           </p>
-          <p className="text-xs text-[rgba(9,10,8,0.3)] mb-6">
-            Trykk Hent data for å synkronisere fra Meta.
+          <p className="text-xs text-[var(--color-gray-400)] mb-6">
+            Trykk Hent data for a synkronisere fra Meta.
           </p>
           <button
             onClick={handleSync}
             disabled={syncing}
-            className="text-xs font-semibold px-4 py-2 rounded-lg bg-[var(--color-accent)] text-[var(--color-black)] hover:opacity-90 transition-colors"
+            className="text-xs font-medium px-4 py-2 rounded-md bg-[var(--color-black)] text-white hover:opacity-90 transition-colors"
           >
             {syncing ? "Henter..." : "Hent data"}
           </button>
@@ -214,10 +208,10 @@ export default function ReachClient({
           {kpis && (
             <div>
               <SectionHeader
-                title="Reach-nøkkeltall"
-                subtitle={`Siste 6 måneder · lookback ${lookbackLabel} · ${filtered.length} mnd data`}
+                title="Reach-nokkeltall"
+                subtitle={`Siste 6 maneder - lookback ${lookbackLabel} - ${filtered.length} mnd data`}
               />
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-4 gap-4">
                 <KpiCard
                   label="Total Spend"
                   value={formatNokShort(kpis.totalSpend)}
@@ -226,13 +220,13 @@ export default function ReachClient({
                 <KpiCard
                   label="Rolling Reach"
                   value={formatReach(kpis.totalReach)}
-                  note={`6M vindu · lookback ${lookbackLabel}`}
+                  note={`6M vindu - lookback ${lookbackLabel}`}
                   size="large"
                 />
                 <KpiCard
                   label="Avg Net New Reach"
                   value={formatReach(kpis.avgNetNewReach)}
-                  note="per måned"
+                  note="per maned"
                 />
                 <KpiCard
                   label="Avg % Net New"
@@ -243,9 +237,9 @@ export default function ReachClient({
               </div>
 
               {kpis.avgNetNewPct < 20 && (
-                <div className="mt-3 px-4 py-3 rounded-lg border border-yellow-200 bg-yellow-50 text-xs text-yellow-800">
-                  <strong>Advarsel:</strong> Net New Reach er {kpis.avgNetNewPct.toFixed(1)}% — under 30%-terskelen.
-                  Frekvens er høy. Vurder kreativ refresh, utvidelse av målgruppe, eller budsjettreduksjon.
+                <div className="mt-4 px-4 py-3 rounded-lg border border-amber-200 bg-amber-50 text-xs text-amber-800">
+                  <strong>Advarsel:</strong> Net New Reach er {kpis.avgNetNewPct.toFixed(1)}% - under 30%-terskelen.
+                  Frekvens er hoy. Vurder kreativ refresh, utvidelse av malgruppe, eller budsjettreduksjon.
                 </div>
               )}
             </div>
@@ -255,21 +249,21 @@ export default function ReachClient({
           <div>
             <SectionHeader
               title="Reach Composition Analysis"
-              subtitle="Grå = previously reached · Grønn = net new · Linje = Net New %"
+              subtitle="Gra = previously reached - Gronn = net new - Linje = Net New %"
             />
-            <div className="rounded-xl border border-[var(--color-border)] p-5 bg-white">
+            <div className="rounded-lg border border-[var(--color-border)] p-5 bg-white">
               <ReachCompositionChart data={chartData} />
-              <div className="flex gap-6 mt-4 text-xs text-[rgba(9,10,8,0.4)]">
+              <div className="flex gap-6 mt-4 text-xs text-[var(--color-gray-400)]">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-sm bg-[#d4d4d0] inline-block" />
+                  <span className="w-3 h-3 rounded-sm bg-[var(--color-gray-200)] inline-block" />
                   Previously reached
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-sm bg-[var(--color-green-mint)] inline-block" />
+                  <span className="w-3 h-3 rounded-sm bg-[var(--color-gray-400)] inline-block" />
                   Net New
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-4 h-0.5 bg-[#d97706] inline-block" />
+                  <span className="w-4 h-0.5 bg-amber-500 inline-block" />
                   Net New %
                 </span>
               </div>
@@ -280,32 +274,32 @@ export default function ReachClient({
           <div>
             <SectionHeader
               title="Cost Per 1k Net New Reach"
-              subtitle="Kostnad per 1000 nye unike nådd — per måned"
+              subtitle="Kostnad per 1000 nye unike nadd - per maned"
             />
-            <div className="rounded-xl border border-[var(--color-border)] p-5 bg-white">
+            <div className="rounded-lg border border-[var(--color-border)] p-5 bg-white">
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={chartData} margin={{ top: 4, right: 48, bottom: 0, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e8e8e6" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-200)" vertical={false} />
                   <XAxis
                     dataKey="month"
-                    tick={{ fontSize: 11, fill: "rgba(9,10,8,0.4)", fontFamily: "var(--font-mono)" }}
+                    tick={{ fontSize: 11, fill: "var(--color-gray-400)" }}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis
-                    tick={{ fontSize: 11, fill: "rgba(9,10,8,0.4)", fontFamily: "var(--font-mono)" }}
+                    tick={{ fontSize: 11, fill: "var(--color-gray-400)" }}
                     tickLine={false}
                     axisLine={false}
                     width={52}
                     tickFormatter={(v) => `${Math.round(v)}`}
                   />
-                  <Tooltip content={<CpmTooltip />} cursor={{ stroke: "rgba(9,10,8,0.06)" }} />
+                  <Tooltip content={<CpmTooltip />} cursor={{ stroke: "var(--color-gray-100)" }} />
                   <Line
                     type="monotone"
                     dataKey="cpmNetNew"
-                    stroke="var(--color-link)"
+                    stroke="var(--color-black)"
                     strokeWidth={2}
-                    dot={{ r: 3, fill: "var(--color-link)", strokeWidth: 0 }}
+                    dot={{ r: 3, fill: "var(--color-black)", strokeWidth: 0 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -316,18 +310,18 @@ export default function ReachClient({
           <div>
             <SectionHeader
               title="Monthly Breakdown"
-              subtitle={`Lookback ${lookbackLabel} · siste ${filtered.length} måneder`}
+              subtitle={`Lookback ${lookbackLabel} - siste ${filtered.length} maneder`}
             />
-            <div className="rounded-xl border border-[var(--color-border)] overflow-x-auto">
+            <div className="rounded-lg border border-[var(--color-border)] overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-                    {["Måned", "Rolling Reach", "Net New", "Spend", "CPM", "Frequency", "CPM Net New", "%"].map((h) => (
+                  <tr className="border-b border-[var(--color-border)] bg-[var(--color-gray-50)]">
+                    {["Maned", "Rolling Reach", "Net New", "Spend", "CPM", "Frequency", "CPM Net New", "%"].map((h) => (
                       <th
                         key={h}
                         className={clsx(
-                          "py-3 text-xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.45)]",
-                          h === "Måned" ? "text-left px-5" : "text-right px-4"
+                          "py-3 text-xs font-medium text-[var(--color-gray-500)]",
+                          h === "Maned" ? "text-left px-5" : "text-right px-4"
                         )}
                       >
                         {h}
@@ -339,37 +333,36 @@ export default function ReachClient({
                   {filtered.map((row) => (
                     <tr
                       key={row.monthKey}
-                      className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface)] transition-colors"
+                      className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-gray-50)] transition-colors"
                     >
                       <td className="px-5 py-2.5 font-medium text-sm whitespace-nowrap">
                         {row.monthLabel}
                       </td>
-                      <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
+                      <td className="px-4 py-2.5 text-right tabular-nums">
                         {formatReach(row.rollingReach)}
                       </td>
-                      <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)", color: "var(--color-link)" }}>
+                      <td className="px-4 py-2.5 text-right tabular-nums text-[var(--color-gray-600)]">
                         {formatReach(row.netNew)}
                       </td>
-                      <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
+                      <td className="px-4 py-2.5 text-right tabular-nums">
                         {formatNok(row.spend)}
                       </td>
-                      <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
+                      <td className="px-4 py-2.5 text-right tabular-nums">
                         {Math.round(row.cpm)} kr
                       </td>
-                      <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
-                        {row.frequency.toFixed(2)}×
+                      <td className="px-4 py-2.5 text-right tabular-nums">
+                        {row.frequency.toFixed(2)}x
                       </td>
-                      <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
+                      <td className="px-4 py-2.5 text-right tabular-nums">
                         {Math.round(row.cpmNetNew)} kr
                       </td>
                       <td className="px-4 py-2.5 text-right">
                         <span
-                          className={clsx("text-xs font-semibold px-1.5 py-0.5 rounded", {
+                          className={clsx("text-xs font-medium px-2 py-0.5 rounded-full tabular-nums", {
                             "bg-green-100 text-green-700": row.netNewPct >= 30,
-                            "bg-yellow-100 text-yellow-700": row.netNewPct >= 18 && row.netNewPct < 30,
+                            "bg-amber-100 text-amber-700": row.netNewPct >= 18 && row.netNewPct < 30,
                             "bg-red-100 text-red-700": row.netNewPct < 18,
                           })}
-                          style={{ fontFamily: "var(--font-mono)" }}
                         >
                           {row.netNewPct.toFixed(1)}%
                         </span>
@@ -381,30 +374,30 @@ export default function ReachClient({
             </div>
           </div>
 
-          {/* Hvordan lese denne rapporten */}
+          {/* Info */}
           <InfoBox title="Forklaring">
             <dl className="space-y-2.5">
               {[
                 {
                   term: "Rolling Reach",
-                  def: "Totalt antall unike personer nådd kumulativt. Teller alle som har sett annonsene dine i det valgte vinduet.",
+                  def: "Totalt antall unike personer nadd kumulativt. Teller alle som har sett annonsene dine i det valgte vinduet.",
                 },
                 {
                   term: "Net New Reach",
-                  def: "Nye folk nådd denne måneden — personer som ikke har sett annonsene dine de siste 3 månedene.",
+                  def: "Nye folk nadd denne maneden - personer som ikke har sett annonsene dine de siste 3 manedene.",
                 },
                 {
                   term: "% Net New",
-                  def: "Andel av månedlig rekkevidde som er nye folk. Over 30 % = frisk målgruppe. Under 18 % = vurder kreativ refresh eller utvidelse av målgruppe.",
+                  def: "Andel av manedlig rekkevidde som er nye folk. Over 30 % = frisk malgruppe. Under 18 % = vurder kreativ refresh eller utvidelse av malgruppe.",
                 },
                 {
                   term: "Lookback",
-                  def: "Utvid historikken bakover for å se reell rekkevidde over lengre tid. Standard betyr ingen utvidelse.",
+                  def: "Utvid historikken bakover for a se reell rekkevidde over lengre tid. Standard betyr ingen utvidelse.",
                 },
               ].map(({ term, def }) => (
                 <div key={term} className="grid grid-cols-[140px_1fr] gap-3">
-                  <dt className="font-semibold text-[rgba(9,10,8,0.75)] leading-snug pt-px">{term}</dt>
-                  <dd className="text-[rgba(9,10,8,0.6)] leading-snug">{def}</dd>
+                  <dt className="font-medium text-[var(--color-black)] leading-snug pt-px">{term}</dt>
+                  <dd className="text-[var(--color-gray-600)] leading-relaxed">{def}</dd>
                 </div>
               ))}
             </dl>
