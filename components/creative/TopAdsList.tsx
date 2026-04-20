@@ -144,10 +144,10 @@ function AdCard({
             src={ad.thumbnailUrl}
             alt={ad.name}
             onError={() => setImgError(true)}
-            className="w-full aspect-[9/16] object-cover block"
+            className="w-full aspect-[4/5] object-cover block"
           />
         ) : (
-          <div className="aspect-[9/16] flex items-center justify-center">
+          <div className="aspect-[4/5] flex items-center justify-center">
             <div className="text-center">
               <p className="text-2xl mb-1">{ad.format === "video" ? "▶" : "▣"}</p>
               <p className="text-[10px] text-[rgba(9,10,8,0.3)] capitalize">{ad.format}</p>

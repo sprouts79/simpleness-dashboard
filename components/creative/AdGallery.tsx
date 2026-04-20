@@ -35,7 +35,7 @@ function Modal({ ad, onClose }: { ad: Ad; onClose: () => void }) {
           ✕
         </button>
         {loading && (
-          <div className="aspect-[9/16] rounded-2xl bg-black/30 flex items-center justify-center">
+          <div className="aspect-[4/5] rounded-2xl bg-black/30 flex items-center justify-center">
             <span className="text-white text-xs">Laster…</span>
           </div>
         )}
@@ -79,10 +79,10 @@ function AdTile({ ad }: { ad: Ad }) {
             src={ad.thumbnailUrl}
             alt={ad.name}
             onError={() => setImgError(true)}
-            className="w-full aspect-[9/16] object-cover block"
+            className="w-full aspect-[4/5] object-cover block"
           />
         ) : (
-          <div className="aspect-[9/16] bg-[#f8f8f7] flex items-center justify-center">
+          <div className="aspect-[4/5] bg-[#f8f8f7] flex items-center justify-center">
             <span className="text-3xl opacity-30">{ad.format === "video" ? "▶" : "▣"}</span>
           </div>
         )}
