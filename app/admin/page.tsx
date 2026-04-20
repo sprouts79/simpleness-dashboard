@@ -71,6 +71,7 @@ export default function AdminPage() {
     setResult(null);
 
     try {
+      // 1. Create client in database
       const res = await fetch("/api/admin/clients", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -78,20 +79,37 @@ export default function AdminPage() {
       });
       const json = await res.json();
 
-      if (json.ok) {
-        setResult({ ok: true, message: `${name} lagt til. Gå til /${slug}/performance og trykk Hent data.` });
-        setSelectedAccountId("");
-        setName("");
-        setSlug("");
-        setSlugEdited(false);
-        // Mark account as added in the list
-        setAccounts((prev) =>
-          prev.map((a) => a.accountId === selectedAccountId ? { ...a, alreadyAdded: true } : a)
-        );
-        router.refresh();
-      } else {
+      if (!json.ok) {
         setResult({ ok: false, message: json.error ?? "Ukjent feil" });
+        return;
       }
+
+      // 2. Refresh sidebar so the new client appears immediately
+      router.refresh();
+      setResult({ ok: true, message: `${name} lagt til — henter data fra Meta...` });
+
+      // 3. Trigger full sync in background
+      const syncRes = await fetch("/api/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clientId: slug, syncType: "all" }),
+      });
+      const syncJson = await syncRes.json();
+
+      if (syncJson.ok) {
+        setResult({ ok: true, message: `${name} lagt til og synket — ${syncJson.performanceSynced ?? 0} dager med data hentet.` });
+      } else {
+        setResult({ ok: true, message: `${name} lagt til, men sync feilet: ${syncJson.errors?.join(", ") || "ukjent feil"}. Prøv Hent data manuelt.` });
+      }
+
+      setSelectedAccountId("");
+      setName("");
+      setSlug("");
+      setSlugEdited(false);
+      setAccounts((prev) =>
+        prev.map((a) => a.accountId === selectedAccountId ? { ...a, alreadyAdded: true } : a)
+      );
+      router.refresh();
     } catch (e: unknown) {
       setResult({ ok: false, message: e instanceof Error ? e.message : "Nettverksfeil" });
     } finally {
@@ -185,7 +203,7 @@ export default function AdminPage() {
               : "bg-[var(--color-surface)] text-[rgba(9,10,8,0.3)] cursor-not-allowed border border-[var(--color-border)]"
           )}
         >
-          {submitting ? "Legger til..." : "Legg til kunde"}
+          {submitting ? (result?.message.includes("henter") ? "Henter data..." : "Legger til...") : "Legg til kunde"}
         </button>
 
         {/* Feedback */}

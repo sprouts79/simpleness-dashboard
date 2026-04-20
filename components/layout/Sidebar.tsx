@@ -2,21 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Client, ClientStatus } from "@/lib/types";
+import { Client } from "@/lib/types";
 import clsx from "clsx";
-
-function StatusDot({ status }: { status: ClientStatus }) {
-  return (
-    <span
-      className={clsx("inline-block w-1.5 h-1.5 rounded-full flex-shrink-0", {
-        "bg-[var(--color-status-green)]": status === "green",
-        "bg-[var(--color-status-yellow)]": status === "yellow",
-        "bg-[var(--color-status-red)]": status === "red",
-      })}
-    />
-  );
-}
-
 
 export default function Sidebar({ clients }: { clients: Client[] }) {
   const pathname = usePathname();
@@ -27,7 +14,6 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
 
       {/* Logo */}
       <div className="px-5 pt-5 pb-4 border-b border-[var(--color-border)]">
-        {/* LOGO: logo-standard.png — replace with logo-standard.svg when exported from Figma */}
         <img
           src="https://simpleness-design-system.vercel.app/logo-standard.png"
           alt="simpleness"
@@ -64,16 +50,14 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
               key={client.id}
               href={`/${client.slug}/performance`}
               className={clsx(
-                "flex items-center justify-between px-3 py-2 rounded-lg text-[13px] transition-colors mb-0.5",
+                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors mb-0.5",
                 isActive
                   ? "bg-[var(--color-green-pale)] text-[var(--color-link)] font-semibold"
                   : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)] hover:bg-[var(--color-border)]"
               )}
             >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <StatusDot status={client.status} />
-                <span className="truncate">{client.name}</span>
-              </div>
+              <span className={clsx("w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[var(--color-accent)]", !isActive && "opacity-30")} />
+              <span className="truncate">{client.name}</span>
             </Link>
           );
         })}
