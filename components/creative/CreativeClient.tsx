@@ -156,15 +156,18 @@ export default function CreativeClient({
     return grouped;
   }, [cohorts, ads]);
 
-  // Top 12 by spend
+  // Top 10 by spend
   const topBySpend = useMemo(() => 
-    [...ads].sort((a, b) => b.spend - a.spend).slice(0, 12),
+    [...ads].sort((a, b) => b.spend - a.spend).slice(0, 10),
   [ads]);
 
-  // Top 12 by reach (using impressions as proxy since we don't have reach per ad)
-  const topByReach = useMemo(() => 
-    [...ads].sort((a, b) => b.impressions - a.impressions).slice(0, 12),
+  // Top 10 by net new reach (which ads reach the most new people)
+  const topByNetNew = useMemo(() => 
+    [...ads].sort((a, b) => (b.netNew || 0) - (a.netNew || 0)).slice(0, 10),
   [ads]);
+  
+  // State for expanded ad in top lists
+  const [expandedAdId, setExpandedAdId] = useState<string | null>(null);
 
   async function handleSync() {
     setSyncing(true);
@@ -404,68 +407,127 @@ export default function CreativeClient({
         </div>
       )}
 
-      {/* Top 12 Lists */}
+      {/* Top 10 Lists */}
       <div className="grid grid-cols-2 gap-6">
         {/* Top by Spend */}
         <div>
-          <SectionHeader title="Topp 12 etter Spend" />
+          <SectionHeader title="Topp 10 etter Spend" subtitle="Annonser som får mest budsjett" />
           <div className="rounded-xl bg-[var(--color-surface)] overflow-hidden">
             <div className="divide-y divide-[var(--color-border)]">
-              {topBySpend.map((ad, i) => (
-                <div key={ad.id} className="flex items-center gap-4 px-4 py-3 hover:bg-white transition-colors">
-                  <span className="w-6 text-sm font-mono text-[rgba(9,10,8,0.4)]">{i + 1}</span>
-                  <div className="w-10 h-10 rounded-lg bg-[rgba(9,10,8,0.06)] overflow-hidden flex-shrink-0">
-                    {ad.thumbnailUrl ? (
-                      <img src={ad.thumbnailUrl} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-xs text-[rgba(9,10,8,0.3)]">?</div>
+              {topBySpend.map((ad, i) => {
+                const isExpanded = expandedAdId === `spend-${ad.id}`;
+                return (
+                  <div key={ad.id}>
+                    <div 
+                      className="flex items-center gap-4 px-4 py-3 hover:bg-white transition-colors cursor-pointer"
+                      onClick={() => setExpandedAdId(isExpanded ? null : `spend-${ad.id}`)}
+                    >
+                      <span className="w-6 text-sm font-mono text-[rgba(9,10,8,0.4)]">{i + 1}</span>
+                      <div className="w-10 h-10 rounded-lg bg-[rgba(9,10,8,0.06)] overflow-hidden flex-shrink-0">
+                        {ad.thumbnailUrl ? (
+                          <img src={ad.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-xs text-[rgba(9,10,8,0.3)]">?</div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{ad.name}</p>
+                        <p className="text-xs text-[rgba(9,10,8,0.5)]">CTR {ad.ctr.toFixed(1)}% · ROAS {ad.roas?.toFixed(1) || "-"}x</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-mono font-semibold">
+                          {ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : Math.round(ad.spend)}
+                        </p>
+                      </div>
+                    </div>
+                    {isExpanded && (
+                      <div className="px-4 pb-4 bg-white">
+                        <div className="flex gap-4">
+                          <div className="w-32 aspect-[9/16] rounded-lg bg-[rgba(9,10,8,0.06)] overflow-hidden flex-shrink-0">
+                            {ad.thumbnailUrl ? (
+                              <img src={ad.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-xs text-[rgba(9,10,8,0.3)]">{ad.format}</div>
+                            )}
+                          </div>
+                          <div className="flex-1 grid grid-cols-2 gap-x-4 gap-y-2 text-sm py-2">
+                            <div><span className="text-[rgba(9,10,8,0.5)]">Spend</span><p className="font-mono font-semibold">{ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : Math.round(ad.spend)}</p></div>
+                            <div><span className="text-[rgba(9,10,8,0.5)]">CTR</span><p className="font-mono font-semibold">{ad.ctr.toFixed(2)}%</p></div>
+                            <div><span className="text-[rgba(9,10,8,0.5)]">CPM</span><p className="font-mono font-semibold">{Math.round(ad.cpm)}</p></div>
+                            <div><span className="text-[rgba(9,10,8,0.5)]">ROAS</span><p className="font-mono font-semibold">{ad.roas?.toFixed(1) || "-"}x</p></div>
+                            <div><span className="text-[rgba(9,10,8,0.5)]">Nye brukere</span><p className="font-mono font-semibold">{ad.netNew ? (ad.netNew >= 1000 ? `${Math.round(ad.netNew / 1000)}k` : ad.netNew) : "-"}</p></div>
+                            <div><span className="text-[rgba(9,10,8,0.5)]">Impressions</span><p className="font-mono font-semibold">{ad.impressions >= 1000 ? `${Math.round(ad.impressions / 1000)}k` : ad.impressions}</p></div>
+                          </div>
+                        </div>
+                      </div>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{ad.name}</p>
-                    <p className="text-xs text-[rgba(9,10,8,0.5)]">CTR {ad.ctr.toFixed(1)}% · ROAS {ad.roas.toFixed(1)}x</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-mono font-semibold">
-                      {ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : Math.round(ad.spend)}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
 
-        {/* Top by Reach/Impressions */}
+        {/* Top by Net New Reach */}
         <div>
-          <SectionHeader title="Topp 12 etter Rekkevidde" />
+          <SectionHeader title="Topp 10 etter Nye brukere" subtitle="Annonser som treffer flest nye mennesker" />
           <div className="rounded-xl bg-[var(--color-surface)] overflow-hidden">
             <div className="divide-y divide-[var(--color-border)]">
-              {topByReach.map((ad, i) => (
-                <div key={ad.id} className="flex items-center gap-4 px-4 py-3 hover:bg-white transition-colors">
-                  <span className="w-6 text-sm font-mono text-[rgba(9,10,8,0.4)]">{i + 1}</span>
-                  <div className="w-10 h-10 rounded-lg bg-[rgba(9,10,8,0.06)] overflow-hidden flex-shrink-0">
-                    {ad.thumbnailUrl ? (
-                      <img src={ad.thumbnailUrl} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-xs text-[rgba(9,10,8,0.3)]">?</div>
+              {topByNetNew.map((ad, i) => {
+                const isExpanded = expandedAdId === `netnew-${ad.id}`;
+                const netNewFormatted = ad.netNew 
+                  ? (ad.netNew >= 1000000 
+                      ? `${(ad.netNew / 1000000).toFixed(1)}M` 
+                      : ad.netNew >= 1000 
+                        ? `${Math.round(ad.netNew / 1000)}k` 
+                        : ad.netNew)
+                  : "-";
+                return (
+                  <div key={ad.id}>
+                    <div 
+                      className="flex items-center gap-4 px-4 py-3 hover:bg-white transition-colors cursor-pointer"
+                      onClick={() => setExpandedAdId(isExpanded ? null : `netnew-${ad.id}`)}
+                    >
+                      <span className="w-6 text-sm font-mono text-[rgba(9,10,8,0.4)]">{i + 1}</span>
+                      <div className="w-10 h-10 rounded-lg bg-[rgba(9,10,8,0.06)] overflow-hidden flex-shrink-0">
+                        {ad.thumbnailUrl ? (
+                          <img src={ad.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-xs text-[rgba(9,10,8,0.3)]">?</div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{ad.name}</p>
+                        <p className="text-xs text-[rgba(9,10,8,0.5)]">CTR {ad.ctr.toFixed(1)}% · {ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : Math.round(ad.spend)} spend</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-mono font-semibold">{netNewFormatted}</p>
+                      </div>
+                    </div>
+                    {isExpanded && (
+                      <div className="px-4 pb-4 bg-white">
+                        <div className="flex gap-4">
+                          <div className="w-32 aspect-[9/16] rounded-lg bg-[rgba(9,10,8,0.06)] overflow-hidden flex-shrink-0">
+                            {ad.thumbnailUrl ? (
+                              <img src={ad.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-xs text-[rgba(9,10,8,0.3)]">{ad.format}</div>
+                            )}
+                          </div>
+                          <div className="flex-1 grid grid-cols-2 gap-x-4 gap-y-2 text-sm py-2">
+                            <div><span className="text-[rgba(9,10,8,0.5)]">Nye brukere</span><p className="font-mono font-semibold">{netNewFormatted}</p></div>
+                            <div><span className="text-[rgba(9,10,8,0.5)]">Nye %</span><p className="font-mono font-semibold">{ad.netNewPct?.toFixed(1) || "-"}%</p></div>
+                            <div><span className="text-[rgba(9,10,8,0.5)]">Spend</span><p className="font-mono font-semibold">{ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : Math.round(ad.spend)}</p></div>
+                            <div><span className="text-[rgba(9,10,8,0.5)]">CTR</span><p className="font-mono font-semibold">{ad.ctr.toFixed(2)}%</p></div>
+                            <div><span className="text-[rgba(9,10,8,0.5)]">CPM</span><p className="font-mono font-semibold">{Math.round(ad.cpm)}</p></div>
+                            <div><span className="text-[rgba(9,10,8,0.5)]">ROAS</span><p className="font-mono font-semibold">{ad.roas?.toFixed(1) || "-"}x</p></div>
+                          </div>
+                        </div>
+                      </div>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{ad.name}</p>
-                    <p className="text-xs text-[rgba(9,10,8,0.5)]">CTR {ad.ctr.toFixed(1)}% · {ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : Math.round(ad.spend)} spend</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-mono font-semibold">
-                      {ad.impressions >= 1000000 
-                        ? `${(ad.impressions / 1000000).toFixed(1)}M` 
-                        : ad.impressions >= 1000 
-                          ? `${Math.round(ad.impressions / 1000)}k` 
-                          : ad.impressions}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
