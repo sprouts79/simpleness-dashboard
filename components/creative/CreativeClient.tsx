@@ -270,7 +270,7 @@ export default function CreativeClient({
                         {cohortAds.slice(0, 4).map((ad, i) => (
                           <div 
                             key={ad.id}
-                            className="w-12 h-12 rounded-lg bg-[rgba(9,10,8,0.1)] border-2 border-[var(--color-surface)] overflow-hidden shadow-sm"
+                            className="w-14 h-14 rounded-lg bg-[rgba(9,10,8,0.08)] border-2 border-[var(--color-surface)] overflow-hidden"
                             style={{ zIndex: 4 - i }}
                           >
                             {ad.thumbnailUrl ? (
@@ -284,7 +284,7 @@ export default function CreativeClient({
                         ))}
                         {cohortAds.length > 4 && (
                           <div 
-                            className="w-12 h-12 rounded-lg bg-[var(--color-black)] border-2 border-[var(--color-surface)] flex items-center justify-center text-xs font-bold text-white shadow-sm"
+                            className="w-14 h-14 rounded-lg bg-[rgba(9,10,8,0.12)] border-2 border-[var(--color-surface)] flex items-center justify-center text-xs font-medium text-[rgba(9,10,8,0.5)]"
                             style={{ zIndex: 0 }}
                           >
                             +{cohortAds.length - 4}
@@ -295,20 +295,20 @@ export default function CreativeClient({
                       {/* Cohort info */}
                       <div className="flex-1">
                         <div className="flex items-center gap-3">
-                          <h3 className="text-lg font-bold">{cohort.label}</h3>
-                          <span className="px-2.5 py-1 rounded-full bg-[var(--color-black)] text-white text-xs font-bold">
-                            {cohort.adCount} ads
+                          <h3 className="text-base font-semibold">{cohort.label}</h3>
+                          <span className="text-sm text-[rgba(9,10,8,0.5)]">
+                            {cohort.adCount} annonser
                           </span>
                         </div>
-                        <div className="flex items-center gap-4 mt-1 text-sm text-[rgba(9,10,8,0.6)]">
+                        <div className="flex items-center gap-4 mt-1 text-sm text-[rgba(9,10,8,0.5)]">
                           <span className="font-mono">
-                            Spend: <span className="font-semibold text-[var(--color-black)]">{totalSpend >= 1000 ? `${Math.round(totalSpend / 1000)}k` : totalSpend}</span>
+                            Spend: <span className="text-[var(--color-black)]">{totalSpend >= 1000 ? `${Math.round(totalSpend / 1000)}k` : Math.round(totalSpend)}</span>
                           </span>
                         </div>
                       </div>
                       
                       {/* Expand indicator */}
-                      <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[rgba(9,10,8,0.4)] text-lg font-medium shadow-sm">
+                      <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-[rgba(9,10,8,0.35)] text-base">
                         {isExpanded ? "−" : "+"}
                       </div>
                     </div>
@@ -370,7 +370,7 @@ export default function CreativeClient({
                             </div>
                             <p className="text-xs text-[rgba(9,10,8,0.7)] truncate font-medium">{ad.name}</p>
                             <p className="text-xs font-mono text-[rgba(9,10,8,0.45)]">
-                              {ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : ad.spend} · {ad.ctr.toFixed(1)}%
+                              {ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : Math.round(ad.spend)} · {ad.ctr.toFixed(1)}%
                             </p>
                           </div>
                         ))}
@@ -407,7 +407,7 @@ export default function CreativeClient({
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-mono font-semibold">
-                      {ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : ad.spend}
+                      {ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : Math.round(ad.spend)}
                     </p>
                   </div>
                 </div>
@@ -433,7 +433,7 @@ export default function CreativeClient({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{ad.name}</p>
-                    <p className="text-xs text-[rgba(9,10,8,0.5)]">CTR {ad.ctr.toFixed(1)}% · {ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : ad.spend} spend</p>
+                    <p className="text-xs text-[rgba(9,10,8,0.5)]">CTR {ad.ctr.toFixed(1)}% · {ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : Math.round(ad.spend)} spend</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-mono font-semibold">
