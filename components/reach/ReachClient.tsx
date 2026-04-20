@@ -259,7 +259,6 @@ export default function ReachClient({
                 <KpiCard
                   label="Rolling Reach"
                   value={formatReach(kpis.totalReach)}
-                  size="large"
                 />
                 <KpiCard
                   label="Snitt Nye per mnd"

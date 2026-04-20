@@ -36,7 +36,7 @@ export default function KpiCard({
   return (
     <div
       className={clsx(
-        "rounded-2xl px-6 py-5",
+        "rounded-2xl px-6 py-5 min-h-[140px] flex flex-col",
         highlight 
           ? "bg-white border-2 border-[var(--color-black)]" 
           : "bg-[var(--color-surface)]"
