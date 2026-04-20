@@ -20,27 +20,51 @@ const METRIC_OPTIONS: { value: MetricKey; label: string; unit: string; higherIsB
 ];
 
 // Get color based on value relative to min/max (for heatmap)
+// Uses a smooth spectrum: red -> orange -> yellow -> light green -> green
 function getHeatmapColor(value: number, min: number, max: number, higherIsBetter: boolean): string {
   if (max === min) return "rgba(9,10,8,0.06)";
   const normalized = (value - min) / (max - min);
-  const adjusted = higherIsBetter ? normalized : 1 - normalized;
+  const t = higherIsBetter ? normalized : 1 - normalized;
   
-  // Interpolate from red (bad) to green (good)
-  const r = Math.round(200 - (200 - 34) * adjusted);
-  const g = Math.round(50 + (140 - 50) * adjusted);
-  const b = Math.round(50 - (50 - 34) * adjusted);
+  // 5-stop gradient: red (0) -> orange (0.25) -> yellow (0.5) -> lime (0.75) -> green (1)
+  let r: number, g: number, b: number;
+  if (t < 0.25) {
+    // Red to orange
+    const s = t / 0.25;
+    r = 220; g = Math.round(60 + 100 * s); b = 50;
+  } else if (t < 0.5) {
+    // Orange to yellow
+    const s = (t - 0.25) / 0.25;
+    r = Math.round(220 - 20 * s); g = Math.round(160 + 40 * s); b = Math.round(50 + 10 * s);
+  } else if (t < 0.75) {
+    // Yellow to lime
+    const s = (t - 0.5) / 0.25;
+    r = Math.round(200 - 80 * s); g = Math.round(200 - 20 * s); b = Math.round(60 - 20 * s);
+  } else {
+    // Lime to green
+    const s = (t - 0.75) / 0.25;
+    r = Math.round(120 - 70 * s); g = Math.round(180 - 30 * s); b = Math.round(40 - 10 * s);
+  }
   
-  return `rgba(${r}, ${g}, ${b}, 0.2)`;
+  return `rgba(${r}, ${g}, ${b}, 0.22)`;
 }
 
 function getHeatmapTextColor(value: number, min: number, max: number, higherIsBetter: boolean): string {
   if (max === min) return "rgba(9,10,8,0.6)";
   const normalized = (value - min) / (max - min);
-  const adjusted = higherIsBetter ? normalized : 1 - normalized;
+  const t = higherIsBetter ? normalized : 1 - normalized;
   
-  const r = Math.round((200 - (200 - 34) * adjusted) * 0.6);
-  const g = Math.round((50 + (140 - 50) * adjusted) * 0.6);
-  const b = Math.round((50 - (50 - 34) * adjusted) * 0.6);
+  // Matching text colors (darker versions)
+  let r: number, g: number, b: number;
+  if (t < 0.25) {
+    r = 160; g = 50; b = 40;
+  } else if (t < 0.5) {
+    r = 140; g = 90; b = 30;
+  } else if (t < 0.75) {
+    r = 100; g = 110; b = 20;
+  } else {
+    r = 40; g = 100; b = 30;
+  }
   
   return `rgb(${r}, ${g}, ${b})`;
 }
@@ -83,8 +107,8 @@ export default function CreativeClient({
 
   const selectedMetricInfo = METRIC_OPTIONS.find(m => m.value === metric)!;
 
-  // Calculate week columns (W0 to W7)
-  const weekColumns = [0, 1, 2, 3, 4, 5, 6, 7];
+  // Calculate week columns (W0 to W11)
+  const weekColumns = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
   // Calculate min/max for each week column for heatmap
   const weekMinMax = useMemo(() => {
@@ -218,110 +242,123 @@ export default function CreativeClient({
             title="Kohort-ytelse"
             subtitle={`${selectedMetricInfo.label} per uke etter lansering - farge viser prestasjon relativt til andre kohorter`}
           />
-          <div className="rounded-xl bg-[var(--color-surface)] overflow-hidden">
-            {/* Header row */}
-            <div className="flex items-center border-b border-[var(--color-border)] px-4 py-3">
-              <div className="w-[200px] text-sm font-medium text-[rgba(9,10,8,0.5)]">Kohort</div>
-              <div className="w-[60px] text-center text-sm font-medium text-[rgba(9,10,8,0.5)]">Ads</div>
-              <div className="w-[70px] text-right text-sm font-medium text-[rgba(9,10,8,0.5)]">Spend</div>
-              {weekColumns.map(w => (
-                <div key={w} className="w-[56px] text-center text-sm font-medium text-[rgba(9,10,8,0.5)]">
-                  W{w}
-                </div>
-              ))}
-              <div className="w-[40px]"></div>
-            </div>
-            
-            {/* Cohort rows */}
+          <div className="space-y-3">
+            {/* Cohort cards */}
             {cohorts.map((cohort) => {
               const totalSpend = cohort.weeks.reduce((s, w) => s + (w.spend ?? 0), 0);
               const cohortAds = adsByCohort[cohort.cohortDate] || [];
               const isExpanded = expandedCohort === cohort.cohortDate;
               
               return (
-                <div key={cohort.cohortDate}>
-                  {/* Main row */}
+                <div 
+                  key={cohort.cohortDate}
+                  className={clsx(
+                    "rounded-xl bg-[var(--color-surface)] overflow-hidden transition-all",
+                    isExpanded && "ring-2 ring-[var(--color-black)]"
+                  )}
+                >
+                  {/* Card header */}
                   <div 
-                    className={clsx(
-                      "flex items-center px-4 py-3 border-b border-[var(--color-border)] cursor-pointer transition-colors",
-                      isExpanded ? "bg-white" : "hover:bg-white"
-                    )}
+                    className="px-5 py-4 cursor-pointer hover:bg-white transition-colors"
                     onClick={() => setExpandedCohort(isExpanded ? null : cohort.cohortDate)}
                   >
-                    {/* Thumbnails + label */}
-                    <div className="w-[200px] flex items-center gap-3">
-                      <div className="flex -space-x-1.5 flex-shrink-0">
-                        {cohortAds.slice(0, 3).map((ad, i) => (
+                    {/* Top section: Thumbnails + info */}
+                    <div className="flex items-center gap-4 mb-4">
+                      {/* Stacked thumbnails */}
+                      <div className="flex -space-x-3 flex-shrink-0">
+                        {cohortAds.slice(0, 4).map((ad, i) => (
                           <div 
                             key={ad.id}
-                            className="w-8 h-8 rounded bg-[rgba(9,10,8,0.1)] border-2 border-[var(--color-surface)] overflow-hidden"
-                            style={{ zIndex: 3 - i }}
+                            className="w-12 h-12 rounded-lg bg-[rgba(9,10,8,0.1)] border-2 border-[var(--color-surface)] overflow-hidden shadow-sm"
+                            style={{ zIndex: 4 - i }}
                           >
                             {ad.thumbnailUrl ? (
                               <img src={ad.thumbnailUrl} alt="" className="w-full h-full object-cover" />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center text-[10px] text-[rgba(9,10,8,0.3)]">
+                              <div className="w-full h-full flex items-center justify-center text-xs text-[rgba(9,10,8,0.3)]">
                                 {ad.format?.charAt(0) || "?"}
                               </div>
                             )}
                           </div>
                         ))}
+                        {cohortAds.length > 4 && (
+                          <div 
+                            className="w-12 h-12 rounded-lg bg-[var(--color-black)] border-2 border-[var(--color-surface)] flex items-center justify-center text-xs font-bold text-white shadow-sm"
+                            style={{ zIndex: 0 }}
+                          >
+                            +{cohortAds.length - 4}
+                          </div>
+                        )}
                       </div>
-                      <span className="font-semibold text-sm">{cohort.label}</span>
-                    </div>
-                    
-                    {/* Ad count */}
-                    <div className="w-[60px] text-center text-sm text-[rgba(9,10,8,0.6)]">
-                      {cohort.adCount}
-                    </div>
-                    
-                    {/* Total spend */}
-                    <div className="w-[70px] text-right text-sm font-mono text-[rgba(9,10,8,0.6)]">
-                      {totalSpend >= 1000 ? `${Math.round(totalSpend / 1000)}k` : totalSpend}
-                    </div>
-                    
-                    {/* Week cells with heatmap */}
-                    {weekColumns.map(weekNum => {
-                      const weekData = cohort.weeks.find(w => w.weekNumber === weekNum);
-                      const value = weekData?.[metric] ?? 0;
-                      const { min, max } = weekMinMax[weekNum];
-                      const hasData = weekData && value > 0;
                       
-                      return (
-                        <div key={weekNum} className="w-[56px] px-1 text-center">
-                          {hasData ? (
-                            <span
-                              className="inline-block px-2 py-1 rounded text-xs font-semibold font-mono min-w-[40px]"
-                              style={{
-                                backgroundColor: getHeatmapColor(value, min, max, selectedMetricInfo.higherIsBetter),
-                                color: getHeatmapTextColor(value, min, max, selectedMetricInfo.higherIsBetter),
-                              }}
-                            >
-                              {formatValue(value, metric)}
-                            </span>
-                          ) : (
-                            <span className="text-[rgba(9,10,8,0.2)] text-xs">-</span>
-                          )}
+                      {/* Cohort info */}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3">
+                          <h3 className="text-lg font-bold">{cohort.label}</h3>
+                          <span className="px-2.5 py-1 rounded-full bg-[var(--color-black)] text-white text-xs font-bold">
+                            {cohort.adCount} ads
+                          </span>
                         </div>
-                      );
-                    })}
+                        <div className="flex items-center gap-4 mt-1 text-sm text-[rgba(9,10,8,0.6)]">
+                          <span className="font-mono">
+                            Spend: <span className="font-semibold text-[var(--color-black)]">{totalSpend >= 1000 ? `${Math.round(totalSpend / 1000)}k` : totalSpend}</span>
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Expand indicator */}
+                      <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[rgba(9,10,8,0.4)] text-lg font-medium shadow-sm">
+                        {isExpanded ? "−" : "+"}
+                      </div>
+                    </div>
                     
-                    {/* Expand indicator */}
-                    <div className="w-[40px] text-center text-[rgba(9,10,8,0.3)]">
-                      {isExpanded ? "−" : "+"}
+                    {/* Heatmap row */}
+                    <div className="flex items-center gap-1">
+                      {weekColumns.map(weekNum => {
+                        const weekData = cohort.weeks.find(w => w.weekNumber === weekNum);
+                        const value = weekData?.[metric] ?? 0;
+                        const { min, max } = weekMinMax[weekNum];
+                        const hasData = weekData && value > 0;
+                        
+                        return (
+                          <div key={weekNum} className="flex-1 text-center">
+                            {weekNum === 0 && (
+                              <div className="text-[10px] text-[rgba(9,10,8,0.4)] mb-1">W0</div>
+                            )}
+                            {weekNum === 11 && (
+                              <div className="text-[10px] text-[rgba(9,10,8,0.4)] mb-1">W11</div>
+                            )}
+                            {weekNum !== 0 && weekNum !== 11 && (
+                              <div className="text-[10px] text-[rgba(9,10,8,0.25)] mb-1">{weekNum}</div>
+                            )}
+                            {hasData ? (
+                              <div
+                                className="px-1 py-1.5 rounded text-[11px] font-bold font-mono"
+                                style={{
+                                  backgroundColor: getHeatmapColor(value, min, max, selectedMetricInfo.higherIsBetter),
+                                  color: getHeatmapTextColor(value, min, max, selectedMetricInfo.higherIsBetter),
+                                }}
+                              >
+                                {formatValue(value, metric)}
+                              </div>
+                            ) : (
+                              <div className="px-1 py-1.5 rounded text-[11px] text-[rgba(9,10,8,0.15)] bg-[rgba(9,10,8,0.03)]">
+                                -
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                   
                   {/* Expanded gallery */}
                   {isExpanded && cohortAds.length > 0 && (
-                    <div className="px-5 py-4 bg-white border-b border-[var(--color-border)]">
-                      <p className="text-xs text-[rgba(9,10,8,0.5)] mb-3">
-                        {cohortAds.length} annonser lansert i {cohort.label}
-                      </p>
-                      <div className="grid grid-cols-6 gap-4">
+                    <div className="px-5 pb-5 border-t border-[var(--color-border)] pt-4">
+                      <div className="grid grid-cols-8 gap-3">
                         {cohortAds.map((ad) => (
                           <div key={ad.id}>
-                            <div className="aspect-square rounded-lg bg-[rgba(9,10,8,0.06)] overflow-hidden mb-2">
+                            <div className="aspect-square rounded-lg bg-[rgba(9,10,8,0.06)] overflow-hidden mb-2 shadow-sm">
                               {ad.thumbnailUrl ? (
                                 <img src={ad.thumbnailUrl} alt="" className="w-full h-full object-cover" />
                               ) : (
