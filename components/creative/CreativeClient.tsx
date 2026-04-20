@@ -22,27 +22,27 @@ const METRIC_OPTIONS: { value: MetricKey; label: string; unit: string; higherIsB
 // Get color based on value relative to min/max (for heatmap)
 // Uses a smooth continuous spectrum from red to green
 function getHeatmapColor(value: number, min: number, max: number, higherIsBetter: boolean): string {
-  if (max === min) return "rgba(9,10,8,0.06)";
+  if (max === min) return "hsla(60, 60%, 75%, 0.9)"; // Neutral yellow when no range
   const normalized = (value - min) / (max - min);
   const t = higherIsBetter ? normalized : 1 - normalized;
   
-  // Smooth HSL interpolation: red (0) -> yellow (60) -> green (120)
+  // Smooth HSL interpolation: red (0) -> orange (30) -> yellow (55) -> lime (90) -> green (120)
   const hue = t * 120; // 0 = red, 60 = yellow, 120 = green
-  const saturation = 65 + (1 - Math.abs(t - 0.5) * 2) * 15; // Boost saturation in middle
-  const lightness = 85 - t * 15; // Slightly darker for greener values
+  const saturation = 55 + t * 15; // 55% to 70% - more saturated for green
+  const lightness = 78 - t * 10; // 78% to 68% - darker for greener values
   
-  return `hsla(${hue}, ${saturation}%, ${lightness}%, 0.9)`;
+  return `hsla(${hue}, ${saturation}%, ${lightness}%, 1)`;
 }
 
 function getHeatmapTextColor(value: number, min: number, max: number, higherIsBetter: boolean): string {
-  if (max === min) return "rgba(9,10,8,0.6)";
+  if (max === min) return "hsl(45, 60%, 30%)";
   const normalized = (value - min) / (max - min);
   const t = higherIsBetter ? normalized : 1 - normalized;
   
   // Darker text matching the hue
   const hue = t * 120;
-  const saturation = 50;
-  const lightness = 30;
+  const saturation = 70;
+  const lightness = 25;
   
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
