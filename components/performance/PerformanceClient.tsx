@@ -150,8 +150,8 @@ export default function PerformanceClient({
 
       {/* Primary KPIs */}
       <div>
-        <SectionHeader title="Nøkkeltall" subtitle={kpis.periodLabel} />
-        <div className="grid grid-cols-3 gap-3 mb-3">
+        <SectionHeader title="Nokkeltall" subtitle={kpis.periodLabel} />
+        <div className="grid grid-cols-3 gap-4 mb-4">
           <KpiCard
             label="Spend"
             value={formatNok(kpis.spend)}
@@ -161,7 +161,7 @@ export default function PerformanceClient({
           />
           <KpiCard
             label="ROAS"
-            value={`${kpis.roas.toFixed(1)}×`}
+            value={`${kpis.roas.toFixed(1)}x`}
             delta={kpis.roasDelta}
             deltaLabel={deltaLabel}
             size="large"
@@ -175,10 +175,10 @@ export default function PerformanceClient({
             size="large"
           />
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-4">
           <KpiCard
             label="CPMn"
-            value={kpis.cpmn > 0 ? `${Math.round(kpis.cpmn)} kr` : "—"}
+            value={kpis.cpmn > 0 ? `${Math.round(kpis.cpmn)} kr` : "-"}
             delta={kpis.cpmn > 0 ? kpis.cpmnDelta : undefined}
             deltaLabel={deltaLabel}
             invertDelta
@@ -190,7 +190,7 @@ export default function PerformanceClient({
             delta={kpis.frequencyDelta}
             deltaLabel={deltaLabel}
             invertDelta
-            note={kpis.frequency > 8 ? "For høy — audience fatigue" : kpis.frequency > 6 ? "Moderat" : "Frisk"}
+            note={kpis.frequency > 8 ? "For hoy - audience fatigue" : kpis.frequency > 6 ? "Moderat" : "Frisk"}
           />
           <KpiCard
             label="CTR (Link)"

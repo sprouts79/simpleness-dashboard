@@ -32,38 +32,49 @@ export default function KpiCard({
   return (
     <div
       className={clsx(
-        "rounded-lg border p-5 flex flex-col gap-1.5",
-        highlight ? "border-[var(--color-accent)] bg-[var(--color-green-pale)]" : "border-[var(--color-border)] bg-white"
+        "rounded-2xl px-6 py-5",
+        highlight 
+          ? "bg-[var(--color-green-pale)]" 
+          : "bg-[var(--color-surface)]"
       )}
     >
-      <p className="text-2xs font-semibold text-[rgba(9,10,8,0.5)] uppercase tracking-widest">
-        {label}
-      </p>
-      <p
-        className={clsx(
-          "font-bold tabular-nums leading-tight",
-          size === "large" ? "text-5xl" : "text-3xl"
-        )}
-        style={{ fontFamily: "var(--font-mono)" }}
-      >
-        {value}
-      </p>
+      {/* Main value row: big number + label beside it */}
+      <div className="flex items-baseline gap-3">
+        <p
+          className={clsx(
+            "font-bold tabular-nums leading-none",
+            size === "large" ? "text-5xl" : "text-4xl"
+          )}
+          style={{ fontFamily: "var(--font-mono)" }}
+        >
+          {value}
+        </p>
+        <div className="flex flex-col">
+          <p className="text-base font-medium text-[rgba(9,10,8,0.7)] leading-tight">
+            {label}
+          </p>
+          {note && (
+            <p className="text-sm text-[rgba(9,10,8,0.45)] leading-tight mt-0.5">
+              {note}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Delta row */}
       {delta !== undefined && (
         <p
-          className={clsx("text-sm font-medium", {
+          className={clsx("text-sm font-medium mt-3", {
             "delta-up": isGood,
             "delta-down": !isGood && !isNeutral,
             "delta-neutral": isNeutral,
           })}
         >
           {formatDelta(delta)}{" "}
-          <span className="font-normal text-[rgba(9,10,8,0.5)]">
+          <span className="font-normal text-[rgba(9,10,8,0.45)]">
             {deltaLabel ?? "vs forrige uke"}
           </span>
         </p>
-      )}
-      {note && (
-        <p className="text-xs text-[rgba(9,10,8,0.5)] mt-1">{note}</p>
       )}
     </div>
   );

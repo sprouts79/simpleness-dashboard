@@ -217,7 +217,7 @@ export default function ReachClient({
                 title="Reach-nøkkeltall"
                 subtitle={`Siste 6 måneder · lookback ${lookbackLabel} · ${filtered.length} mnd data`}
               />
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-4 gap-4">
                 <KpiCard
                   label="Total Spend"
                   value={formatNokShort(kpis.totalSpend)}
@@ -226,13 +226,13 @@ export default function ReachClient({
                 <KpiCard
                   label="Rolling Reach"
                   value={formatReach(kpis.totalReach)}
-                  note={`6M vindu · lookback ${lookbackLabel}`}
+                  note={`6M vindu - lookback ${lookbackLabel}`}
                   size="large"
                 />
                 <KpiCard
                   label="Avg Net New Reach"
                   value={formatReach(kpis.avgNetNewReach)}
-                  note="per måned"
+                  note="per maned"
                 />
                 <KpiCard
                   label="Avg % Net New"
