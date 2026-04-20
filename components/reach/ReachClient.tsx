@@ -18,13 +18,16 @@ import ReachCompositionChart from "@/components/charts/ReachCompositionChart";
 import InfoBox from "@/components/ui/InfoBox";
 import { MonthlyReachRow } from "@/lib/types";
 
-// Extension options — how far before the 6M display period to extend the window start
-// 0 = standard (no extension; first month ≈ 100% net new)
-const LOOKBACK_OPTIONS = [
-  { label: "Standard", days: 0 },
-  { label: "+3M", days: 90 },
-  { label: "+6M", days: 180 },
-  { label: "+12M", days: 360 },
+// Period options
+const PERIOD_OPTIONS = [
+  { value: "3m", label: "Siste 3 mndr", months: 3 },
+  { value: "6m", label: "Siste 6 mndr", months: 6 },
+];
+
+// Compare options
+const COMPARE_OPTIONS = [
+  { value: "same", label: "Samme periode" },
+  { value: "previous", label: "Forrige periode" },
 ];
 
 function formatReach(n: number) {
@@ -64,18 +67,19 @@ const CpmTooltip = ({ active, payload, label }: any) => {
 export default function ReachClient({
   clientId,
   data,
-  currentLookback,
 }: {
   clientId: string;
   data: MonthlyReachRow[];
-  currentLookback: number;
 }) {
   const router = useRouter();
   const [syncing, setSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
+  const [period, setPeriod] = useState<"3m" | "6m">("6m");
+  const [compare, setCompare] = useState<"same" | "previous">("same");
 
-  // Fixed 6-month display window, newest-first data
-  const filtered = data.slice(0, 6);
+  // Filter data based on selected period
+  const periodMonths = PERIOD_OPTIONS.find(p => p.value === period)?.months ?? 6;
+  const filtered = data.slice(0, periodMonths);
 
   const kpis = filtered.length === 0 ? null : {
     totalSpend: filtered.reduce((s, r) => s + r.spend, 0),
@@ -93,29 +97,19 @@ export default function ReachClient({
     cpmNetNew: r.cpmNetNew,
   }));
 
-  const activeOption = LOOKBACK_OPTIONS.find((o) => o.days === currentLookback) ?? LOOKBACK_OPTIONS[0];
-  const lookbackLabel = currentLookback === 0 ? "standard (ingen)" : `+${currentLookback}d`;
-
   const netNewStatus =
     !kpis ? "" :
-    kpis.avgNetNewPct >= 30 ? "Frisk målgruppe" :
+    kpis.avgNetNewPct >= 30 ? "Frisk malgruppe" :
     kpis.avgNetNewPct >= 18 ? "Moderat metning" :
-    "Høy metning";
+    "Hoy metning";
 
-  // Switching lookback navigates to new URL — server fetches the right data
-  // Auto-sync Standard (0) lookback on first load if no data exists
+  // Auto-sync on first load if no data exists
   useEffect(() => {
-    if (currentLookback === 0 && data.length === 0 && !syncing) {
+    if (data.length === 0 && !syncing) {
       handleSync();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  function handleLookbackClick(days: number) {
-    if (days !== currentLookback) {
-      router.push(`?lookback=${days}`);
-    }
-  }
 
   async function handleSync() {
     setSyncing(true);
@@ -127,13 +121,13 @@ export default function ReachClient({
         body: JSON.stringify({
           clientId,
           months: 6,
-          lookbackDays: currentLookback,
+          lookbackDays: 0,
           syncType: "reach",
         }),
       });
       const json = await res.json();
       if (json.ok) {
-        setSyncStatus(`Synkronisert — ${json.reachSynced} uker hentet`);
+        setSyncStatus(`Synkronisert`);
         router.refresh();
       } else {
         setSyncStatus(`Feil: ${json.errors?.join(", ") || "Ukjent"}`);
@@ -148,12 +142,12 @@ export default function ReachClient({
   return (
     <div className="space-y-8">
 
-      {/* Controls: lookback selector + Hent data */}
+      {/* Controls: period + compare dropdowns */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <select
-            value={currentLookback}
-            onChange={(e) => handleLookbackClick(Number(e.target.value))}
+            value={period}
+            onChange={(e) => setPeriod(e.target.value as "3m" | "6m")}
             className="text-sm font-semibold bg-[var(--color-surface)] border-0 rounded-lg px-4 py-2.5 text-[var(--color-black)] cursor-pointer appearance-none pr-10"
             style={{
               backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23090a08' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
@@ -161,15 +155,27 @@ export default function ReachClient({
               backgroundPosition: 'right 12px center',
             }}
           >
-            {LOOKBACK_OPTIONS.map(({ label, days }) => (
-              <option key={days} value={days}>{label}</option>
+            {PERIOD_OPTIONS.map(({ value, label }) => (
+              <option key={value} value={value}>{label}</option>
             ))}
           </select>
-          {currentLookback !== 0 && filtered.length === 0 && (
-            <span className="text-sm text-[rgba(9,10,8,0.45)]">
-              Ingen data enna
-            </span>
-          )}
+
+          <span className="text-sm text-[rgba(9,10,8,0.4)]">vs.</span>
+
+          <select
+            value={compare}
+            onChange={(e) => setCompare(e.target.value as "same" | "previous")}
+            className="text-sm font-semibold bg-[var(--color-surface)] border-0 rounded-lg px-4 py-2.5 text-[var(--color-black)] cursor-pointer appearance-none pr-10"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23090a08' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 12px center',
+            }}
+          >
+            {COMPARE_OPTIONS.map(({ value, label }) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
         </div>
 
         <div className="flex items-center gap-4">
@@ -220,21 +226,18 @@ export default function ReachClient({
                 <KpiCard
                   label="Total Spend"
                   value={formatNokShort(kpis.totalSpend)}
-                  note="siste 6 mnd"
                 />
                 <KpiCard
                   label="Rolling Reach"
                   value={formatReach(kpis.totalReach)}
-                  note={`6M vindu - lookback ${lookbackLabel}`}
                   size="large"
                 />
                 <KpiCard
-                  label="Avg Net New Reach"
+                  label="Snitt Nye Brukere"
                   value={formatReach(kpis.avgNetNewReach)}
-                  note="per maned"
                 />
                 <KpiCard
-                  label="Avg % Net New"
+                  label="Snitt % Nye Brukere"
                   value={`${kpis.avgNetNewPct.toFixed(1)}%`}
                   note={netNewStatus}
                   highlight={kpis.avgNetNewPct < 18}
@@ -252,9 +255,7 @@ export default function ReachClient({
 
           {/* Reach Composition chart */}
           <div>
-            <SectionHeader
-              title="Reach Composition"
-            />
+            <SectionHeader title="Nye brukere per maned" />
             <div className="rounded-xl border border-[var(--color-border)] p-5 bg-white">
               <ReachCompositionChart data={chartData} />
               <div className="flex gap-6 mt-4 text-sm text-[rgba(9,10,8,0.6)]">
@@ -264,11 +265,11 @@ export default function ReachClient({
                 </span>
                 <span className="flex items-center gap-2">
                   <span className="w-3.5 h-3.5 rounded-sm bg-[var(--color-black)] inline-block" />
-                  Net New
+                  Nye brukere
                 </span>
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[var(--color-link)] inline-block" />
-                  Net New %
+                  % Nye
                 </span>
               </div>
             </div>
