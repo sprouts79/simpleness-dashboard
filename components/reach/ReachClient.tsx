@@ -71,7 +71,7 @@ const CpmTooltip = ({ active, payload, label }: any) => {
       <p className="font-semibold text-base mb-2">{label}</p>
       <div>
         <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-[var(--color-surface)] text-[rgba(9,10,8,0.6)] mb-1">
-          CPM Net New
+          CPM Nye
         </span>
         <p className="font-bold text-xl" style={{ fontFamily: "var(--font-mono)" }}>
           {Math.round(payload[0]?.value ?? 0)} kr
@@ -300,7 +300,7 @@ export default function ReachClient({
 
           {/* Cost per 1k Net New Reach */}
           <div>
-            <SectionHeader title="CPM Net New" />
+            <SectionHeader title="CPM Nye" />
             <div className="rounded-xl border border-[var(--color-border)] p-5 bg-white">
               <ResponsiveContainer width="100%" height={260}>
                 <LineChart data={chartData} margin={{ top: 8, right: 16, bottom: 4, left: 4 }}>
