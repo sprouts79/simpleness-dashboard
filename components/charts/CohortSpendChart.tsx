@@ -16,20 +16,20 @@ interface Props {
   cohorts: AdCohort[];
 }
 
-// Color palette for cohorts - distinct but harmonious
+// Color palette for cohorts - distinct, warm-to-cool progression
 const COHORT_COLORS = [
-  "#89FF58", // Green (accent)
-  "#4ECDC4", // Teal
-  "#45B7D1", // Blue
-  "#96CEB4", // Sage
-  "#FFEAA7", // Yellow
-  "#DDA0DD", // Plum
-  "#F7DC6F", // Gold
-  "#BB8FCE", // Purple
-  "#85C1E9", // Light blue
-  "#F8B500", // Orange
-  "#82E0AA", // Mint
-  "#F1948A", // Coral
+  "#2D3142", // Dark slate (oldest)
+  "#4F5D75", // Steel gray
+  "#7B8794", // Cool gray
+  "#9A8C98", // Mauve
+  "#C9ADA7", // Dusty rose
+  "#E8B4B8", // Blush
+  "#EAC4D5", // Light pink
+  "#B8E0D2", // Mint
+  "#95D5B2", // Sage
+  "#74C69D", // Green
+  "#52B788", // Fresh green
+  "#89FF58", // Bright green (newest)
 ];
 
 function formatSpend(v: number) {
@@ -76,6 +76,27 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     </div>
   );
 };
+
+// Legend component
+function CohortLegend({ labels, colors }: { labels: string[], colors: string[] }) {
+  // Show newest first (reverse order)
+  const reversedLabels = [...labels].reverse();
+  const reversedColors = [...colors].slice(0, labels.length).reverse();
+  
+  return (
+    <div className="flex flex-wrap gap-x-4 gap-y-2 mb-4">
+      {reversedLabels.map((label, idx) => (
+        <div key={label} className="flex items-center gap-2">
+          <div 
+            className="w-3 h-3 rounded-sm flex-shrink-0" 
+            style={{ backgroundColor: reversedColors[idx] }}
+          />
+          <span className="text-xs text-[rgba(9,10,8,0.7)]">{label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function CohortSpendChart({ cohorts }: Props) {
   // Transform cohort data into weekly timeline
@@ -152,7 +173,9 @@ export default function CohortSpendChart({ cohorts }: Props) {
   }
 
   return (
-    <ResponsiveContainer width="100%" height={300}>
+    <div>
+      <CohortLegend labels={cohortLabels} colors={COHORT_COLORS} />
+      <ResponsiveContainer width="100%" height={300}>
       <AreaChart data={chartData} margin={{ top: 8, right: 16, bottom: 4, left: 4 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e0e0de" vertical={false} />
         <XAxis
@@ -185,5 +208,6 @@ export default function CohortSpendChart({ cohorts }: Props) {
         ))}
       </AreaChart>
     </ResponsiveContainer>
+    </div>
   );
 }
