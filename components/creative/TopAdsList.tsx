@@ -137,14 +137,14 @@ function AdCard({
       className="rounded-xl border border-[var(--color-border)] overflow-hidden bg-white cursor-pointer group hover:border-[var(--color-link)] transition-colors"
       onClick={onOpen}
     >
-      {/* Thumbnail — natural aspect ratio from Meta, no forced crop */}
+      {/* Thumbnail — forced 9:16 portrait crop for consistency */}
       <div className="bg-[var(--color-surface)] relative">
         {hasThumbnail ? (
           <img
             src={ad.thumbnailUrl}
             alt={ad.name}
             onError={() => setImgError(true)}
-            className="w-full h-auto block"
+            className="w-full aspect-[9/16] object-cover block"
           />
         ) : (
           <div className="aspect-[9/16] flex items-center justify-center">

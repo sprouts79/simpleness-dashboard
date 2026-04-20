@@ -73,13 +73,13 @@ function AdTile({ ad }: { ad: Ad }) {
         className="rounded-xl border border-[var(--color-border)] bg-white cursor-pointer hover:border-[var(--color-link)] transition-colors overflow-hidden"
         onClick={() => setOpen(true)}
       >
-        {/* Image at its natural dimensions — no forced crop, no aspect ratio override */}
+        {/* Thumbnail — forced 9:16 portrait crop for consistency */}
         {ad.thumbnailUrl && !imgError ? (
           <img
             src={ad.thumbnailUrl}
             alt={ad.name}
             onError={() => setImgError(true)}
-            className="w-full h-auto block"
+            className="w-full aspect-[9/16] object-cover block"
           />
         ) : (
           <div className="aspect-[9/16] bg-[#f8f8f7] flex items-center justify-center">
@@ -107,11 +107,9 @@ function AdTile({ ad }: { ad: Ad }) {
 
 export default function AdGallery({ ads }: { ads: Ad[] }) {
   return (
-    <div className="columns-4 gap-4">
+    <div className="grid grid-cols-4 gap-4">
       {ads.map((ad) => (
-        <div key={ad.id} className="break-inside-avoid mb-4">
-          <AdTile ad={ad} />
-        </div>
+        <AdTile key={ad.id} ad={ad} />
       ))}
     </div>
   );
