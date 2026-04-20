@@ -127,6 +127,8 @@ export default function PerformanceClient({
           ))}
         </select>
 
+        <span className="text-sm text-[rgba(9,10,8,0.4)]">vs.</span>
+
         {/* Compare toggle */}
         <div className="flex bg-[var(--color-surface)] rounded-lg p-1 gap-1">
           {COMPARE_OPTIONS.map(({ value, label }) => (
