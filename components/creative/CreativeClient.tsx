@@ -20,33 +20,18 @@ const METRIC_OPTIONS: { value: MetricKey; label: string; unit: string; higherIsB
 ];
 
 // Get color based on value relative to min/max (for heatmap)
-// Uses a smooth spectrum: red -> orange -> yellow -> light green -> green
+// Uses a smooth continuous spectrum from red to green
 function getHeatmapColor(value: number, min: number, max: number, higherIsBetter: boolean): string {
   if (max === min) return "rgba(9,10,8,0.06)";
   const normalized = (value - min) / (max - min);
   const t = higherIsBetter ? normalized : 1 - normalized;
   
-  // 5-stop gradient: red (0) -> orange (0.25) -> yellow (0.5) -> lime (0.75) -> green (1)
-  let r: number, g: number, b: number;
-  if (t < 0.25) {
-    // Red to orange
-    const s = t / 0.25;
-    r = 220; g = Math.round(60 + 100 * s); b = 50;
-  } else if (t < 0.5) {
-    // Orange to yellow
-    const s = (t - 0.25) / 0.25;
-    r = Math.round(220 - 20 * s); g = Math.round(160 + 40 * s); b = Math.round(50 + 10 * s);
-  } else if (t < 0.75) {
-    // Yellow to lime
-    const s = (t - 0.5) / 0.25;
-    r = Math.round(200 - 80 * s); g = Math.round(200 - 20 * s); b = Math.round(60 - 20 * s);
-  } else {
-    // Lime to green
-    const s = (t - 0.75) / 0.25;
-    r = Math.round(120 - 70 * s); g = Math.round(180 - 30 * s); b = Math.round(40 - 10 * s);
-  }
+  // Smooth HSL interpolation: red (0) -> yellow (60) -> green (120)
+  const hue = t * 120; // 0 = red, 60 = yellow, 120 = green
+  const saturation = 65 + (1 - Math.abs(t - 0.5) * 2) * 15; // Boost saturation in middle
+  const lightness = 85 - t * 15; // Slightly darker for greener values
   
-  return `rgba(${r}, ${g}, ${b}, 0.22)`;
+  return `hsla(${hue}, ${saturation}%, ${lightness}%, 0.9)`;
 }
 
 function getHeatmapTextColor(value: number, min: number, max: number, higherIsBetter: boolean): string {
@@ -54,19 +39,12 @@ function getHeatmapTextColor(value: number, min: number, max: number, higherIsBe
   const normalized = (value - min) / (max - min);
   const t = higherIsBetter ? normalized : 1 - normalized;
   
-  // Matching text colors (darker versions)
-  let r: number, g: number, b: number;
-  if (t < 0.25) {
-    r = 160; g = 50; b = 40;
-  } else if (t < 0.5) {
-    r = 140; g = 90; b = 30;
-  } else if (t < 0.75) {
-    r = 100; g = 110; b = 20;
-  } else {
-    r = 40; g = 100; b = 30;
-  }
+  // Darker text matching the hue
+  const hue = t * 120;
+  const saturation = 50;
+  const lightness = 30;
   
-  return `rgb(${r}, ${g}, ${b})`;
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
 function formatValue(value: number, metric: MetricKey): string {
@@ -142,24 +120,29 @@ export default function CreativeClient({
     return { activeAds, activeCohorts, totalSpend, avgCtr };
   }, [ads, cohorts]);
 
-  // Group ads by cohort - match ads to cohort by week start date
+  // Group ads by cohort - match ads to cohort by week number (label)
   const adsByCohort = useMemo(() => {
-    // Helper to get Monday of a given date
-    const getMondayOf = (dateStr: string): string => {
-      if (!dateStr) return "";
+    // Helper to get ISO week number from a date string
+    const getWeekNumber = (dateStr: string): number => {
+      if (!dateStr) return 0;
       const d = new Date(dateStr + "T00:00:00Z");
-      const day = d.getUTCDay();
-      const diff = day === 0 ? -6 : 1 - day;
-      d.setUTCDate(d.getUTCDate() + diff);
-      return d.toISOString().split("T")[0];
+      const tempDate = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+      const dayNum = tempDate.getUTCDay() || 7;
+      tempDate.setUTCDate(tempDate.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(tempDate.getUTCFullYear(), 0, 1));
+      return Math.ceil((((tempDate.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
     };
     
     const grouped: Record<string, Ad[]> = {};
     cohorts.forEach(c => {
-      const cohortWeekStart = getMondayOf(c.cohortDate);
+      // Extract week number from cohort label (e.g., "Uke 10" -> 10)
+      const cohortWeekMatch = c.label.match(/Uke\s*(\d+)/i);
+      const cohortWeek = cohortWeekMatch ? parseInt(cohortWeekMatch[1], 10) : 0;
+      
       grouped[c.cohortDate] = ads.filter(ad => {
-        const adWeekStart = getMondayOf(ad.cohortDate || "");
-        return adWeekStart === cohortWeekStart;
+        if (!ad.cohortDate) return false;
+        const adWeek = getWeekNumber(ad.cohortDate);
+        return adWeek === cohortWeek;
       });
     });
     return grouped;
@@ -277,11 +260,11 @@ export default function CreativeClient({
                     {/* Top section: Thumbnails + info */}
                     <div className="flex items-center gap-4 mb-4">
                       {/* Stacked thumbnails */}
-                      <div className="flex -space-x-3 flex-shrink-0">
+                      <div className="flex -space-x-4 flex-shrink-0">
                         {cohortAds.slice(0, 4).map((ad, i) => (
                           <div 
                             key={ad.id}
-                            className="w-14 h-14 rounded-lg bg-[rgba(9,10,8,0.08)] border-2 border-[var(--color-surface)] overflow-hidden"
+                            className="w-16 h-16 rounded-lg bg-[rgba(9,10,8,0.08)] border-2 border-[var(--color-surface)] overflow-hidden"
                             style={{ zIndex: 4 - i }}
                           >
                             {ad.thumbnailUrl ? (
@@ -295,7 +278,7 @@ export default function CreativeClient({
                         ))}
                         {cohortAds.length > 4 && (
                           <div 
-                            className="w-14 h-14 rounded-lg bg-[rgba(9,10,8,0.12)] border-2 border-[var(--color-surface)] flex items-center justify-center text-xs font-medium text-[rgba(9,10,8,0.5)]"
+                            className="w-16 h-16 rounded-lg bg-[rgba(9,10,8,0.12)] border-2 border-[var(--color-surface)] flex items-center justify-center text-xs font-medium text-[rgba(9,10,8,0.5)]"
                             style={{ zIndex: 0 }}
                           >
                             +{cohortAds.length - 4}
