@@ -674,7 +674,7 @@ export async function getCohorts(clientId: string): Promise<AdCohort[]> {
         const cpm = agg.impressions > 0 ? (agg.spend / agg.impressions) * 1000 : 0;
         const cpa = agg.purchases > 0 ? agg.spend / agg.purchases : 0;
         const roas = agg.spend > 0 ? agg.purchaseValue / agg.spend : 0;
-        weeks.push({ week: w, spend: agg.spend, impressions: agg.impressions, hookRate, holdRate, ctr, cpm, cpa, roas });
+        weeks.push({ week: w, weekNumber: w, spend: agg.spend, impressions: agg.impressions, hookRate, holdRate, ctr, cpm, cpa, roas });
       }
       weeks.sort((a, b) => a.week - b.week);
 

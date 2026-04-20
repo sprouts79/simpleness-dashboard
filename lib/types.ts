@@ -113,6 +113,7 @@ export interface AdCohort {
 
 export interface CohortWeekData {
   week: number; // W0, W1, W2...
+  weekNumber: number; // Same as week, for compatibility
   spend: number;
   hookRate: number; // 3s video view %
   holdRate: number; // ThruPlay %

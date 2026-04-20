@@ -413,6 +413,7 @@ const makeWeeks = (
     const spendDecay = w < 2 ? 1 + w * 0.3 : Math.pow(0.82, w - 2);
     return {
       week: w,
+      weekNumber: w,
       spend: Math.round(spendBase * spendDecay * (0.85 + Math.random() * 0.3)),
       hookRate: Math.max(4, hookBase * decay * (0.88 + Math.random() * 0.24)),
       holdRate: Math.max(2, holdBase * decay * (0.88 + Math.random() * 0.24)),
