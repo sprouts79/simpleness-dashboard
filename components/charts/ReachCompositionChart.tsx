@@ -31,22 +31,26 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   const pct = payload.find((p: any) => p.dataKey === "netNewPct")?.value ?? 0;
   const total = prevReached + netNew;
   return (
-    <div className="bg-white border border-[var(--color-border)] rounded-lg px-3 py-2.5 shadow-sm text-xs min-w-[180px]">
-      <p className="font-semibold mb-2">{label}</p>
-      <div className="space-y-1">
-        <div className="flex justify-between gap-4">
-          <span className="text-[rgba(9,10,8,0.5)]">Net New</span>
-          <span style={{ fontFamily: "var(--font-mono)", color: "var(--color-link)" }}>
-            {formatReach(netNew)} ({pct}%)
+    <div className="bg-white border border-[var(--color-border)] rounded-xl px-4 py-3 shadow-md min-w-[200px]">
+      <p className="font-semibold text-base mb-3">{label}</p>
+      <div className="space-y-2">
+        <div>
+          <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-[var(--color-black)] text-white mb-1">
+            Net New
           </span>
+          <p className="font-bold text-lg" style={{ fontFamily: "var(--font-mono)" }}>
+            {formatReach(netNew)} <span className="text-sm font-medium text-[rgba(9,10,8,0.5)]">({pct}%)</span>
+          </p>
         </div>
-        <div className="flex justify-between gap-4">
-          <span className="text-[rgba(9,10,8,0.5)]">Prev. reached</span>
-          <span style={{ fontFamily: "var(--font-mono)" }}>{formatReach(prevReached)}</span>
+        <div>
+          <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-[var(--color-surface)] text-[rgba(9,10,8,0.6)] mb-1">
+            Tidligere nadd
+          </span>
+          <p className="font-bold text-lg" style={{ fontFamily: "var(--font-mono)" }}>{formatReach(prevReached)}</p>
         </div>
-        <div className="flex justify-between gap-4 pt-1 border-t border-[var(--color-border)]">
-          <span className="font-medium">Total reach</span>
-          <span className="font-medium" style={{ fontFamily: "var(--font-mono)" }}>{formatReach(total)}</span>
+        <div className="pt-2 border-t border-[var(--color-border)]">
+          <span className="text-sm text-[rgba(9,10,8,0.5)]">Total reach</span>
+          <p className="font-bold text-lg" style={{ fontFamily: "var(--font-mono)" }}>{formatReach(total)}</p>
         </div>
       </div>
     </div>
@@ -56,32 +60,33 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export default function ReachCompositionChart({ data }: Props) {
   return (
     <ResponsiveContainer width="100%" height={280}>
-      <ComposedChart data={data} margin={{ top: 4, right: 48, bottom: 0, left: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e8e8e6" vertical={false} />
+      <ComposedChart data={data} margin={{ top: 8, right: 16, bottom: 4, left: 4 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#e0e0de" vertical={false} />
         <XAxis
           dataKey="month"
-          tick={{ fontSize: 11, fill: "rgba(9,10,8,0.4)", fontFamily: "var(--font-mono)" }}
+          tick={{ fontSize: 13, fill: "rgba(9,10,8,0.5)", fontFamily: "var(--font-mono)" }}
           tickLine={false}
           axisLine={false}
+          dy={8}
         />
         <YAxis
           yAxisId="reach"
           orientation="left"
-          tick={{ fontSize: 11, fill: "rgba(9,10,8,0.4)", fontFamily: "var(--font-mono)" }}
+          tick={{ fontSize: 13, fill: "rgba(9,10,8,0.5)", fontFamily: "var(--font-mono)" }}
           tickLine={false}
           axisLine={false}
           tickFormatter={formatReach}
-          width={44}
+          width={52}
         />
         <YAxis
           yAxisId="pct"
           orientation="right"
-          tick={{ fontSize: 11, fill: "rgba(9,10,8,0.4)", fontFamily: "var(--font-mono)" }}
+          tick={{ fontSize: 13, fill: "rgba(9,10,8,0.5)", fontFamily: "var(--font-mono)" }}
           tickLine={false}
           axisLine={false}
           tickFormatter={(v) => `${v}%`}
           domain={[0, 100]}
-          width={40}
+          width={48}
         />
         <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(9,10,8,0.03)" }} />
 
@@ -90,7 +95,7 @@ export default function ReachCompositionChart({ data }: Props) {
           yAxisId="reach"
           dataKey="previouslyReached"
           stackId="reach"
-          fill="#d4d4d0"
+          fill="rgba(9,10,8,0.15)"
           name="Prev. reached"
           maxBarSize={32}
         />
@@ -106,14 +111,15 @@ export default function ReachCompositionChart({ data }: Props) {
           radius={[3, 3, 0, 0]}
         />
 
-        {/* Net New % line — accent */}
+        {/* Net New % line — green from design system */}
         <Line
           yAxisId="pct"
           type="monotone"
           dataKey="netNewPct"
-          stroke="#d97706"
-          strokeWidth={2}
-          dot={{ r: 3, fill: "#d97706", strokeWidth: 0 }}
+          stroke="var(--color-link)"
+          strokeWidth={2.5}
+          dot={{ r: 3, fill: "#515B12", strokeWidth: 0 }}
+          activeDot={{ fill: "#89FF58", stroke: "#515B12", strokeWidth: 2, r: 6 }}
           name="Net New %"
         />
       </ComposedChart>

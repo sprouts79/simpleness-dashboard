@@ -257,27 +257,30 @@ export default function TopAdsList({
   return (
     <>
       {/* Controls */}
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex bg-[var(--color-surface)] rounded-lg p-1 gap-1">
+      <div className="flex items-center gap-4 mb-5">
+        <select
+          value={period}
+          onChange={(e) => setPeriod(e.target.value as "7d" | "30d" | "90d")}
+          className="text-sm font-semibold bg-[var(--color-surface)] border-0 rounded-lg px-4 py-2.5 text-[var(--color-black)] cursor-pointer appearance-none pr-10"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23090a08' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right 12px center',
+          }}
+        >
           {PERIOD_OPTIONS.map(({ value, label }) => (
-            <button
-              key={value}
-              onClick={() => setPeriod(value)}
-              className={clsx(
-                "text-sm font-semibold px-4 py-2 rounded-md transition-colors whitespace-nowrap",
-                period === value
-                  ? "bg-white text-[var(--color-black)] shadow-sm"
-                  : "text-[rgba(9,10,8,0.5)] hover:text-[var(--color-black)]"
-              )}
-            >
-              {label}
-            </button>
+            <option key={value} value={value}>{label}</option>
           ))}
-        </div>
+        </select>
         <select
           value={metric}
           onChange={(e) => setMetric(e.target.value as CohortMetric)}
-          className="text-sm font-semibold bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-4 py-2.5 text-[var(--color-black)] cursor-pointer"
+          className="text-sm font-semibold bg-[var(--color-surface)] border-0 rounded-lg px-4 py-2.5 text-[var(--color-black)] cursor-pointer appearance-none pr-10"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23090a08' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right 12px center',
+          }}
         >
           {METRIC_OPTIONS.map((m) => (
             <option key={m.value} value={m.value}>Sorter: {m.label}</option>

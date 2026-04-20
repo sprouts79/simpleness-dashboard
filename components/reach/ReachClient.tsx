@@ -151,23 +151,20 @@ export default function ReachClient({
       {/* Controls: lookback selector + Hent data */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <span className="text-sm font-medium text-[rgba(9,10,8,0.55)]">Se lenger tilbake:</span>
-          <div className="flex bg-[var(--color-surface)] rounded-lg p-1 gap-1">
+          <select
+            value={currentLookback}
+            onChange={(e) => handleLookbackClick(Number(e.target.value))}
+            className="text-sm font-semibold bg-[var(--color-surface)] border-0 rounded-lg px-4 py-2.5 text-[var(--color-black)] cursor-pointer appearance-none pr-10"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23090a08' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 12px center',
+            }}
+          >
             {LOOKBACK_OPTIONS.map(({ label, days }) => (
-              <button
-                key={days}
-                onClick={() => handleLookbackClick(days)}
-                className={clsx(
-                  "text-sm font-semibold px-4 py-2 rounded-md transition-colors",
-                  currentLookback === days
-                    ? "bg-white text-[var(--color-black)] shadow-sm"
-                    : "text-[rgba(9,10,8,0.5)] hover:text-[var(--color-black)]"
-                )}
-              >
-                {label}
-              </button>
+              <option key={days} value={days}>{label}</option>
             ))}
-          </div>
+          </select>
           {currentLookback !== 0 && filtered.length === 0 && (
             <span className="text-sm text-[rgba(9,10,8,0.45)]">
               Ingen data enna
@@ -260,17 +257,17 @@ export default function ReachClient({
             />
             <div className="rounded-xl border border-[var(--color-border)] p-5 bg-white">
               <ReachCompositionChart data={chartData} />
-              <div className="flex gap-6 mt-4 text-sm text-[rgba(9,10,8,0.5)]">
+              <div className="flex gap-6 mt-4 text-sm text-[rgba(9,10,8,0.6)]">
                 <span className="flex items-center gap-2">
-                  <span className="w-3.5 h-3.5 rounded-sm bg-[#d4d4d0] inline-block" />
-                  Previously reached
+                  <span className="w-3.5 h-3.5 rounded-sm bg-[rgba(9,10,8,0.15)] inline-block" />
+                  Tidligere nadd
                 </span>
                 <span className="flex items-center gap-2">
                   <span className="w-3.5 h-3.5 rounded-sm bg-[var(--color-black)] inline-block" />
                   Net New
                 </span>
                 <span className="flex items-center gap-2">
-                  <span className="w-5 h-0.5 bg-[#d97706] inline-block" />
+                  <span className="w-2 h-2 rounded-full bg-[var(--color-link)] inline-block" />
                   Net New %
                 </span>
               </div>
