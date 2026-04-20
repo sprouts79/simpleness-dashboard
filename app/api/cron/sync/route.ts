@@ -116,7 +116,7 @@ export async function GET(req: NextRequest) {
 
       // ── Reach ──────────────────────────────────────────────────────────────
       const reachSince = daysAgoInTz(196, tz); // ~6.5 months — reach page shows 6
-      const windowStart = reachSince;
+      const windowStart = daysAgoInTz(196 + 91, tz); // 91-day baseline before display period
       const weeklyRows = await fetchWeeklyReachRows(client.meta_account_id, reachSince, until, windowStart);
       const reachUpsert = weeklyRows.map((r) => {
         const netNew = Math.max(0, r.cumulativeReach - r.prevWindowReach);

@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
     const reachSince = daysAgoInTz(reachDays, tz);
     // windowStart: fixed for all weeks. lookbackDays = extension BEFORE the display period.
     // 0 = no extension (windowStart = periodStart, first week ≈ 100% net new)
-    const windowStart = daysAgoInTz(reachDays + lookbackDays, tz);
+    const windowStart = daysAgoInTz(reachDays + lookbackDays + 91, tz); // always 91-day baseline
     const weeklyRows = await fetchWeeklyReachRows(accountId, reachSince, until, windowStart);
 
     const upsertRows = weeklyRows.map((r) => {
