@@ -293,7 +293,7 @@ export default function ReachClient({
                   Tidligere nadd
                 </span>
                 <span className="flex items-center gap-2">
-                  <span className="w-3.5 h-3.5 rounded-sm bg-[var(--color-black)] inline-block" />
+                  <span className="w-3.5 h-3.5 rounded-sm bg-[var(--color-accent)] inline-block" />
                   Nye
                 </span>
                 <span className="flex items-center gap-2">

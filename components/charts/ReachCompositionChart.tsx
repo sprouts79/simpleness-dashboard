@@ -35,8 +35,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       <p className="font-semibold text-base mb-3">{label}</p>
       <div className="space-y-2">
         <div>
-          <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-[var(--color-black)] text-white mb-1">
-            Nye Brukere
+          <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-[var(--color-accent)] text-[var(--color-black)] mb-1">
+            Nye
           </span>
           <p className="font-bold text-lg" style={{ fontFamily: "var(--font-mono)" }}>
             {formatReach(netNew)} <span className="text-sm font-medium text-[rgba(9,10,8,0.5)]">({pct}%)</span>
@@ -100,13 +100,13 @@ export default function ReachCompositionChart({ data }: Props) {
           maxBarSize={32}
         />
 
-        {/* Net New — dark, the important metric */}
+        {/* Net New — signal green */}
         <Bar
           yAxisId="reach"
           dataKey="netNew"
           stackId="reach"
-          fill="var(--color-black)"
-          name="Net New"
+          fill="var(--color-accent)"
+          name="Nye"
           maxBarSize={32}
           radius={[3, 3, 0, 0]}
         />
