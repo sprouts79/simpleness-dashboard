@@ -104,7 +104,7 @@ export default function SpendTrendChart({ data }: Props) {
         <Bar
           yAxisId="spend"
           dataKey="spend"
-          fill="rgba(9,10,8,0.12)"
+          fill="rgba(9,10,8,0.15)"
           radius={[3, 3, 0, 0]}
           name="Spend"
           maxBarSize={28}
@@ -113,10 +113,10 @@ export default function SpendTrendChart({ data }: Props) {
           yAxisId="roas"
           type="monotone"
           dataKey="roas"
-          stroke="var(--color-black)"
-          strokeWidth={2}
-          dot={{ fill: "var(--color-black)", strokeWidth: 0, r: 3 }}
-          activeDot={{ fill: "#89FF58", stroke: "var(--color-black)", strokeWidth: 2, r: 5 }}
+          stroke="#C2410C"
+          strokeWidth={2.5}
+          dot={{ fill: "#C2410C", strokeWidth: 0, r: 3 }}
+          activeDot={{ fill: "#EA580C", stroke: "#C2410C", strokeWidth: 2, r: 6 }}
           name="ROAS"
         />
       </ComposedChart>
