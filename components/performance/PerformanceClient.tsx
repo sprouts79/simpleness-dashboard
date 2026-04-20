@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import KpiCard from "@/components/ui/KpiCard";
 import SectionHeader from "@/components/ui/SectionHeader";
 import SpendTrendChart from "@/components/charts/SpendTrendChart";
-import InfoBox from "@/components/ui/InfoBox";
 import { PerformanceKpis, SpendTrendPoint, Campaign, PeriodKey, CompareKey } from "@/lib/types";
 import clsx from "clsx";
 import { useState } from "react";
@@ -246,21 +245,6 @@ export default function PerformanceClient({
         </div>
       </div>
 
-      {/* Hvordan lese denne rapporten */}
-      <InfoBox>
-        <p className="font-semibold mb-1">Hvordan lese denne rapporten</p>
-        <p className="mb-2">
-          Nøkkeltallene viser perioden du har valgt, med delta (pil) som forteller om det er bedre eller verre enn sammenligningsperioden.
-          <strong> ROAS</strong> (Return on Ad Spend) viser hvor mye omsetning du får per krone brukt — høyere er bedre.
-          <strong> CPA</strong> (kostnad per konvertering) viser hva du betaler per kjøp — lavere er bedre.
-          <strong> CPM</strong> er hva du betaler per 1000 visninger — et mål på auksjonskostnaden.
-          <strong> Frekvens</strong> er antall ganger samme person ser annonsene dine i snitt — over 6–8 er et tegn på publikumsmetning.
-        </p>
-        <p>
-          <strong>Hva du ser etter:</strong> ROAS og CPA beveger seg som regel i motsatt retning av CPM og Frekvens. Stiger CPM og Frekvens uten at ROAS henger med, er det et tegn på at publikum er mettet eller at kreativene er utslitte.
-          Kampanjetabellen lar deg bryte ned resultatene per kampanje og ad set — nyttig for å finne hva som driver (og hva som trekker ned) totalen.
-        </p>
-      </InfoBox>
     </div>
   );
 }
