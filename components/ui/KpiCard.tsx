@@ -63,29 +63,26 @@ export default function KpiCard({
 
       {/* Status badge if present */}
       {status && (
-        <div className="mt-3">
+        <div className="mt-auto pt-3">
           <span
             className={clsx(
-              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold",
+              "inline-flex items-center gap-1.5 text-xs",
               {
-                "bg-[rgba(45,122,10,0.12)] text-[#2d7a0a]": status.level === "good",
-                "bg-[rgba(180,120,20,0.12)] text-[#8a6010]": status.level === "warning",
-                "bg-[rgba(180,60,60,0.12)] text-[#9a3c3c]": status.level === "critical",
+                "text-[#3d8a12]": status.level === "good",
+                "text-[#9a7010]": status.level === "warning",
+                "text-[#9a4c4c]": status.level === "critical",
               }
             )}
           >
             <span
               className={clsx("w-1.5 h-1.5 rounded-full", {
-                "bg-[#2d7a0a]": status.level === "good",
+                "bg-[#3d8a12]": status.level === "good",
                 "bg-[#b47814]": status.level === "warning",
-                "bg-[#b43c3c]": status.level === "critical",
+                "bg-[#b45c5c]": status.level === "critical",
               })}
             />
             {status.label}
           </span>
-          {status.description && (
-            <p className="text-xs text-[rgba(9,10,8,0.5)] mt-1.5">{status.description}</p>
-          )}
         </div>
       )}
 
