@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getPulseData } from "@/lib/db";
+import InfoBox from "@/components/ui/InfoBox";
 import clsx from "clsx";
 
 export const dynamic = "force-dynamic";
@@ -158,10 +159,18 @@ export default async function PulsePage() {
         </table>
       </div>
 
-      {/* Legend */}
-      <div className="mt-6 flex gap-6 text-xs text-[rgba(9,10,8,0.4)]">
-        <span>Net New %: <strong className="text-[rgba(9,10,8,0.7)]">≥30%</strong> = frisk målgruppe · <strong className="text-[rgba(9,10,8,0.7)]">18–30%</strong> = moderat · <strong className="text-[rgba(9,10,8,0.7)]">&lt;18%</strong> = mettet</span>
-        <span>Freq. <strong className="text-red-500">&gt;8</strong> = for høy</span>
+      {/* Info */}
+      <div className="mt-6">
+        <InfoBox>
+          <p className="font-semibold mb-1">Hvordan lese denne oversikten</p>
+          <p className="mb-2">
+            <strong>Net New %</strong> er andelen av ukens rekkevidde som er nye personer — folk som ikke har sett annonsene dine i løpet av de siste 3 månedene.
+            Høyere er bedre: ≥30 % betyr at budsjettet når nye folk, 18–30 % er moderat, under 18 % tyder på at de samme personene treffes igjen og igjen.
+          </p>
+          <p>
+            <strong>Frekvens</strong> over 6–8 er et tegn på publikumsmetning og bør følges opp med kreativ refresh eller utvidet målgruppe.
+          </p>
+        </InfoBox>
       </div>
     </div>
   );
