@@ -196,12 +196,13 @@ export async function getPulseData(): Promise<PulseRow[]> {
     .gte("date", since14)
     .lt("date", until14);
 
-  // Latest weekly reach % from meta_reach_weekly
+  // Latest weekly reach % from meta_reach_weekly — standard window only (lookback_days = 0)
   const { data: reachRows } = await supabase
     .from("meta_reach_weekly")
     .select("client_id,pct_net_new,frequency")
+    .eq("lookback_days", 0)
     .order("week_start", { ascending: false })
-    .limit(clients.length * 3);
+    .limit(clients.length);
 
   return clients.map((client) => {
     const cRows = (curr7 ?? []).filter((r) => r.client_id === client.id);
