@@ -16,20 +16,20 @@ interface Props {
   cohorts: AdCohort[];
 }
 
-// Color palette for cohorts - distinct, warm-to-cool progression
-const COHORT_COLORS = [
-  "#2D3142", // Dark slate (oldest)
-  "#4F5D75", // Steel gray
-  "#7B8794", // Cool gray
-  "#9A8C98", // Mauve
-  "#C9ADA7", // Dusty rose
-  "#E8B4B8", // Blush
-  "#EAC4D5", // Light pink
-  "#B8E0D2", // Mint
-  "#95D5B2", // Sage
-  "#74C69D", // Green
-  "#52B788", // Fresh green
-  "#89FF58", // Bright green (newest)
+// Color palette for cohorts - modern, app-friendly colors
+export const COHORT_COLORS = [
+  "#6366F1", // Indigo
+  "#8B5CF6", // Violet
+  "#A855F7", // Purple
+  "#D946EF", // Fuchsia
+  "#EC4899", // Pink
+  "#F43F5E", // Rose
+  "#F97316", // Orange
+  "#EAB308", // Yellow
+  "#84CC16", // Lime
+  "#22C55E", // Green
+  "#14B8A6", // Teal
+  "#06B6D4", // Cyan
 ];
 
 function formatSpend(v: number) {

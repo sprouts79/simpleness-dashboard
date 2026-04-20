@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import SectionHeader from "@/components/ui/SectionHeader";
 import KpiCard from "@/components/ui/KpiCard";
-import CohortSpendChart from "@/components/charts/CohortSpendChart";
+import CohortSpendChart, { COHORT_COLORS } from "@/components/charts/CohortSpendChart";
 import { Ad, AdCohort, CreativeChurnPoint, CohortMetric } from "@/lib/types";
 import clsx from "clsx";
 
@@ -272,10 +272,18 @@ export default function CreativeClient({
           </div>
           <div className="space-y-3">
             {/* Cohort cards */}
-            {cohorts.map((cohort) => {
-              const totalSpend = cohort.weeks.reduce((s, w) => s + (w.spend ?? 0), 0);
-              const cohortAds = adsByCohort[cohort.cohortDate] || [];
-              const isExpanded = expandedCohort === cohort.cohortDate;
+            {(() => {
+              // Sort cohorts by date for consistent color assignment
+              const sortedByDate = [...cohorts].sort((a, b) => 
+                new Date(a.cohortDate).getTime() - new Date(b.cohortDate).getTime()
+              );
+              const colorMap = new Map(sortedByDate.map((c, i) => [c.cohortDate, COHORT_COLORS[i % COHORT_COLORS.length]]));
+              
+              return cohorts.map((cohort) => {
+                const totalSpend = cohort.weeks.reduce((s, w) => s + (w.spend ?? 0), 0);
+                const cohortAds = adsByCohort[cohort.cohortDate] || [];
+                const isExpanded = expandedCohort === cohort.cohortDate;
+                const cohortColor = colorMap.get(cohort.cohortDate) || COHORT_COLORS[0];
               
               return (
                 <div 
@@ -322,6 +330,10 @@ export default function CreativeClient({
                       {/* Cohort info */}
                       <div className="flex-1">
                         <div className="flex items-center gap-3">
+                          <div 
+                            className="w-3 h-3 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: cohortColor }}
+                          />
                           <h3 className="text-base font-semibold">{cohort.label}</h3>
                           <span className="text-sm text-[rgba(9,10,8,0.5)]">
                             {cohort.adCount} annonser
@@ -424,7 +436,8 @@ export default function CreativeClient({
                   )}
                 </div>
               );
-            })}
+            });
+            })()}
           </div>
         </div>
       )}
