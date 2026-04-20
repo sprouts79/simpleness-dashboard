@@ -23,10 +23,10 @@ export default function ClientTabNav({ clientSlug }: { clientSlug: string }) {
             key={tab.path}
             href={href}
             className={clsx(
-              "text-sm font-medium pb-3 border-b-2 transition-colors",
+              "text-base font-medium pb-3 border-b-2 transition-colors",
               isActive
                 ? "border-[var(--color-black)] text-[var(--color-black)]"
-                : "border-transparent text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)]"
+                : "border-transparent text-[rgba(9,10,8,0.5)] hover:text-[var(--color-black)]"
             )}
           >
             {tab.label}

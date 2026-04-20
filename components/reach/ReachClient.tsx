@@ -145,18 +145,18 @@ export default function ReachClient({
 
       {/* Controls: lookback selector + Hent data */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-medium text-[rgba(9,10,8,0.45)]">Utvid lookback med:</span>
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-medium text-[rgba(9,10,8,0.55)]">Utvid lookback med:</span>
           <div className="flex bg-[var(--color-surface)] rounded-lg p-1 gap-1">
             {LOOKBACK_OPTIONS.map(({ label, days }) => (
               <button
                 key={days}
                 onClick={() => handleLookbackClick(days)}
                 className={clsx(
-                  "text-xs font-semibold px-3 py-1.5 rounded-md transition-colors",
+                  "text-sm font-semibold px-4 py-2 rounded-md transition-colors",
                   currentLookback === days
                     ? "bg-white text-[var(--color-black)] shadow-sm"
-                    : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)]"
+                    : "text-[rgba(9,10,8,0.5)] hover:text-[var(--color-black)]"
                 )}
               >
                 {label}
@@ -164,23 +164,23 @@ export default function ReachClient({
             ))}
           </div>
           {currentLookback !== 0 && filtered.length === 0 && (
-            <span className="text-xs text-[rgba(9,10,8,0.35)]">
-              Ingen data — trykk Hent data
+            <span className="text-sm text-[rgba(9,10,8,0.45)]">
+              Ingen data - trykk Hent data
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           {syncStatus && (
-            <span className="text-xs text-[rgba(9,10,8,0.45)]">{syncStatus}</span>
+            <span className="text-sm text-[rgba(9,10,8,0.55)]">{syncStatus}</span>
           )}
           <button
             onClick={handleSync}
             disabled={syncing}
             className={clsx(
-              "text-xs font-semibold px-4 py-2 rounded-lg transition-colors",
+              "text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors",
               syncing
-                ? "bg-[var(--color-surface)] text-[rgba(9,10,8,0.35)] cursor-not-allowed border border-[var(--color-border)]"
+                ? "bg-[var(--color-surface)] text-[rgba(9,10,8,0.45)] cursor-not-allowed border border-[var(--color-border)]"
                 : "bg-[var(--color-accent)] text-[var(--color-black)] hover:opacity-90"
             )}
           >
@@ -192,16 +192,16 @@ export default function ReachClient({
       {/* Empty state */}
       {filtered.length === 0 && (
         <div className="rounded-xl border border-[var(--color-border)] p-12 text-center">
-          <p className="text-sm text-[rgba(9,10,8,0.4)] mb-2">
+          <p className="text-base text-[rgba(9,10,8,0.5)] mb-2">
             Ingen reach-data for lookback {activeOption.label}.
           </p>
-          <p className="text-xs text-[rgba(9,10,8,0.3)] mb-6">
-            Trykk Hent data for å synkronisere fra Meta.
+          <p className="text-sm text-[rgba(9,10,8,0.4)] mb-6">
+            Trykk Hent data for a synkronisere fra Meta.
           </p>
           <button
             onClick={handleSync}
             disabled={syncing}
-            className="text-xs font-semibold px-4 py-2 rounded-lg bg-[var(--color-accent)] text-[var(--color-black)] hover:opacity-90 transition-colors"
+            className="text-sm font-semibold px-5 py-2.5 rounded-lg bg-[var(--color-accent)] text-[var(--color-black)] hover:opacity-90 transition-colors"
           >
             {syncing ? "Henter..." : "Hent data"}
           </button>
@@ -243,9 +243,9 @@ export default function ReachClient({
               </div>
 
               {kpis.avgNetNewPct < 20 && (
-                <div className="mt-3 px-4 py-3 rounded-lg border border-yellow-200 bg-yellow-50 text-xs text-yellow-800">
-                  <strong>Advarsel:</strong> Net New Reach er {kpis.avgNetNewPct.toFixed(1)}% — under 30%-terskelen.
-                  Frekvens er høy. Vurder kreativ refresh, utvidelse av målgruppe, eller budsjettreduksjon.
+                <div className="mt-4 px-5 py-4 rounded-lg border border-yellow-200 bg-yellow-50 text-sm text-yellow-800">
+                  <strong>Advarsel:</strong> Net New Reach er {kpis.avgNetNewPct.toFixed(1)}% - under 30%-terskelen.
+                  Frekvens er hoy. Vurder kreativ refresh, utvidelse av malgruppe, eller budsjettreduksjon.
                 </div>
               )}
             </div>
@@ -259,17 +259,17 @@ export default function ReachClient({
             />
             <div className="rounded-xl border border-[var(--color-border)] p-5 bg-white">
               <ReachCompositionChart data={chartData} />
-              <div className="flex gap-6 mt-4 text-xs text-[rgba(9,10,8,0.4)]">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-sm bg-[#d4d4d0] inline-block" />
+              <div className="flex gap-6 mt-4 text-sm text-[rgba(9,10,8,0.5)]">
+                <span className="flex items-center gap-2">
+                  <span className="w-3.5 h-3.5 rounded-sm bg-[#d4d4d0] inline-block" />
                   Previously reached
                 </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-sm bg-[var(--color-green-mint)] inline-block" />
+                <span className="flex items-center gap-2">
+                  <span className="w-3.5 h-3.5 rounded-sm bg-[var(--color-green-mint)] inline-block" />
                   Net New
                 </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-4 h-0.5 bg-[#d97706] inline-block" />
+                <span className="flex items-center gap-2">
+                  <span className="w-5 h-0.5 bg-[#d97706] inline-block" />
                   Net New %
                 </span>
               </div>
@@ -316,18 +316,18 @@ export default function ReachClient({
           <div>
             <SectionHeader
               title="Monthly Breakdown"
-              subtitle={`Lookback ${lookbackLabel} · siste ${filtered.length} måneder`}
+              subtitle={`Lookback ${lookbackLabel} - siste ${filtered.length} maneder`}
             />
             <div className="rounded-xl border border-[var(--color-border)] overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-base">
                 <thead>
                   <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-                    {["Måned", "Rolling Reach", "Net New", "Spend", "CPM", "Frequency", "CPM Net New", "%"].map((h) => (
+                    {["Maned", "Rolling Reach", "Net New", "Spend", "CPM", "Frequency", "CPM Net New", "%"].map((h) => (
                       <th
                         key={h}
                         className={clsx(
-                          "py-3 text-xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.45)]",
-                          h === "Måned" ? "text-left px-5" : "text-right px-4"
+                          "py-3.5 text-2xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.5)]",
+                          h === "Maned" ? "text-left px-5" : "text-right px-4"
                         )}
                       >
                         {h}
@@ -341,30 +341,30 @@ export default function ReachClient({
                       key={row.monthKey}
                       className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface)] transition-colors"
                     >
-                      <td className="px-5 py-2.5 font-medium text-sm whitespace-nowrap">
+                      <td className="px-5 py-3.5 font-medium text-base whitespace-nowrap">
                         {row.monthLabel}
                       </td>
-                      <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
+                      <td className="px-4 py-3.5 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
                         {formatReach(row.rollingReach)}
                       </td>
-                      <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)", color: "var(--color-link)" }}>
+                      <td className="px-4 py-3.5 text-right text-sm" style={{ fontFamily: "var(--font-mono)", color: "var(--color-link)" }}>
                         {formatReach(row.netNew)}
                       </td>
-                      <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
+                      <td className="px-4 py-3.5 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
                         {formatNok(row.spend)}
                       </td>
-                      <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
+                      <td className="px-4 py-3.5 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
                         {Math.round(row.cpm)} kr
                       </td>
-                      <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
-                        {row.frequency.toFixed(2)}×
+                      <td className="px-4 py-3.5 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
+                        {row.frequency.toFixed(2)}x
                       </td>
-                      <td className="px-4 py-2.5 text-right" style={{ fontFamily: "var(--font-mono)" }}>
+                      <td className="px-4 py-3.5 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
                         {Math.round(row.cpmNetNew)} kr
                       </td>
-                      <td className="px-4 py-2.5 text-right">
+                      <td className="px-4 py-3.5 text-right">
                         <span
-                          className={clsx("text-xs font-semibold px-1.5 py-0.5 rounded", {
+                          className={clsx("text-sm font-semibold px-2 py-1 rounded", {
                             "bg-green-100 text-green-700": row.netNewPct >= 30,
                             "bg-yellow-100 text-yellow-700": row.netNewPct >= 18 && row.netNewPct < 30,
                             "bg-red-100 text-red-700": row.netNewPct < 18,

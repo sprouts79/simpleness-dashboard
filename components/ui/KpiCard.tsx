@@ -32,17 +32,17 @@ export default function KpiCard({
   return (
     <div
       className={clsx(
-        "rounded-lg border p-4 flex flex-col gap-1",
+        "rounded-lg border p-5 flex flex-col gap-1.5",
         highlight ? "border-[var(--color-accent)] bg-[var(--color-green-pale)]" : "border-[var(--color-border)] bg-white"
       )}
     >
-      <p className="text-xs font-medium text-[rgba(9,10,8,0.45)] uppercase tracking-wide">
+      <p className="text-2xs font-semibold text-[rgba(9,10,8,0.5)] uppercase tracking-widest">
         {label}
       </p>
       <p
         className={clsx(
           "font-bold tabular-nums leading-tight",
-          size === "large" ? "text-3xl" : "text-2xl"
+          size === "large" ? "text-5xl" : "text-3xl"
         )}
         style={{ fontFamily: "var(--font-mono)" }}
       >
@@ -50,20 +50,20 @@ export default function KpiCard({
       </p>
       {delta !== undefined && (
         <p
-          className={clsx("text-xs font-medium", {
+          className={clsx("text-sm font-medium", {
             "delta-up": isGood,
             "delta-down": !isGood && !isNeutral,
             "delta-neutral": isNeutral,
           })}
         >
           {formatDelta(delta)}{" "}
-          <span className="font-normal text-[rgba(9,10,8,0.4)]">
+          <span className="font-normal text-[rgba(9,10,8,0.5)]">
             {deltaLabel ?? "vs forrige uke"}
           </span>
         </p>
       )}
       {note && (
-        <p className="text-xs text-[rgba(9,10,8,0.4)] mt-0.5">{note}</p>
+        <p className="text-xs text-[rgba(9,10,8,0.5)] mt-1">{note}</p>
       )}
     </div>
   );

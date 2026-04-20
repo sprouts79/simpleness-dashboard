@@ -110,8 +110,8 @@ function PreviewModal({
 function MetricCell({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[10px] text-[rgba(9,10,8,0.35)] uppercase tracking-wide leading-none mb-0.5">{label}</p>
-      <p className="text-xs font-semibold" style={{ fontFamily: "var(--font-mono)" }}>{value}</p>
+      <p className="text-2xs text-[rgba(9,10,8,0.45)] uppercase tracking-wide leading-none mb-0.5">{label}</p>
+      <p className="text-sm font-semibold" style={{ fontFamily: "var(--font-mono)" }}>{value}</p>
     </div>
   );
 }
@@ -186,9 +186,9 @@ function AdCard({
       </div>
 
       {/* KPIs — always Spend · ROAS · CTR · CPA */}
-      <div className="p-2.5">
-        <p className="text-[11px] font-medium leading-tight mb-2 line-clamp-2 h-7">{ad.name}</p>
-        <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
+      <div className="p-3">
+        <p className="text-sm font-medium leading-tight mb-2.5 line-clamp-2 h-9">{ad.name}</p>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2">
           <MetricCell
             label="Spend"
             value={ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : `${Math.round(ad.spend)}`}
@@ -248,8 +248,8 @@ export default function TopAdsList({
 
   if (!adsMap[period].length) {
     return (
-      <div className="rounded-xl border border-[var(--color-border)] p-8 text-center">
-        <p className="text-sm text-[rgba(9,10,8,0.4)]">Ingen annonsedata for perioden.</p>
+      <div className="rounded-xl border border-[var(--color-border)] p-10 text-center">
+        <p className="text-base text-[rgba(9,10,8,0.5)]">Ingen annonsedata for perioden.</p>
       </div>
     );
   }
@@ -257,17 +257,17 @@ export default function TopAdsList({
   return (
     <>
       {/* Controls */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-5">
         <div className="flex bg-[var(--color-surface)] rounded-lg p-1 gap-1">
           {PERIOD_OPTIONS.map(({ value, label }) => (
             <button
               key={value}
               onClick={() => setPeriod(value)}
               className={clsx(
-                "text-xs font-semibold px-3 py-1.5 rounded-md transition-colors whitespace-nowrap",
+                "text-sm font-semibold px-4 py-2 rounded-md transition-colors whitespace-nowrap",
                 period === value
                   ? "bg-white text-[var(--color-black)] shadow-sm"
-                  : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)]"
+                  : "text-[rgba(9,10,8,0.5)] hover:text-[var(--color-black)]"
               )}
             >
               {label}
@@ -277,7 +277,7 @@ export default function TopAdsList({
         <select
           value={metric}
           onChange={(e) => setMetric(e.target.value as CohortMetric)}
-          className="text-xs font-semibold bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-[var(--color-black)] cursor-pointer"
+          className="text-sm font-semibold bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-4 py-2.5 text-[var(--color-black)] cursor-pointer"
         >
           {METRIC_OPTIONS.map((m) => (
             <option key={m.value} value={m.value}>Sorter: {m.label}</option>

@@ -23,7 +23,17 @@ const config: Config = {
         mono: ["var(--font-mono)", "monospace"],
       },
       fontSize: {
-        "2xs": "0.625rem",
+        // Minimum readable sizes - 37signals style
+        "2xs": "0.8125rem",   // 13px - smallest allowed (labels only)
+        "xs": "0.875rem",      // 14px - small text, captions
+        "sm": "0.9375rem",     // 15px - secondary text
+        "base": "1rem",        // 16px - default body
+        "lg": "1.0625rem",     // 17px - slightly emphasized
+        "xl": "1.25rem",       // 20px - section headers
+        "2xl": "1.5rem",       // 24px - subsection headers
+        "3xl": "1.75rem",      // 28px - KPI values
+        "4xl": "2rem",         // 32px - page titles
+        "5xl": "2.5rem",       // 40px - hero numbers
       },
     },
   },

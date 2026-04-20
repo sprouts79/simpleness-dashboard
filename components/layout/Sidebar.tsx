@@ -27,18 +27,18 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
         <Link
           href="/"
           className={clsx(
-            "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors mb-0.5",
+            "flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5",
             isPulse
               ? "bg-[var(--color-green-pale)] text-[var(--color-link)]"
-              : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)] hover:bg-[var(--color-border)]"
+              : "text-[rgba(9,10,8,0.55)] hover:text-[var(--color-black)] hover:bg-[var(--color-border)]"
           )}
         >
           <span className={clsx("w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[var(--color-accent)]", !isPulse && "opacity-30")} />
           Puls
         </Link>
 
-        <div className="mt-4 mb-1.5 px-3">
-          <p className="text-[10px] font-semibold tracking-widest uppercase text-[rgba(9,10,8,0.3)]">
+        <div className="mt-5 mb-2 px-3">
+          <p className="text-2xs font-semibold tracking-widest uppercase text-[rgba(9,10,8,0.4)]">
             Kunder
           </p>
         </div>
@@ -50,10 +50,10 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
               key={client.id}
               href={`/${client.slug}/performance`}
               className={clsx(
-                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors mb-0.5",
+                "flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors mb-0.5",
                 isActive
                   ? "bg-[var(--color-green-pale)] text-[var(--color-link)] font-semibold"
-                  : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)] hover:bg-[var(--color-border)]"
+                  : "text-[rgba(9,10,8,0.55)] hover:text-[var(--color-black)] hover:bg-[var(--color-border)]"
               )}
             >
               <span className={clsx("w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[var(--color-accent)]", !isActive && "opacity-30")} />
@@ -64,17 +64,17 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
       </nav>
 
       {/* Admin */}
-      <div className="px-2.5 pb-4 border-t border-[var(--color-border)] pt-3 mt-2">
+      <div className="px-2.5 pb-4 border-t border-[var(--color-border)] pt-4 mt-2">
         <Link
           href="/admin"
           className={clsx(
-            "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors",
+            "flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors",
             pathname === "/admin"
               ? "bg-[var(--color-green-pale)] text-[var(--color-link)] font-semibold"
-              : "text-[rgba(9,10,8,0.35)] hover:text-[var(--color-black)] hover:bg-[var(--color-border)]"
+              : "text-[rgba(9,10,8,0.45)] hover:text-[var(--color-black)] hover:bg-[var(--color-border)]"
           )}
         >
-          <span className="text-[10px]">＋</span>
+          <span className="text-xs">＋</span>
           Legg til kunde
         </Link>
       </div>

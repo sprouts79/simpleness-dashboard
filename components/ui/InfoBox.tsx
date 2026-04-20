@@ -6,7 +6,7 @@ interface Props {
 export default function InfoBox({ children, title }: Props) {
   return (
     <div
-      className="max-w-xl rounded-xl px-5 py-4 text-sm"
+      className="max-w-xl rounded-xl px-5 py-5 text-base leading-relaxed"
       style={{
         background: "rgba(137, 255, 88, 0.08)",
         border: "1px solid rgba(137, 255, 88, 0.25)",
@@ -14,7 +14,7 @@ export default function InfoBox({ children, title }: Props) {
       }}
     >
       {title && (
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.4)] mb-3">
+        <p className="text-2xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.5)] mb-3">
           {title}
         </p>
       )}

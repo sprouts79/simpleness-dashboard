@@ -88,9 +88,9 @@ function AdTile({ ad }: { ad: Ad }) {
         )}
 
         {/* Metrics */}
-        <div className="px-3 py-2.5">
-          <p className="text-[11px] font-semibold leading-snug mb-1.5 line-clamp-2">{ad.name}</p>
-          <div className="flex gap-2.5 text-[11px] text-[rgba(9,10,8,0.4)]" style={{ fontFamily: "var(--font-mono)" }}>
+        <div className="px-3 py-3">
+          <p className="text-sm font-semibold leading-snug mb-2 line-clamp-2">{ad.name}</p>
+          <div className="flex gap-3 text-sm text-[rgba(9,10,8,0.5)]" style={{ fontFamily: "var(--font-mono)" }}>
             <span>{ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : Math.round(ad.spend)} kr</span>
             {ad.roas > 0 && <span>{ad.roas.toFixed(1)}×</span>}
             {ad.ctr > 0 && <span>{ad.ctr.toFixed(1)}%</span>}
