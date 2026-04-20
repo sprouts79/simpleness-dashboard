@@ -189,25 +189,8 @@ export default function CreativeClient({
 
   return (
     <div className="space-y-10">
-      {/* Header with controls */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <select
-            value={metric}
-            onChange={(e) => setMetric(e.target.value as MetricKey)}
-            className="text-sm font-semibold bg-[var(--color-surface)] border-0 rounded-lg px-4 py-2.5 text-[var(--color-black)] cursor-pointer appearance-none pr-10"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23090a08' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'right 12px center',
-            }}
-          >
-            {METRIC_OPTIONS.map((m) => (
-              <option key={m.value} value={m.value}>{m.label}</option>
-            ))}
-          </select>
-        </div>
-
+      {/* Header with sync button */}
+      <div className="flex items-center justify-end">
         <div className="flex items-center gap-4">
           {syncStatus && (
             <span className="text-sm text-[rgba(9,10,8,0.55)]">{syncStatus}</span>
@@ -238,10 +221,28 @@ export default function CreativeClient({
       {/* Cohort Heatmap Table with Thumbnails */}
       {cohorts.length > 0 && (
         <div>
-          <SectionHeader
-            title="Kohort-ytelse"
-            subtitle={`${selectedMetricInfo.label} per uke etter lansering - farge viser prestasjon relativt til andre kohorter`}
-          />
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-bold text-[var(--color-black)]">Kohort-ytelse</h2>
+              <p className="text-sm text-[rgba(9,10,8,0.55)] mt-0.5">
+                Farge viser prestasjon relativt til andre kohorter per uke
+              </p>
+            </div>
+            <select
+              value={metric}
+              onChange={(e) => setMetric(e.target.value as MetricKey)}
+              className="text-sm font-semibold bg-[var(--color-surface)] border-0 rounded-lg px-4 py-2.5 text-[var(--color-black)] cursor-pointer appearance-none pr-10"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23090a08' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 12px center',
+              }}
+            >
+              {METRIC_OPTIONS.map((m) => (
+                <option key={m.value} value={m.value}>{m.label}</option>
+              ))}
+            </select>
+          </div>
           <div className="space-y-3">
             {/* Cohort cards */}
             {cohorts.map((cohort) => {
