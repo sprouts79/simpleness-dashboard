@@ -42,11 +42,8 @@ export default function KpiCard({
           : "bg-[var(--color-surface)]"
       )}
     >
-      {/* Badge label */}
-      <span className={clsx(
-        "inline-block px-2.5 py-1 rounded-full text-xs font-semibold mb-3 shadow-sm",
-        highlight ? "bg-[var(--color-accent)] text-[var(--color-black)]" : "bg-white text-[rgba(9,10,8,0.6)]"
-      )}>
+      {/* Label */}
+      <span className="text-sm font-medium text-[rgba(9,10,8,0.5)] mb-2">
         {label}
       </span>
 
