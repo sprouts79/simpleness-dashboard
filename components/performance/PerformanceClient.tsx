@@ -157,7 +157,6 @@ export default function PerformanceClient({
             value={formatNok(kpis.spend)}
             delta={kpis.spendDelta}
             deltaLabel={deltaLabel}
-            note="Pengebruk"
             size="large"
           />
           <KpiCard
@@ -165,11 +164,10 @@ export default function PerformanceClient({
             value={`${kpis.roas.toFixed(1)}x`}
             delta={kpis.roasDelta}
             deltaLabel={deltaLabel}
-            note="Avkastning"
             size="large"
           />
           <KpiCard
-            label="Kost per kjop"
+            label="CPA"
             value={`${Math.round(kpis.cpa)} kr`}
             delta={kpis.cpaDelta}
             deltaLabel={deltaLabel}
@@ -184,7 +182,6 @@ export default function PerformanceClient({
             delta={kpis.cpmn > 0 ? kpis.cpmnDelta : undefined}
             deltaLabel={deltaLabel}
             invertDelta
-            note="Per 1000 nye personer"
           />
           <KpiCard
             label="Frekvens"
@@ -192,14 +189,12 @@ export default function PerformanceClient({
             delta={kpis.frequencyDelta}
             deltaLabel={deltaLabel}
             invertDelta
-            note={kpis.frequency > 8 ? "Sliten malgruppe" : kpis.frequency > 6 ? "Ganger vist per person" : "Ganger vist per person"}
           />
           <KpiCard
             label="CTR"
             value={`${kpis.ctr.toFixed(1)}%`}
             delta={kpis.ctrDelta}
             deltaLabel={deltaLabel}
-            note="Klikkrate"
           />
         </div>
       </div>

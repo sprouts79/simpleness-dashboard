@@ -38,28 +38,28 @@ export default function KpiCard({
           : "bg-[var(--color-surface)]"
       )}
     >
-      {/* Main value row: big number + label beside it */}
-      <div className="flex items-baseline gap-3">
-        <p
-          className={clsx(
-            "font-bold tabular-nums leading-none",
-            size === "large" ? "text-5xl" : "text-4xl"
-          )}
-          style={{ fontFamily: "var(--font-mono)" }}
-        >
-          {value}
+      {/* Badge label */}
+      <span className="inline-block px-2.5 py-1 rounded-full text-xs font-semibold bg-white text-[rgba(9,10,8,0.6)] mb-3 shadow-sm">
+        {label}
+      </span>
+
+      {/* Big number */}
+      <p
+        className={clsx(
+          "font-bold tabular-nums leading-none",
+          size === "large" ? "text-5xl" : "text-4xl"
+        )}
+        style={{ fontFamily: "var(--font-mono)" }}
+      >
+        {value}
+      </p>
+
+      {/* Note if present */}
+      {note && (
+        <p className="text-sm text-[rgba(9,10,8,0.45)] mt-2">
+          {note}
         </p>
-        <div className="flex flex-col">
-          <p className="text-base font-medium text-[rgba(9,10,8,0.7)] leading-tight">
-            {label}
-          </p>
-          {note && (
-            <p className="text-sm text-[rgba(9,10,8,0.45)] leading-tight mt-0.5">
-              {note}
-            </p>
-          )}
-        </div>
-      </div>
+      )}
 
       {/* Delta row */}
       {delta !== undefined && (
