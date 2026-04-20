@@ -133,6 +133,7 @@ export interface Ad {
   id: string;
   name: string;
   cohortDate: string;
+  createdAt?: string;
   format: "video" | "static" | "carousel" | "story";
   status: "active" | "paused" | "learning";
   thumbnailUrl: string;
@@ -144,6 +145,8 @@ export interface Ad {
   roas: number;
   cpa: number;
   impressions: number;
+  netNew?: number;
+  netNewPct?: number;
 }
 
 export type CohortMetric =

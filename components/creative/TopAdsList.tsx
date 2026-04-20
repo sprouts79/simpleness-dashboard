@@ -260,7 +260,7 @@ export default function TopAdsList({
       <div className="flex items-center gap-4 mb-5">
         <select
           value={period}
-          onChange={(e) => setPeriod(e.target.value as "7d" | "30d" | "90d")}
+          onChange={(e) => setPeriod(e.target.value as TopPeriod)}
           className="text-sm font-semibold bg-[var(--color-surface)] border-0 rounded-lg px-4 py-2.5 text-[var(--color-black)] cursor-pointer appearance-none pr-10"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23090a08' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,

@@ -76,7 +76,7 @@ export default function CohortTable({ cohorts, metric }: Props) {
     const cpm = impressions > 0 ? (spend / impressions) * 1000 : 0;
     const cpa = weekSlice.filter((wd) => wd.cpa > 0).reduce((s, wd) => s + wd.cpa, 0) / (weekSlice.filter((wd) => wd.cpa > 0).length || 1);
     const roas = weekSlice.filter((wd) => wd.roas > 0).reduce((s, wd) => s + wd.roas, 0) / (weekSlice.filter((wd) => wd.roas > 0).length || 1);
-    return { week: w, spend, impressions, hookRate, holdRate, ctr, cpm, cpa, roas };
+    return { week: w, weekNumber: w, spend, impressions, hookRate, holdRate, ctr, cpm, cpa, roas };
   });
   const totalAdCount = cohorts.reduce((s, c) => s + c.adCount, 0);
 
