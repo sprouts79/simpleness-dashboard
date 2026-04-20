@@ -47,11 +47,16 @@ function formatNokShort(n: number) {
 const CpmTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white border border-[var(--color-border)] rounded-lg px-3 py-2 shadow-sm text-xs">
-      <p className="font-semibold mb-1">{label}</p>
-      <p style={{ fontFamily: "var(--font-mono)" }}>
-        {formatNok(payload[0]?.value ?? 0)} / 1k net new
-      </p>
+    <div className="bg-white border border-[var(--color-border)] rounded-xl px-4 py-3 shadow-md">
+      <p className="font-semibold text-base mb-2">{label}</p>
+      <div>
+        <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-[var(--color-surface)] text-[rgba(9,10,8,0.6)] mb-1">
+          CPM Net New
+        </span>
+        <p className="font-bold text-xl" style={{ fontFamily: "var(--font-mono)" }}>
+          {Math.round(payload[0]?.value ?? 0)} kr
+        </p>
+      </div>
     </div>
   );
 };
@@ -213,10 +218,7 @@ export default function ReachClient({
           {/* KPI cards */}
           {kpis && (
             <div>
-              <SectionHeader
-                title="Reach-nøkkeltall"
-                subtitle={`Siste 6 måneder · lookback ${lookbackLabel} · ${filtered.length} mnd data`}
-              />
+              <SectionHeader title="Oppsummering" />
               <div className="grid grid-cols-4 gap-4">
                 <KpiCard
                   label="Total Spend"
@@ -243,9 +245,9 @@ export default function ReachClient({
               </div>
 
               {kpis.avgNetNewPct < 20 && (
-                <div className="mt-4 px-5 py-4 rounded-lg border border-yellow-200 bg-yellow-50 text-sm text-yellow-800">
-                  <strong>Advarsel:</strong> Net New Reach er {kpis.avgNetNewPct.toFixed(1)}% - under 30%-terskelen.
-                  Frekvens er hoy. Vurder kreativ refresh, utvidelse av malgruppe, eller budsjettreduksjon.
+                <div className="mt-4 px-5 py-4 rounded-lg border-2 border-[var(--color-black)] bg-white text-sm text-[var(--color-black)]">
+                  <strong>Obs:</strong> Net New Reach er {kpis.avgNetNewPct.toFixed(1)}% - under 30%-terskelen.
+                  Vurder kreativ refresh, utvidelse av malgruppe, eller budsjettreduksjon.
                 </div>
               )}
             </div>
@@ -254,8 +256,7 @@ export default function ReachClient({
           {/* Reach Composition chart */}
           <div>
             <SectionHeader
-              title="Reach Composition Analysis"
-              subtitle="Grå = previously reached · Grønn = net new · Linje = Net New %"
+              title="Reach Composition"
             />
             <div className="rounded-xl border border-[var(--color-border)] p-5 bg-white">
               <ReachCompositionChart data={chartData} />
@@ -278,34 +279,33 @@ export default function ReachClient({
 
           {/* Cost per 1k Net New Reach */}
           <div>
-            <SectionHeader
-              title="Cost Per 1k Net New Reach"
-              subtitle="Kostnad per 1000 nye unike nådd — per måned"
-            />
+            <SectionHeader title="CPM Net New" />
             <div className="rounded-xl border border-[var(--color-border)] p-5 bg-white">
-              <ResponsiveContainer width="100%" height={220}>
-                <LineChart data={chartData} margin={{ top: 4, right: 48, bottom: 0, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e8e8e6" vertical={false} />
+              <ResponsiveContainer width="100%" height={260}>
+                <LineChart data={chartData} margin={{ top: 8, right: 16, bottom: 4, left: 4 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0de" vertical={false} />
                   <XAxis
                     dataKey="month"
-                    tick={{ fontSize: 11, fill: "rgba(9,10,8,0.4)", fontFamily: "var(--font-mono)" }}
+                    tick={{ fontSize: 13, fill: "rgba(9,10,8,0.5)", fontFamily: "var(--font-mono)" }}
                     tickLine={false}
                     axisLine={false}
+                    dy={8}
                   />
                   <YAxis
-                    tick={{ fontSize: 11, fill: "rgba(9,10,8,0.4)", fontFamily: "var(--font-mono)" }}
+                    tick={{ fontSize: 13, fill: "rgba(9,10,8,0.5)", fontFamily: "var(--font-mono)" }}
                     tickLine={false}
                     axisLine={false}
-                    width={52}
-                    tickFormatter={(v) => `${Math.round(v)}`}
+                    width={56}
+                    tickFormatter={(v) => `${Math.round(v)} kr`}
                   />
                   <Tooltip content={<CpmTooltip />} cursor={{ stroke: "rgba(9,10,8,0.06)" }} />
                   <Line
                     type="monotone"
                     dataKey="cpmNetNew"
                     stroke="var(--color-link)"
-                    strokeWidth={2}
-                    dot={{ r: 3, fill: "var(--color-link)", strokeWidth: 0 }}
+                    strokeWidth={2.5}
+                    dot={{ r: 3, fill: "#515B12", strokeWidth: 0 }}
+                    activeDot={{ fill: "#89FF58", stroke: "#515B12", strokeWidth: 2, r: 6 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -314,10 +314,7 @@ export default function ReachClient({
 
           {/* Monthly breakdown table */}
           <div>
-            <SectionHeader
-              title="Monthly Breakdown"
-              subtitle={`Lookback ${lookbackLabel} - siste ${filtered.length} maneder`}
-            />
+            <SectionHeader title="Per maned" />
             <div className="rounded-xl border border-[var(--color-border)] overflow-x-auto">
               <table className="w-full text-base">
                 <thead>
@@ -365,9 +362,9 @@ export default function ReachClient({
                       <td className="px-4 py-3.5 text-right">
                         <span
                           className={clsx("text-sm font-semibold px-2 py-1 rounded", {
-                            "bg-green-100 text-green-700": row.netNewPct >= 30,
-                            "bg-yellow-100 text-yellow-700": row.netNewPct >= 18 && row.netNewPct < 30,
-                            "bg-red-100 text-red-700": row.netNewPct < 18,
+                            "bg-[var(--color-black)] text-white": row.netNewPct >= 30,
+                            "bg-[var(--color-surface)] text-[rgba(9,10,8,0.7)]": row.netNewPct >= 18 && row.netNewPct < 30,
+                            "bg-[var(--color-surface)] text-[rgba(9,10,8,0.5)] border border-[var(--color-border)]": row.netNewPct < 18,
                           })}
                           style={{ fontFamily: "var(--font-mono)" }}
                         >
