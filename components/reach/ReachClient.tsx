@@ -51,15 +51,15 @@ function getNetNewColor(pct: number): { bg: string; text: string } {
   // Clamp between 0 and 25, then normalize to 0-1
   const normalized = Math.min(Math.max(pct, 0), 25) / 25;
   
-  // Interpolate from red (0) to green (1)
-  // Red: rgb(180, 60, 60) -> Green: rgb(45, 122, 10)
-  const r = Math.round(180 - (180 - 45) * normalized);
-  const g = Math.round(60 + (122 - 60) * normalized);
-  const b = Math.round(60 - (60 - 10) * normalized);
+  // Interpolate from red (0) to green (1) with more saturation
+  // Red: rgb(200, 50, 50) -> Green: rgb(34, 140, 34)
+  const r = Math.round(200 - (200 - 34) * normalized);
+  const g = Math.round(50 + (140 - 50) * normalized);
+  const b = Math.round(50 - (50 - 34) * normalized);
   
   return {
-    bg: `rgba(${r}, ${g}, ${b}, 0.12)`,
-    text: `rgb(${Math.round(r * 0.7)}, ${Math.round(g * 0.7)}, ${Math.round(b * 0.7)})`
+    bg: `rgba(${r}, ${g}, ${b}, 0.18)`,
+    text: `rgb(${Math.round(r * 0.65)}, ${Math.round(g * 0.65)}, ${Math.round(b * 0.65)})`
   };
 }
 
@@ -340,7 +340,7 @@ export default function ReachClient({
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-[var(--color-border)]">
-                    {["Maned", "Reach", "Nye", "Spend", "Frekvens", "CPM Nye", "% Nye"].map((h) => (
+                    {["Maned", "Reach", "Nye", "% Nye", "Spend", "Frekvens", "CPM Nye"].map((h) => (
                       <th
                         key={h}
                         className={clsx(
@@ -365,17 +365,8 @@ export default function ReachClient({
                       <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
                         {formatReach(row.rollingReach)}
                       </td>
-                      <td className="px-4 py-3 text-right text-sm font-medium" style={{ fontFamily: "var(--font-mono)", color: "var(--color-link)" }}>
+                      <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
                         {formatReach(row.netNew)}
-                      </td>
-                      <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
-                        {formatNok(row.spend)}
-                      </td>
-                      <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
-                        {row.frequency.toFixed(1)}x
-                      </td>
-                      <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
-                        {Math.round(row.cpmNetNew)} kr
                       </td>
                       <td className="px-4 py-3 text-right">
                         <span
@@ -388,6 +379,15 @@ export default function ReachClient({
                         >
                           {row.netNewPct.toFixed(1)}%
                         </span>
+                      </td>
+                      <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
+                        {formatNok(row.spend)}
+                      </td>
+                      <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
+                        {row.frequency.toFixed(1)}x
+                      </td>
+                      <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
+                        {Math.round(row.cpmNetNew)} kr
                       </td>
                     </tr>
                   ))}
