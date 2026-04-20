@@ -14,7 +14,7 @@ import { Ad, AdCohort, CreativeChurnPoint, CohortMetric } from "@/lib/types";
 import clsx from "clsx";
 
 const COHORT_COLORS = [
-  "#89FF58", "#515B12", "#41BD0E", "#DFF7CC",
+  "#41BD0E", "#515B12", "#2d8a0a", "#6bc43e",
   "#d97706", "#7c3aed", "#0ea5e9", "#ec4899",
 ];
 

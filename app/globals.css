@@ -7,7 +7,7 @@
 :root {
   --color-white: #ffffff;
   --color-black: #090a08;
-  --color-accent: #89ff58;
+  --color-accent: #41BD0E;
   --color-link: #515b12;
   --color-green-moss: #515b12;
   --color-green-deep: #41bd0e;
@@ -131,6 +131,6 @@ small, .text-small {
 
 /* Sidebar link active state */
 .sidebar-link-active {
-  background: rgba(137, 255, 88, 0.15);
+  background: rgba(65, 189, 14, 0.15);
   color: var(--color-accent);
 }

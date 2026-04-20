@@ -10,11 +10,11 @@ const config: Config = {
     extend: {
       colors: {
         black: "#090A08",
-        accent: "#89FF58",
+        accent: "#41BD0E",
         link: "#515B12",
         "green-moss": "#515B12",
         "green-deep": "#41BD0E",
-        "green-clear": "#89FF58",
+        "green-clear": "#41BD0E",
         "green-mint": "#DFF7CC",
         "green-pale": "#F6FFEE",
       },

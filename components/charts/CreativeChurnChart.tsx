@@ -19,7 +19,7 @@ interface Props {
 
 // Cohort colors — cycling through a palette inspired by the withadinsights screenshots
 const COHORT_COLORS = [
-  "#89FF58", // accent green
+  "#41BD0E", // accent green
   "#515B12", // moss green
   "#41BD0E", // deep green
   "#DFF7CC", // mint
