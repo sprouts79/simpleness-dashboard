@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { getPulseData } from "@/lib/db";
-import { ClientStatus } from "@/lib/types";
 import clsx from "clsx";
 
 export const dynamic = "force-dynamic";
 
-function fmt(n: number, prefix = "", decimals = 0) {
-  if (n >= 1000000) return `${prefix}${(n / 1000000).toFixed(1)}M`;
+function fmt(n: number, prefix = "") {
+  if (n >= 1000000) return `${prefix}${Math.round(n / 1000000)}M`;
   if (n >= 1000) return `${prefix}${Math.round(n / 1000)}k`;
-  return `${prefix}${n.toFixed(decimals)}`;
+  return `${prefix}${Math.round(n)}`;
 }
 
 function DeltaBadge({ value, invert = false }: { value: number; invert?: boolean }) {
@@ -28,33 +27,8 @@ function DeltaBadge({ value, invert = false }: { value: number; invert?: boolean
   );
 }
 
-function StatusPill({ status }: { status: ClientStatus }) {
-  const labels = { green: "On track", yellow: "Advarsel", red: "Kritisk" };
-  return (
-    <span
-      className={clsx(
-        "inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full",
-        {
-          "bg-green-50 text-green-700": status === "green",
-          "bg-yellow-50 text-yellow-700": status === "yellow",
-          "bg-red-50 text-red-700": status === "red",
-        }
-      )}
-    >
-      <span
-        className={clsx("w-1.5 h-1.5 rounded-full", {
-          "bg-green-500": status === "green",
-          "bg-yellow-500": status === "yellow",
-          "bg-red-500": status === "red",
-        })}
-      />
-      {labels[status]}
-    </span>
-  );
-}
-
 export default async function PulsePage() {
-  const pulseData = await getPulseData();
+  const pulseData = (await getPulseData()).sort((a, b) => b.spend7d - a.spend7d);
   const totalSpend = pulseData.reduce((s, r) => s + r.spend7d, 0);
 
   return (
@@ -62,7 +36,7 @@ export default async function PulsePage() {
       {/* Header */}
       <div className="flex items-baseline justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold">Pulse</h1>
+          <h1 className="text-2xl font-bold">Puls</h1>
           <p className="text-sm text-[rgba(9,10,8,0.45)] mt-1">
             Alle kunder · Siste 7 dager
           </p>
@@ -93,9 +67,6 @@ export default async function PulsePage() {
                 CPA
               </th>
               <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.45)]">
-                CPM
-              </th>
-              <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.45)]">
                 Net New %
               </th>
               <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.45)]">
@@ -112,10 +83,7 @@ export default async function PulsePage() {
               >
                 {/* Client */}
                 <td className="px-5 py-4">
-                  <div className="flex items-center gap-3">
-                    <StatusPill status={row.client.status} />
-                    <span className="font-semibold">{row.client.name}</span>
-                  </div>
+                  <span className="font-semibold">{row.client.name}</span>
                 </td>
 
                 {/* Spend */}
@@ -142,19 +110,9 @@ export default async function PulsePage() {
                 <td className="px-4 py-4 text-right">
                   <div className="flex flex-col items-end">
                     <span className="font-medium" style={{ fontFamily: "var(--font-mono)" }}>
-                      {row.cpa} kr
+                      {Math.round(row.cpa)} kr
                     </span>
                     <DeltaBadge value={row.cpaDelta} invert />
-                  </div>
-                </td>
-
-                {/* CPM */}
-                <td className="px-4 py-4 text-right">
-                  <div className="flex flex-col items-end">
-                    <span className="font-medium" style={{ fontFamily: "var(--font-mono)" }}>
-                      {row.cpm} kr
-                    </span>
-                    <DeltaBadge value={row.cpmDelta} invert />
                   </div>
                 </td>
 
@@ -162,15 +120,13 @@ export default async function PulsePage() {
                 <td className="px-4 py-4 text-right">
                   <div className="flex flex-col items-end">
                     <span className="font-medium" style={{ fontFamily: "var(--font-mono)" }}>
-                      {row.netNewReachPct}%
+                      {row.netNewReachPct > 0 ? `${row.netNewReachPct.toFixed(1)}%` : "—"}
                     </span>
-                    <span className="text-xs text-[rgba(9,10,8,0.35)]">
-                      {row.netNewReachPct >= 30
-                        ? "Frisk"
-                        : row.netNewReachPct >= 18
-                        ? "Moderat"
-                        : "Mettet"}
-                    </span>
+                    {row.netNewReachPct > 0 && (
+                      <span className="text-xs text-[rgba(9,10,8,0.35)]">
+                        {row.netNewReachPct >= 30 ? "Frisk" : row.netNewReachPct >= 18 ? "Moderat" : "Mettet"}
+                      </span>
+                    )}
                   </div>
                 </td>
 
@@ -183,7 +139,7 @@ export default async function PulsePage() {
                     })}
                     style={{ fontFamily: "var(--font-mono)" }}
                   >
-                    {row.frequency.toFixed(1)}
+                    {row.frequency > 0 ? row.frequency.toFixed(1) : "—"}
                   </span>
                 </td>
 

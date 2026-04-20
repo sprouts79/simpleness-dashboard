@@ -48,7 +48,7 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
           )}
         >
           <span className={clsx("w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[var(--color-accent)]", !isPulse && "opacity-30")} />
-          Pulse
+          Puls
         </Link>
 
         <div className="mt-4 mb-1.5 px-3">
