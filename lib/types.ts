@@ -34,8 +34,8 @@ export interface PerformanceKpis {
   roasDelta: number;
   cpa: number;
   cpaDelta: number;
-  cpm: number;
-  cpmDelta: number;
+  cpmn: number;      // cost per 1k net new reach
+  cpmnDelta: number;
   frequency: number;
   frequencyDelta: number;
   ctr: number;

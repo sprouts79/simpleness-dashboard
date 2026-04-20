@@ -8,6 +8,7 @@ interface KpiCardProps {
   note?: string;
   size?: "default" | "large";
   highlight?: boolean;
+  invertDelta?: boolean; // lower is better (CPA, CPMn, Frequency)
 }
 
 function formatDelta(delta: number) {
@@ -23,9 +24,10 @@ export default function KpiCard({
   note,
   size = "default",
   highlight = false,
+  invertDelta = false,
 }: KpiCardProps) {
-  const isPositive = (delta ?? 0) > 0;
   const isNeutral = delta === undefined || delta === 0;
+  const isGood = invertDelta ? (delta ?? 0) < 0 : (delta ?? 0) > 0;
 
   return (
     <div
@@ -49,8 +51,8 @@ export default function KpiCard({
       {delta !== undefined && (
         <p
           className={clsx("text-xs font-medium", {
-            "delta-up": isPositive,
-            "delta-down": !isPositive && !isNeutral,
+            "delta-up": isGood,
+            "delta-down": !isGood && !isNeutral,
             "delta-neutral": isNeutral,
           })}
         >

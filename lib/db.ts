@@ -250,23 +250,64 @@ export async function getPerformanceKpis(
   periodLabel: string,
   compareLabel: string,
 ): Promise<PerformanceKpis | null> {
+  // Fetch performance daily data
   const { data } = await supabase
     .from("meta_performance_daily")
-    .select("date,spend,purchases,purchase_value,impressions,clicks,frequency")
+    .select("date,spend,purchases,purchase_value,impressions,clicks,frequency,reach")
     .eq("client_id", clientId)
     .gte("date", compSince)
     .lte("date", until)
-    .not("campaign_id", "is", null)   // exclude stray NULL rows (matches getCampaigns)
-    .neq("campaign_id", "")           // exclude account-level aggregate rows if any
+    .not("campaign_id", "is", null)
+    .neq("campaign_id", "")
     .order("date");
 
   if (!data?.length) return MOCK_PERFORMANCE_KPIS[clientId] ?? null;
+
+  // Fetch weekly reach data for CPMn + accurate frequency
+  // Include weeks starting up to 6 days before compSince (a week may start just before the period)
+  const { data: reachRows } = await supabase
+    .from("meta_reach_weekly")
+    .select("week_start, net_new_reach, weekly_reach, frequency")
+    .eq("client_id", clientId)
+    .eq("lookback_days", 0)
+    .gte("week_start", shiftDays(compSince, -6))
+    .lte("week_start", until)
+    .order("week_start");
+
+  // Weeks overlapping with a given date range (week = 7 days from week_start)
+  function weeksFor(from: string, to: string) {
+    return (reachRows ?? []).filter((r) => {
+      const weekEnd = shiftDays(r.week_start, 6);
+      return r.week_start <= to && weekEnd >= from;
+    });
+  }
+
+  // CPMn = spend / (net_new_reach / 1000)
+  function computeCPMn(spend: number, rows: typeof reachRows): number {
+    const netNew = (rows ?? []).reduce((s, r) => s + (r.net_new_reach ?? 0), 0);
+    return netNew > 0 ? (spend / netNew) * 1000 : 0;
+  }
+
+  // Frequency weighted by weekly_reach; falls back to 0 when no reach data
+  function computeFrequency(rows: typeof reachRows): number {
+    const totalReach = (rows ?? []).reduce((s, r) => s + (r.weekly_reach ?? 0), 0);
+    if (totalReach === 0) return 0;
+    return (rows ?? []).reduce((s, r) => s + (r.frequency ?? 0) * (r.weekly_reach ?? 0), 0) / totalReach;
+  }
 
   const curr = data.filter((r) => r.date >= since && r.date <= until);
   const comp = data.filter((r) => r.date >= compSince && r.date <= compUntil);
 
   const c = derivedKpis(aggRows(curr));
   const p = derivedKpis(aggRows(comp));
+
+  const reachCurr = weeksFor(since, until);
+  const reachComp = weeksFor(compSince, compUntil);
+
+  const cpmnCurr = computeCPMn(c.spend, reachCurr);
+  const cpmnComp = computeCPMn(p.spend, reachComp);
+  const freqCurr = computeFrequency(reachCurr) || c.frequency;
+  const freqComp = computeFrequency(reachComp) || p.frequency;
 
   return {
     spend: c.spend,
@@ -275,10 +316,10 @@ export async function getPerformanceKpis(
     roasDelta: pctDelta(c.roas, p.roas),
     cpa: c.cpa,
     cpaDelta: pctDelta(c.cpa, p.cpa),
-    cpm: c.cpm,
-    cpmDelta: pctDelta(c.cpm, p.cpm),
-    frequency: c.frequency,
-    frequencyDelta: pctDelta(c.frequency, p.frequency),
+    cpmn: cpmnCurr,
+    cpmnDelta: pctDelta(cpmnCurr, cpmnComp),
+    frequency: freqCurr,
+    frequencyDelta: pctDelta(freqCurr, freqComp),
     ctr: c.ctr,
     ctrDelta: pctDelta(c.ctr, p.ctr),
     periodLabel,

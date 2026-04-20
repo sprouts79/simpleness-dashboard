@@ -171,26 +171,32 @@ export default function PerformanceClient({
             value={`${Math.round(kpis.cpa)} kr`}
             delta={kpis.cpaDelta}
             deltaLabel={deltaLabel}
+            invertDelta
             size="large"
           />
         </div>
         <div className="grid grid-cols-3 gap-3">
           <KpiCard
-            label="CPM"
-            value={`${Math.round(kpis.cpm)} kr`}
-            delta={kpis.cpmDelta}
+            label="CPMn"
+            value={kpis.cpmn > 0 ? `${Math.round(kpis.cpmn)} kr` : "—"}
+            delta={kpis.cpmn > 0 ? kpis.cpmnDelta : undefined}
             deltaLabel={deltaLabel}
+            invertDelta
+            note="per 1k net new reach"
           />
           <KpiCard
             label="Frekvens"
             value={kpis.frequency.toFixed(1)}
             delta={kpis.frequencyDelta}
-            note={kpis.frequency > 8 ? "⚠ For høy — audience fatigue" : kpis.frequency > 6 ? "Moderat" : "Frisk"}
+            deltaLabel={deltaLabel}
+            invertDelta
+            note={kpis.frequency > 8 ? "For høy — audience fatigue" : kpis.frequency > 6 ? "Moderat" : "Frisk"}
           />
           <KpiCard
             label="CTR (Link)"
             value={`${kpis.ctr.toFixed(1)}%`}
             delta={kpis.ctrDelta}
+            deltaLabel={deltaLabel}
           />
         </div>
       </div>
