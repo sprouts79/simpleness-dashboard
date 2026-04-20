@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import SectionHeader from "@/components/ui/SectionHeader";
 import KpiCard from "@/components/ui/KpiCard";
+import CohortSpendChart from "@/components/charts/CohortSpendChart";
 import { Ad, AdCohort, CreativeChurnPoint, CohortMetric } from "@/lib/types";
 import clsx from "clsx";
 
@@ -424,6 +425,19 @@ export default function CreativeClient({
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Cohort Spend Over Time Chart */}
+      {cohorts.length > 0 && (
+        <div>
+          <SectionHeader 
+            title="Spend fordelt per kohort over tid" 
+            subtitle="Se hvordan ulike kohorter bidrar til total spend uke for uke"
+          />
+          <div className="rounded-xl bg-[var(--color-surface)] p-5">
+            <CohortSpendChart cohorts={cohorts} />
           </div>
         </div>
       )}
