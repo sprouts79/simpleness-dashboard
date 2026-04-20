@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
   for (const client of clients) {
     try {
       const tz = await fetchAccountTimezone(client.meta_account_id);
-      const since = daysAgoInTz(90, tz);
+      const since = daysAgoInTz(365, tz); // 12 months of performance data
       const until = daysAgoInTz(1, tz);
 
       // ── Performance ────────────────────────────────────────────────────────
@@ -115,8 +115,8 @@ export async function GET(req: NextRequest) {
         .upsert(adsUpsert, { onConflict: "ad_id,client_id" });
 
       // ── Reach ──────────────────────────────────────────────────────────────
-      const reachSince = daysAgoInTz(196, tz); // ~6.5 months — reach page shows 6
-      const windowStart = daysAgoInTz(196 + 91, tz); // 91-day baseline before display period
+      const reachSince = daysAgoInTz(365, tz); // 12 months — covers gaps in ad spend
+      const windowStart = daysAgoInTz(365 + 91, tz); // 91-day baseline before display period
       const weeklyRows = await fetchWeeklyReachRows(client.meta_account_id, reachSince, until, windowStart);
       const reachUpsert = weeklyRows.map((r) => {
         const netNew = Math.max(0, r.cumulativeReach - r.prevWindowReach);

@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
   const accountId = client.meta_account_id;
 
   const tz = await fetchAccountTimezone(accountId);
-  const since = daysAgoInTz(90, tz);
+  const since = daysAgoInTz(365, tz); // 12 months
   const until = daysAgoInTz(1, tz);
   const errors: string[] = [];
 
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
 
   let reachSynced = 0;
   if (syncType === "all" || syncType === "reach") try {
-    const reachDays = months ? Math.ceil(months * 30.44) + 14 : 196; // ~6.5 months default
+    const reachDays = months ? Math.ceil(months * 30.44) + 14 : 365; // 12 months default
     const reachSince = daysAgoInTz(reachDays, tz);
     // windowStart: fixed for all weeks. lookbackDays = extension BEFORE the display period.
     // 0 = no extension (windowStart = periodStart, first week ≈ 100% net new)
