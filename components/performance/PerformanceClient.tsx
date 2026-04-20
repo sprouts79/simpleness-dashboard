@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import KpiCard from "@/components/ui/KpiCard";
 import SectionHeader from "@/components/ui/SectionHeader";
 import SpendTrendChart from "@/components/charts/SpendTrendChart";
+import { CHART_BAR_COLOR, CHART_LINE_COLOR } from "@/lib/chart-colors";
 import { PerformanceKpis, SpendTrendPoint, Campaign, PeriodKey, CompareKey } from "@/lib/types";
 import clsx from "clsx";
 import { useState } from "react";
@@ -206,11 +207,11 @@ export default function PerformanceClient({
           <SpendTrendChart data={trend} days={365} />
           <div className="flex gap-6 mt-4 text-sm text-[rgba(9,10,8,0.6)]">
             <span className="flex items-center gap-2">
-              <span className="w-3.5 h-3 rounded-sm bg-[rgba(9,10,8,0.15)] inline-block" />
+              <span className="w-3.5 h-3 rounded-sm inline-block" style={{ backgroundColor: CHART_BAR_COLOR }} />
               Spend
             </span>
             <span className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[var(--color-link)] inline-block" />
+              <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: CHART_LINE_COLOR }} />
               ROAS
             </span>
           </div>

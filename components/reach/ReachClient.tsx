@@ -16,6 +16,7 @@ import KpiCard from "@/components/ui/KpiCard";
 import SectionHeader from "@/components/ui/SectionHeader";
 import ReachCompositionChart from "@/components/charts/ReachCompositionChart";
 import InfoBox from "@/components/ui/InfoBox";
+import { CHART_BAR_COLOR, CHART_BAR_STACKED, CHART_LINE_COLOR } from "@/lib/chart-colors";
 import { MonthlyReachRow } from "@/lib/types";
 
 // Period options
@@ -70,9 +71,10 @@ const CpmTooltip = ({ active, payload, label }: any) => {
     <div className="bg-white border border-[var(--color-border)] rounded-xl px-4 py-3 shadow-md">
       <p className="font-semibold text-base mb-2">{label}</p>
       <div>
-        <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-[var(--color-surface)] text-[rgba(9,10,8,0.6)] mb-1">
-          Kost per 1k nye
-        </span>
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: CHART_LINE_COLOR }} />
+          <span className="text-xs font-semibold text-[rgba(9,10,8,0.6)]">Kost per 1k nye</span>
+        </div>
         <p className="font-bold text-xl" style={{ fontFamily: "var(--font-mono)" }}>
           {Math.round(payload[0]?.value ?? 0)} kr
         </p>
@@ -283,15 +285,15 @@ export default function ReachClient({
               <ReachCompositionChart data={chartData} />
               <div className="flex gap-6 mt-4 text-sm text-[rgba(9,10,8,0.6)]">
                 <span className="flex items-center gap-2">
-                  <span className="w-3.5 h-3.5 rounded-sm bg-[rgba(9,10,8,0.15)] inline-block" />
-                  Tidligere nadd
+                  <span className="w-3.5 h-3.5 rounded-sm inline-block" style={{ backgroundColor: CHART_BAR_COLOR }} />
+                  Tidligere nådd
                 </span>
                 <span className="flex items-center gap-2">
-                  <span className="w-3.5 h-3.5 rounded-sm bg-[var(--color-accent)] inline-block" />
+                  <span className="w-3.5 h-3.5 rounded-sm inline-block" style={{ backgroundColor: CHART_BAR_STACKED }} />
                   Nye
                 </span>
                 <span className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[var(--color-link)] inline-block" />
+                  <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: CHART_LINE_COLOR }} />
                   % Nye
                 </span>
               </div>
@@ -323,10 +325,10 @@ export default function ReachClient({
                   <Line
                     type="monotone"
                     dataKey="cpmNetNew"
-                    stroke="var(--color-link)"
+                    stroke={CHART_LINE_COLOR}
                     strokeWidth={3}
-                    dot={{ fill: "var(--color-link)", strokeWidth: 0, r: 4 }}
-                    activeDot={{ fill: "var(--color-link)", strokeWidth: 0, r: 5 }}
+                    dot={{ fill: CHART_LINE_COLOR, strokeWidth: 0, r: 4 }}
+                    activeDot={{ fill: CHART_LINE_COLOR, strokeWidth: 0, r: 5 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
