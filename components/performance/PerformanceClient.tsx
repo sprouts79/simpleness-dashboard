@@ -204,13 +204,13 @@ export default function PerformanceClient({
         <SectionHeader title="Utvikling over tid" />
         <div className="rounded-xl border border-[var(--color-border)] p-4 bg-white">
           <SpendTrendChart data={trend} days={365} />
-          <div className="flex gap-6 mt-4 text-sm text-[rgba(9,10,8,0.5)]">
+          <div className="flex gap-6 mt-4 text-sm text-[rgba(9,10,8,0.6)]">
             <span className="flex items-center gap-2">
-              <span className="w-3.5 h-3 rounded-sm bg-[#e8e8e6] inline-block" />
+              <span className="w-3.5 h-3 rounded-sm bg-[var(--color-green-mint)] inline-block" />
               Spend
             </span>
             <span className="flex items-center gap-2">
-              <span className="w-5 h-0.5 bg-[var(--color-link)] inline-block" />
+              <span className="w-2 h-2 rounded-full bg-[var(--color-black)] inline-block" />
               ROAS
             </span>
           </div>
