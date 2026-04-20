@@ -31,22 +31,30 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   const spend = payload.find((p: any) => p.dataKey === "spend")?.value;
   const roas = payload.find((p: any) => p.dataKey === "roas")?.value;
   return (
-    <div className="bg-white border border-[var(--color-border)] rounded-lg px-3 py-2 shadow-sm text-xs">
-      <p className="font-semibold mb-1">{label}</p>
-      {spend !== undefined && (
-        <p>
-          Spend:{" "}
-          <span style={{ fontFamily: "var(--font-mono)" }}>
-            NOK {spend.toLocaleString("no-NO")}
-          </span>
-        </p>
-      )}
-      {roas !== undefined && (
-        <p>
-          ROAS:{" "}
-          <span style={{ fontFamily: "var(--font-mono)" }}>{roas.toFixed(2)}×</span>
-        </p>
-      )}
+    <div className="bg-white border border-[var(--color-border)] rounded-xl px-4 py-3 shadow-md">
+      <p className="font-semibold text-base mb-3">{label}</p>
+      <div className="flex gap-5">
+        {spend !== undefined && (
+          <div>
+            <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-[var(--color-surface)] text-[rgba(9,10,8,0.6)] mb-1">
+              Spend
+            </span>
+            <p className="font-bold text-xl" style={{ fontFamily: "var(--font-mono)" }}>
+              {spend.toLocaleString("no-NO")} kr
+            </p>
+          </div>
+        )}
+        {roas !== undefined && (
+          <div>
+            <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-[var(--color-surface)] text-[rgba(9,10,8,0.6)] mb-1">
+              ROAS
+            </span>
+            <p className="font-bold text-xl" style={{ fontFamily: "var(--font-mono)" }}>
+              {roas.toFixed(1)}x
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -62,50 +70,51 @@ export default function SpendTrendChart({ data }: Props) {
   const tickInterval = n <= 7 ? 0 : n <= 30 ? 6 : n <= 90 ? 14 : 30;
 
   return (
-    <ResponsiveContainer width="100%" height={220}>
-      <ComposedChart data={formatted} margin={{ top: 4, right: 12, bottom: 0, left: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e8e8e6" vertical={false} />
+    <ResponsiveContainer width="100%" height={280}>
+      <ComposedChart data={formatted} margin={{ top: 8, right: 16, bottom: 4, left: 4 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#e0e0de" vertical={false} />
         <XAxis
           dataKey="label"
-          tick={{ fontSize: 11, fill: "rgba(9,10,8,0.4)", fontFamily: "var(--font-mono)" }}
+          tick={{ fontSize: 13, fill: "rgba(9,10,8,0.5)", fontFamily: "var(--font-mono)" }}
           tickLine={false}
           axisLine={false}
           interval={tickInterval}
+          dy={8}
         />
         <YAxis
           yAxisId="spend"
           orientation="left"
-          tick={{ fontSize: 11, fill: "rgba(9,10,8,0.4)", fontFamily: "var(--font-mono)" }}
+          tick={{ fontSize: 13, fill: "rgba(9,10,8,0.5)", fontFamily: "var(--font-mono)" }}
           tickLine={false}
           axisLine={false}
-          tickFormatter={formatNok}
-          width={40}
+          tickFormatter={(v) => `${formatNok(v)} kr`}
+          width={56}
         />
         <YAxis
           yAxisId="roas"
           orientation="right"
-          tick={{ fontSize: 11, fill: "rgba(9,10,8,0.4)", fontFamily: "var(--font-mono)" }}
+          tick={{ fontSize: 13, fill: "rgba(9,10,8,0.5)", fontFamily: "var(--font-mono)" }}
           tickLine={false}
           axisLine={false}
-          tickFormatter={(v) => `${v.toFixed(1)}×`}
+          tickFormatter={(v) => `${v.toFixed(1)}x`}
           domain={[0, "auto"]}
-          width={40}
+          width={48}
         />
-        <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(9,10,8,0.03)" }} />
+        <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(9,10,8,0.04)" }} />
         <Bar
           yAxisId="spend"
           dataKey="spend"
-          fill="#e8e8e6"
-          radius={[2, 2, 0, 0]}
+          fill="#d4d4d0"
+          radius={[3, 3, 0, 0]}
           name="Spend"
-          maxBarSize={24}
+          maxBarSize={28}
         />
         <Line
           yAxisId="roas"
           type="monotone"
           dataKey="roas"
           stroke="var(--color-link)"
-          strokeWidth={2}
+          strokeWidth={2.5}
           dot={false}
           name="ROAS"
         />
