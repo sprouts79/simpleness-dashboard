@@ -358,10 +358,10 @@ export default function CreativeClient({
                   {/* Expanded gallery */}
                   {isExpanded && cohortAds.length > 0 && (
                     <div className="px-5 pb-5 border-t border-[var(--color-border)] pt-4">
-                      <div className="grid grid-cols-8 gap-3">
+                      <div className="grid grid-cols-6 gap-4">
                         {cohortAds.map((ad) => (
-                          <div key={ad.id}>
-                            <div className="aspect-square rounded-lg bg-[rgba(9,10,8,0.06)] overflow-hidden mb-2 shadow-sm">
+                          <div key={ad.id} className="group">
+                            <div className="aspect-[9/16] rounded-lg bg-[rgba(9,10,8,0.06)] overflow-hidden mb-2 relative">
                               {ad.thumbnailUrl ? (
                                 <img src={ad.thumbnailUrl} alt="" className="w-full h-full object-cover" />
                               ) : (
@@ -369,11 +369,29 @@ export default function CreativeClient({
                                   {ad.format}
                                 </div>
                               )}
+                              {/* KPI overlay */}
+                              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-2 pt-6">
+                                <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[10px] font-mono text-white/90">
+                                  <div>
+                                    <span className="text-white/50">Spend</span>
+                                    <p className="font-semibold">{ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : Math.round(ad.spend)}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-white/50">CTR</span>
+                                    <p className="font-semibold">{ad.ctr.toFixed(2)}%</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-white/50">CPM</span>
+                                    <p className="font-semibold">{Math.round(ad.cpm)}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-white/50">ROAS</span>
+                                    <p className="font-semibold">{ad.roas?.toFixed(1) || "-"}</p>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                             <p className="text-xs text-[rgba(9,10,8,0.7)] truncate font-medium">{ad.name}</p>
-                            <p className="text-xs font-mono text-[rgba(9,10,8,0.45)]">
-                              {ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : Math.round(ad.spend)} · {ad.ctr.toFixed(1)}%
-                            </p>
                           </div>
                         ))}
                       </div>
