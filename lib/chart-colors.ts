@@ -16,5 +16,6 @@ export const CHART_COLORS = [
 ];
 
 // For bar/line charts that need a single accent color
-export const CHART_BAR_COLOR = "#96723d"; // Mid-brown
+export const CHART_BAR_COLOR = "#f5f0e8"; // Lightest beige (default bar)
+export const CHART_BAR_STACKED = "#d4c4a8"; // Third color (for stacked bars)
 export const CHART_LINE_COLOR = "#41BD0E"; // Strong green (accent from design system)

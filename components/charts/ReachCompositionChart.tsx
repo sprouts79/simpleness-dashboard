@@ -12,7 +12,7 @@ import {
   Cell,
 } from "recharts";
 import { ReachCompositionPoint } from "@/lib/types";
-import { CHART_BAR_COLOR, CHART_LINE_COLOR } from "@/lib/chart-colors";
+import { CHART_BAR_COLOR, CHART_BAR_STACKED, CHART_LINE_COLOR } from "@/lib/chart-colors";
 
 interface Props {
   data: ReachCompositionPoint[];
@@ -37,7 +37,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       <div className="space-y-2">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: CHART_BAR_COLOR }} />
+            <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: CHART_BAR_STACKED }} />
             <span className="text-xs font-semibold text-[rgba(9,10,8,0.6)]">Nye</span>
           </div>
           <p className="font-bold text-lg" style={{ fontFamily: "var(--font-mono)" }}>
@@ -46,7 +46,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         </div>
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "#e8dcc8" }} />
+            <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: CHART_BAR_COLOR }} />
             <span className="text-xs font-semibold text-[rgba(9,10,8,0.6)]">Tidligere nådd</span>
           </div>
           <p className="font-bold text-lg" style={{ fontFamily: "var(--font-mono)" }}>{formatReach(prevReached)}</p>
@@ -93,22 +93,22 @@ export default function ReachCompositionChart({ data }: Props) {
         />
         <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(9,10,8,0.03)" }} />
 
-        {/* Previously reached — light brown */}
+        {/* Previously reached — lightest beige */}
         <Bar
           yAxisId="reach"
           dataKey="previouslyReached"
           stackId="reach"
-          fill="#e8dcc8"
+          fill={CHART_BAR_COLOR}
           name="Prev. reached"
           maxBarSize={32}
         />
 
-        {/* Net New — dark brown */}
+        {/* Net New — third darkest (stacked) */}
         <Bar
           yAxisId="reach"
           dataKey="netNew"
           stackId="reach"
-          fill={CHART_BAR_COLOR}
+          fill={CHART_BAR_STACKED}
           name="Nye"
           maxBarSize={32}
           radius={[3, 3, 0, 0]}
