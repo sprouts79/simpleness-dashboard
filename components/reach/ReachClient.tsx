@@ -325,15 +325,15 @@ export default function ReachClient({
           {/* Monthly breakdown table */}
           <div>
             <SectionHeader title="Per maned" />
-            <div className="rounded-xl border border-[var(--color-border)] overflow-x-auto">
-              <table className="w-full text-base">
+            <div className="rounded-xl bg-[var(--color-surface)] overflow-x-auto">
+              <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-                    {["Maned", "Rolling Reach", "Net New", "Spend", "CPM", "Frequency", "CPM Net New", "%"].map((h) => (
+                  <tr className="border-b border-[var(--color-border)]">
+                    {["Maned", "Reach", "Nye", "Spend", "CPM", "Frekvens", "CPM Nye", "%"].map((h) => (
                       <th
                         key={h}
                         className={clsx(
-                          "py-3.5 text-2xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.5)]",
+                          "py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)]",
                           h === "Maned" ? "text-left px-5" : "text-right px-4"
                         )}
                       >
@@ -346,35 +346,35 @@ export default function ReachClient({
                   {filtered.map((row) => (
                     <tr
                       key={row.monthKey}
-                      className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface)] transition-colors"
+                      className="border-b border-[var(--color-border)] last:border-0 hover:bg-white transition-colors"
                     >
-                      <td className="px-5 py-3.5 font-medium text-base whitespace-nowrap">
+                      <td className="px-5 py-3 font-medium text-sm whitespace-nowrap">
                         {row.monthLabel}
                       </td>
-                      <td className="px-4 py-3.5 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
+                      <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
                         {formatReach(row.rollingReach)}
                       </td>
-                      <td className="px-4 py-3.5 text-right text-sm" style={{ fontFamily: "var(--font-mono)", color: "var(--color-link)" }}>
+                      <td className="px-4 py-3 text-right text-sm font-medium" style={{ fontFamily: "var(--font-mono)" }}>
                         {formatReach(row.netNew)}
                       </td>
-                      <td className="px-4 py-3.5 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
+                      <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
                         {formatNok(row.spend)}
                       </td>
-                      <td className="px-4 py-3.5 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
+                      <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
                         {Math.round(row.cpm)} kr
                       </td>
-                      <td className="px-4 py-3.5 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
-                        {row.frequency.toFixed(2)}x
+                      <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
+                        {row.frequency.toFixed(1)}x
                       </td>
-                      <td className="px-4 py-3.5 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
+                      <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
                         {Math.round(row.cpmNetNew)} kr
                       </td>
-                      <td className="px-4 py-3.5 text-right">
+                      <td className="px-4 py-3 text-right">
                         <span
-                          className={clsx("text-sm font-semibold px-2 py-1 rounded", {
-                            "bg-[var(--color-black)] text-white": row.netNewPct >= 30,
-                            "bg-[var(--color-surface)] text-[rgba(9,10,8,0.7)]": row.netNewPct >= 18 && row.netNewPct < 30,
-                            "bg-[var(--color-surface)] text-[rgba(9,10,8,0.5)] border border-[var(--color-border)]": row.netNewPct < 18,
+                          className={clsx("text-sm px-2 py-1 rounded", {
+                            "font-semibold bg-[var(--color-black)] text-white": row.netNewPct >= 30,
+                            "text-[rgba(9,10,8,0.7)]": row.netNewPct >= 18 && row.netNewPct < 30,
+                            "text-[rgba(9,10,8,0.4)]": row.netNewPct < 18,
                           })}
                           style={{ fontFamily: "var(--font-mono)" }}
                         >

@@ -35,8 +35,8 @@ function CampaignRow({ campaign, depth = 0 }: { campaign: Campaign; depth?: numb
 
   return (
     <>
-      <tr className="border-b border-[var(--color-border)] hover:bg-[var(--color-surface)] transition-colors">
-        <td className="px-5 py-3.5">
+      <tr className="border-b border-[var(--color-border)] hover:bg-white transition-colors">
+        <td className="px-5 py-3">
           <div className="flex items-center gap-2" style={{ paddingLeft: depth * 20 }}>
             {hasChildren && (
               <button
@@ -47,30 +47,30 @@ function CampaignRow({ campaign, depth = 0 }: { campaign: Campaign; depth?: numb
               </button>
             )}
             {!hasChildren && <span className="w-4" />}
-            <span className={clsx("text-base", depth === 0 ? "font-medium" : "text-[rgba(9,10,8,0.7)]")}>
+            <span className={clsx("text-sm", depth === 0 ? "font-medium" : "text-[rgba(9,10,8,0.6)]")}>
               {campaign.name}
             </span>
           </div>
         </td>
-        <td className="px-4 py-3.5 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
+        <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
           {formatNok(campaign.spend)}
         </td>
-        <td className="px-4 py-3.5 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
+        <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
           {campaign.roas.toFixed(1)}x
         </td>
-        <td className="px-4 py-3.5 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
+        <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
           {Math.round(campaign.cpa)} kr
         </td>
-        <td className="px-4 py-3.5 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
+        <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
           {Math.round(campaign.cpm)} kr
         </td>
-        <td className="px-4 py-3.5 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
+        <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
           {campaign.frequency.toFixed(1)}
         </td>
-        <td className="px-4 py-3.5 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
+        <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
           {campaign.ctr.toFixed(1)}%
         </td>
-        <td className="px-4 py-3.5 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
+        <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
           {campaign.reach >= 1000 ? `${Math.round(campaign.reach / 1000)}K` : campaign.reach}
         </td>
       </tr>
@@ -220,15 +220,15 @@ export default function PerformanceClient({
       {/* Campaign table */}
       <div>
         <SectionHeader title="Kampanjer" />
-        <div className="rounded-xl border border-[var(--color-border)] overflow-hidden">
-          <table className="w-full text-base">
+        <div className="rounded-xl bg-[var(--color-surface)] overflow-hidden">
+          <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-                {["Kampanje", "Spend", "ROAS", "Kost/kjop", "CPM", "Frekvens", "CTR", "Reach"].map((h) => (
+              <tr className="border-b border-[var(--color-border)]">
+                {["Kampanje", "Spend", "ROAS", "CPA", "CPM", "Frekvens", "CTR", "Reach"].map((h) => (
                   <th
                     key={h}
                     className={clsx(
-                      "py-3.5 text-2xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.5)]",
+                      "py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)]",
                       h === "Kampanje" ? "text-left px-5" : "text-right px-4"
                     )}
                   >

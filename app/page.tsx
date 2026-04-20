@@ -51,40 +51,40 @@ export default async function PulsePage() {
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-[var(--color-border)] overflow-hidden">
+      <div className="rounded-xl bg-[var(--color-surface)] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-              <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.45)]">
+            <tr className="border-b border-[var(--color-border)]">
+              <th className="text-left px-5 py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)]">
                 Kunde
               </th>
-              <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.45)]">
+              <th className="text-right px-4 py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)]">
                 Spend 7d
               </th>
-              <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.45)]">
+              <th className="text-right px-4 py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)]">
                 ROAS
               </th>
-              <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.45)]">
+              <th className="text-right px-4 py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)]">
                 CPA
               </th>
-              <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.45)]">
-                Net New %
+              <th className="text-right px-4 py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)]">
+                Nye %
               </th>
-              <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.45)]">
-                Freq.
+              <th className="text-right px-4 py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)]">
+                Frekvens
               </th>
-              <th className="px-4 py-3"></th>
+              <th className="px-4 py-3.5"></th>
             </tr>
           </thead>
           <tbody>
             {pulseData.map((row) => (
               <tr
                 key={row.client.id}
-                className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface)] transition-colors group"
+                className="border-b border-[var(--color-border)] last:border-0 hover:bg-white transition-colors group"
               >
                 {/* Client */}
                 <td className="px-5 py-4">
-                  <span className="font-semibold">{row.client.name}</span>
+                  <span className="font-medium">{row.client.name}</span>
                 </td>
 
                 {/* Spend */}
@@ -101,7 +101,7 @@ export default async function PulsePage() {
                 <td className="px-4 py-4 text-right">
                   <div className="flex flex-col items-end">
                     <span className="font-medium" style={{ fontFamily: "var(--font-mono)" }}>
-                      {row.roas.toFixed(1)}×
+                      {row.roas.toFixed(1)}x
                     </span>
                     <DeltaBadge value={row.roasDelta} />
                   </div>
@@ -119,28 +119,20 @@ export default async function PulsePage() {
 
                 {/* Net New Reach % */}
                 <td className="px-4 py-4 text-right">
-                  <div className="flex flex-col items-end">
-                    <span className="font-medium" style={{ fontFamily: "var(--font-mono)" }}>
-                      {row.netNewReachPct > 0 ? `${row.netNewReachPct.toFixed(1)}%` : "—"}
-                    </span>
-                    {row.netNewReachPct > 0 && (
-                      <span className="text-xs text-[rgba(9,10,8,0.35)]">
-                        {row.netNewReachPct >= 30 ? "Frisk" : row.netNewReachPct >= 18 ? "Moderat" : "Mettet"}
-                      </span>
-                    )}
-                  </div>
+                  <span className="font-medium" style={{ fontFamily: "var(--font-mono)" }}>
+                    {row.netNewReachPct > 0 ? `${row.netNewReachPct.toFixed(1)}%` : "-"}
+                  </span>
                 </td>
 
                 {/* Frequency */}
                 <td className="px-4 py-4 text-right">
                   <span
                     className={clsx("font-medium", {
-                      "text-red-600": row.frequency > 8,
-                      "text-yellow-600": row.frequency > 6 && row.frequency <= 8,
+                      "font-semibold": row.frequency > 8,
                     })}
                     style={{ fontFamily: "var(--font-mono)" }}
                   >
-                    {row.frequency > 0 ? row.frequency.toFixed(1) : "—"}
+                    {row.frequency > 0 ? row.frequency.toFixed(1) : "-"}
                   </span>
                 </td>
 
@@ -148,7 +140,7 @@ export default async function PulsePage() {
                 <td className="px-4 py-4 text-right">
                   <Link
                     href={`/${row.client.slug}/performance`}
-                    className="text-[rgba(9,10,8,0.25)] group-hover:text-[var(--color-black)] transition-colors text-sm"
+                    className="text-[rgba(9,10,8,0.3)] group-hover:text-[var(--color-black)] transition-colors"
                   >
                     →
                   </Link>

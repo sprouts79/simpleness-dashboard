@@ -81,22 +81,22 @@ export default function CohortTable({ cohorts, metric }: Props) {
   const totalAdCount = cohorts.reduce((s, c) => s + c.adCount, 0);
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-[var(--color-border)]">
-      <table className="text-base w-full">
+    <div className="overflow-x-auto rounded-xl bg-[var(--color-surface)]">
+      <table className="text-sm w-full">
         <thead>
-          <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-            <th className="text-left px-5 py-3.5 text-2xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.5)] whitespace-nowrap">
+          <tr className="border-b border-[var(--color-border)]">
+            <th className="text-left px-5 py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)] whitespace-nowrap">
               Kohort
             </th>
-            <th className="text-center px-4 py-3.5 text-2xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.5)]">
+            <th className="text-center px-4 py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)]">
               Ads
             </th>
             {weekCols.map((w) => (
               <th
                 key={w}
-                className="text-center px-4 py-3.5 text-2xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.5)] whitespace-nowrap"
+                className="text-center px-4 py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)] whitespace-nowrap"
               >
-                W{w}
+                Uke {w}
               </th>
             ))}
           </tr>
@@ -105,10 +105,10 @@ export default function CohortTable({ cohorts, metric }: Props) {
           {cohorts.map((cohort) => (
             <tr
               key={cohort.cohortDate}
-              className="border-b border-[var(--color-border)]"
+              className="border-b border-[var(--color-border)] hover:bg-white transition-colors"
             >
               <td className="px-5 py-3 font-medium whitespace-nowrap">{cohort.label}</td>
-              <td className="px-4 py-3 text-center text-sm text-[rgba(9,10,8,0.55)]">
+              <td className="px-4 py-3 text-center text-sm text-[rgba(9,10,8,0.5)]">
                 {cohort.adCount}
               </td>
               {weekCols.map((w) => {
@@ -116,7 +116,7 @@ export default function CohortTable({ cohorts, metric }: Props) {
                 if (!weekData) {
                   return (
                     <td key={w} className="px-4 py-3 text-center">
-                      <span className="text-[rgba(9,10,8,0.2)] text-sm">—</span>
+                      <span className="text-[rgba(9,10,8,0.25)]">-</span>
                     </td>
                   );
                 }
@@ -128,12 +128,12 @@ export default function CohortTable({ cohorts, metric }: Props) {
                   <td key={w} className="px-3 py-2.5 text-center">
                     <span
                       className={clsx(
-                        "inline-block px-2.5 py-1.5 rounded text-sm font-medium",
+                        "inline-block px-2 py-1 rounded text-sm",
                         aboveMedian
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-50 text-red-700"
+                          ? "bg-[var(--color-black)] text-white font-medium"
+                          : "text-[rgba(9,10,8,0.5)]"
                       )}
-                      style={{ fontFamily: "var(--font-mono)", minWidth: 60 }}
+                      style={{ fontFamily: "var(--font-mono)", minWidth: 56 }}
                     >
                       {formatCell(val, metric)}
                     </span>
@@ -144,11 +144,11 @@ export default function CohortTable({ cohorts, metric }: Props) {
           ))}
 
           {/* ALL COHORTS aggregate row */}
-          <tr className="border-t-2 border-[var(--color-border)] bg-[var(--color-surface)]">
-            <td className="px-5 py-3 font-semibold whitespace-nowrap text-2xs uppercase tracking-widest text-[rgba(9,10,8,0.6)]">
-              All Cohorts
+          <tr className="border-t-2 border-[var(--color-border)] bg-white">
+            <td className="px-5 py-3 font-semibold whitespace-nowrap text-sm text-[rgba(9,10,8,0.6)]">
+              Alle kohorter
             </td>
-            <td className="px-4 py-3 text-center text-sm font-semibold text-[rgba(9,10,8,0.55)]">
+            <td className="px-4 py-3 text-center text-sm font-semibold text-[rgba(9,10,8,0.5)]">
               {totalAdCount}
             </td>
             {weekCols.map((w) => {
@@ -156,15 +156,15 @@ export default function CohortTable({ cohorts, metric }: Props) {
               if (!wd) {
                 return (
                   <td key={w} className="px-4 py-3 text-center">
-                    <span className="text-[rgba(9,10,8,0.2)] text-sm">—</span>
+                    <span className="text-[rgba(9,10,8,0.25)]">-</span>
                   </td>
                 );
               }
               return (
                 <td key={w} className="px-3 py-2.5 text-center">
                   <span
-                    className="inline-block px-2.5 py-1.5 rounded text-sm font-semibold bg-[rgba(9,10,8,0.06)] text-[var(--color-black)]"
-                    style={{ fontFamily: "var(--font-mono)", minWidth: 60 }}
+                    className="inline-block px-2 py-1 rounded text-sm font-semibold text-[var(--color-black)]"
+                    style={{ fontFamily: "var(--font-mono)", minWidth: 56 }}
                   >
                     {formatCell(getCellValue(wd, metric), metric)}
                   </span>
