@@ -35,42 +35,42 @@ function CampaignRow({ campaign, depth = 0 }: { campaign: Campaign; depth?: numb
 
   return (
     <>
-      <tr className="border-b border-[var(--color-border)] hover:bg-[var(--color-gray-50)] transition-colors">
-        <td className="px-5 py-3">
+      <tr className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+        <td className="px-6 py-4">
           <div className="flex items-center gap-2" style={{ paddingLeft: depth * 20 }}>
             {hasChildren && (
               <button
                 onClick={() => setExpanded(!expanded)}
-                className="text-[var(--color-gray-400)] hover:text-[var(--color-black)] text-xs w-4"
+                className="text-gray-400 hover:text-navy text-xs w-4 font-medium"
               >
                 {expanded ? "v" : ">"}
               </button>
             )}
             {!hasChildren && <span className="w-4" />}
-            <span className={clsx("text-sm", depth === 0 ? "font-medium" : "text-[var(--color-gray-600)]")}>
+            <span className={clsx("text-sm", depth === 0 ? "font-medium text-navy" : "text-gray-600")}>
               {campaign.name}
             </span>
           </div>
         </td>
-        <td className="px-4 py-3 text-right tabular-nums">
+        <td className="px-5 py-4 text-right tabular-nums font-medium text-navy">
           {formatNok(campaign.spend)}
         </td>
-        <td className="px-4 py-3 text-right tabular-nums">
+        <td className="px-5 py-4 text-right tabular-nums font-medium text-navy">
           {campaign.roas.toFixed(1)}x
         </td>
-        <td className="px-4 py-3 text-right tabular-nums">
+        <td className="px-5 py-4 text-right tabular-nums font-medium text-navy">
           {Math.round(campaign.cpa)} kr
         </td>
-        <td className="px-4 py-3 text-right tabular-nums">
+        <td className="px-5 py-4 text-right tabular-nums text-gray-600">
           {Math.round(campaign.cpm)} kr
         </td>
-        <td className="px-4 py-3 text-right tabular-nums">
+        <td className="px-5 py-4 text-right tabular-nums text-gray-600">
           {campaign.frequency.toFixed(1)}
         </td>
-        <td className="px-4 py-3 text-right tabular-nums">
+        <td className="px-5 py-4 text-right tabular-nums text-gray-600">
           {campaign.ctr.toFixed(1)}%
         </td>
-        <td className="px-4 py-3 text-right text-sm tabular-nums">
+        <td className="px-5 py-4 text-right text-sm tabular-nums text-gray-600">
           {campaign.reach >= 1000 ? `${Math.round(campaign.reach / 1000)}K` : campaign.reach}
         </td>
       </tr>
@@ -108,20 +108,20 @@ export default function PerformanceClient({
   const deltaLabel = kpis.compareLabel;
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-12">
       {/* Period selector + compare toggle */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         {/* Period */}
-        <div className="flex gap-1">
+        <div className="flex gap-1 bg-gray-100 p-1 rounded-full">
           {PERIOD_OPTIONS.map(({ value, label }) => (
             <button
               key={value}
               onClick={() => navigate(value, compare)}
               className={clsx(
-                "text-xs font-medium px-3 py-1.5 rounded-md transition-all whitespace-nowrap",
+                "text-sm font-medium px-4 py-2 rounded-full transition-all whitespace-nowrap",
                 period === value
-                  ? "bg-[var(--color-gray-100)] text-[var(--color-black)]"
-                  : "text-[var(--color-gray-500)] hover:text-[var(--color-black)] hover:bg-[var(--color-gray-50)]"
+                  ? "bg-white text-navy shadow-sm"
+                  : "text-gray-500 hover:text-navy"
               )}
             >
               {label}
@@ -130,16 +130,16 @@ export default function PerformanceClient({
         </div>
 
         {/* Compare */}
-        <div className="flex gap-1">
+        <div className="flex gap-2">
           {COMPARE_OPTIONS.map(({ value, label }) => (
             <button
               key={value}
               onClick={() => navigate(period, value)}
               className={clsx(
-                "text-xs font-medium px-3 py-1.5 rounded-md transition-all whitespace-nowrap",
+                "btn-pill text-sm",
                 compare === value
-                  ? "bg-[var(--color-gray-100)] text-[var(--color-black)]"
-                  : "text-[var(--color-gray-500)] hover:text-[var(--color-black)] hover:bg-[var(--color-gray-50)]"
+                  ? "btn-pill-primary"
+                  : "btn-pill-secondary"
               )}
             >
               {label}
@@ -151,7 +151,7 @@ export default function PerformanceClient({
       {/* Primary KPIs */}
       <div>
         <SectionHeader title="Nokkeltall" subtitle={kpis.periodLabel} />
-        <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-3 gap-5 mb-5">
           <KpiCard
             label="Spend"
             value={formatNok(kpis.spend)}
@@ -175,7 +175,7 @@ export default function PerformanceClient({
             size="large"
           />
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-5">
           <KpiCard
             label="CPMn"
             value={kpis.cpmn > 0 ? `${Math.round(kpis.cpmn)} kr` : "-"}
@@ -204,15 +204,15 @@ export default function PerformanceClient({
       {/* Trend chart */}
       <div>
         <SectionHeader title="Spend og ROAS - trend" subtitle={kpis.periodLabel} />
-        <div className="rounded-lg border border-[var(--color-border)] p-5 bg-white">
+        <div className="card p-6">
           <SpendTrendChart data={trend} days={365} />
-          <div className="flex gap-6 mt-4 text-xs text-[var(--color-gray-400)]">
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-2.5 rounded-sm bg-[var(--color-gray-200)] inline-block" />
+          <div className="flex gap-6 mt-5 text-sm text-gray-500">
+            <span className="flex items-center gap-2">
+              <span className="w-4 h-3 rounded bg-teal-pale inline-block border border-teal/30" />
               Spend (NOK)
             </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-4 h-0.5 bg-[var(--color-gray-600)] inline-block" />
+            <span className="flex items-center gap-2">
+              <span className="w-5 h-0.5 bg-navy inline-block rounded-full" />
               ROAS
             </span>
           </div>
@@ -225,16 +225,16 @@ export default function PerformanceClient({
           title="Kampanjer"
           subtitle="Klikk > for a se ad sets"
         />
-        <div className="rounded-lg border border-[var(--color-border)] overflow-hidden">
+        <div className="card overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[var(--color-border)] bg-[var(--color-gray-50)]">
+              <tr className="border-b border-gray-200 bg-gray-50">
                 {["Kampanje", "Spend", "ROAS", "CPA", "CPM", "Freq.", "CTR", "Reach"].map((h) => (
                   <th
                     key={h}
                     className={clsx(
-                      "py-3 text-xs font-medium text-[var(--color-gray-500)]",
-                      h === "Kampanje" ? "text-left px-5" : "text-right px-4"
+                      "py-4 small-caps",
+                      h === "Kampanje" ? "text-left px-6" : "text-right px-5"
                     )}
                   >
                     {h}

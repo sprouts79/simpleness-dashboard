@@ -1,40 +1,48 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Minimalist Design Tokens */
+/* 37signals / Fizzy-inspired Design System */
 :root {
-  --color-white: #ffffff;
-  --color-black: #1a1a1a;
-  --color-accent: #1a1a1a;
-  --color-link: #6b7280;
+  /* Primary palette - navy blue inspired */
+  --color-navy: #1e3a5f;
+  --color-navy-light: #2d4a6f;
+  --color-navy-dark: #152a47;
   
-  /* Neutral palette */
-  --color-gray-50: #fafafa;
-  --color-gray-100: #f5f5f5;
-  --color-gray-200: #e5e5e5;
-  --color-gray-300: #d4d4d4;
-  --color-gray-400: #a3a3a3;
-  --color-gray-500: #737373;
-  --color-gray-600: #525252;
-  --color-gray-700: #404040;
-  --color-gray-800: #262626;
-  --color-gray-900: #171717;
+  /* Accent - teal/blue-green for avatars and highlights */
+  --color-teal: #4a9ba5;
+  --color-teal-light: #5fb5bf;
+  --color-teal-pale: #e8f4f5;
+  
+  /* Action blue - for primary buttons */
+  --color-action: #3b82f6;
+  --color-action-hover: #2563eb;
+  
+  /* Neutrals - warm grays */
+  --color-white: #ffffff;
+  --color-black: #1a1f36;
+  --color-gray-50: #f8f9fa;
+  --color-gray-100: #f1f3f5;
+  --color-gray-200: #e9ecef;
+  --color-gray-300: #dee2e6;
+  --color-gray-400: #adb5bd;
+  --color-gray-500: #6c757d;
+  --color-gray-600: #495057;
+  --color-gray-700: #343a40;
 
-  /* Status */
+  /* Status colors */
   --color-status-green: #22c55e;
   --color-status-yellow: #eab308;
   --color-status-red: #ef4444;
 
   /* Surfaces */
-  --color-surface: #fafafa;
-  --color-border: #e5e5e5;
-  --color-sidebar: #fafafa;
+  --color-surface: #f8f9fa;
+  --color-border: #dee2e6;
 
   /* Typography */
+  --font-display: 'Fraunces', Georgia, serif;
   --font-sans: 'Inter', system-ui, sans-serif;
-  --font-mono: 'Inter', system-ui, sans-serif;
 }
 
 * {
@@ -54,6 +62,14 @@ html, body {
   letter-spacing: -0.01em;
 }
 
+/* Display headings - Fraunces serif */
+h1, h2, .heading {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-navy);
+  letter-spacing: -0.02em;
+}
+
 /* Number / data values */
 .mono {
   font-variant-numeric: tabular-nums;
@@ -70,8 +86,115 @@ html, body {
   color: var(--color-gray-400);
 }
 
+/* Pill button base */
+.btn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 150ms ease;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-pill-primary {
+  background: var(--color-action);
+  color: white;
+}
+.btn-pill-primary:hover {
+  background: var(--color-action-hover);
+}
+
+.btn-pill-secondary {
+  background: white;
+  color: var(--color-black);
+  border: 1px solid var(--color-border);
+}
+.btn-pill-secondary:hover {
+  background: var(--color-gray-50);
+  border-color: var(--color-gray-300);
+}
+
+/* Fieldset-style section dividers (like Fizzy) */
+.fieldset-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0 1rem;
+}
+
+.fieldset-header::before,
+.fieldset-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.fieldset-header span {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-navy);
+  white-space: nowrap;
+}
+
+/* Avatar with initials */
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-teal);
+  color: white;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+/* Badge/tag */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-navy {
+  background: var(--color-navy);
+  color: white;
+}
+
+.badge-teal {
+  background: var(--color-teal-pale);
+  color: var(--color-teal);
+}
+
+/* Small caps for metadata */
+.small-caps {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-gray-500);
+}
+
+/* Card with subtle shadow */
+.card {
+  background: white;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
 /* Sidebar link active state */
 .sidebar-link-active {
-  background: var(--color-gray-100);
-  color: var(--color-black);
+  background: var(--color-navy);
+  color: white;
 }

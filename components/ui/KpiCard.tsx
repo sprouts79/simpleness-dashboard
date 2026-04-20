@@ -30,39 +30,34 @@ export default function KpiCard({
   const isGood = invertDelta ? (delta ?? 0) < 0 : (delta ?? 0) > 0;
 
   return (
-    <div
-      className={clsx(
-        "rounded-lg border border-[var(--color-border)] p-5 flex flex-col gap-1.5",
-        highlight ? "bg-[var(--color-gray-50)]" : "bg-white"
-      )}
-    >
-      <p className="text-xs font-medium text-[var(--color-gray-500)] tracking-wide">
+    <div className="card p-5 flex flex-col gap-2">
+      <p className="small-caps">
         {label}
       </p>
       <p
         className={clsx(
-          "font-semibold tabular-nums leading-tight tracking-tight",
-          size === "large" ? "text-3xl" : "text-2xl"
+          "font-display font-semibold tabular-nums leading-tight tracking-tight text-navy",
+          size === "large" ? "text-4xl" : "text-3xl"
         )}
       >
         {value}
       </p>
       {delta !== undefined && (
         <p
-          className={clsx("text-xs font-medium", {
+          className={clsx("text-sm font-medium", {
             "delta-up": isGood,
             "delta-down": !isGood && !isNeutral,
             "delta-neutral": isNeutral,
           })}
         >
           {formatDelta(delta)}{" "}
-          <span className="font-normal text-[var(--color-gray-400)]">
+          <span className="font-normal text-gray-400">
             {deltaLabel ?? "vs forrige uke"}
           </span>
         </p>
       )}
       {note && (
-        <p className="text-xs text-[var(--color-gray-400)] mt-0.5">{note}</p>
+        <p className="text-sm text-gray-500 mt-1">{note}</p>
       )}
     </div>
   );

@@ -9,28 +9,41 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        black: "#1a1a1a",
-        accent: "#1a1a1a",
-        link: "#6b7280",
+        navy: {
+          DEFAULT: "#1e3a5f",
+          light: "#2d4a6f",
+          dark: "#152a47",
+        },
+        teal: {
+          DEFAULT: "#4a9ba5",
+          light: "#5fb5bf",
+          pale: "#e8f4f5",
+        },
+        action: {
+          DEFAULT: "#3b82f6",
+          hover: "#2563eb",
+        },
+        black: "#1a1f36",
         gray: {
-          50: "#fafafa",
-          100: "#f5f5f5",
-          200: "#e5e5e5",
-          300: "#d4d4d4",
-          400: "#a3a3a3",
-          500: "#737373",
-          600: "#525252",
-          700: "#404040",
-          800: "#262626",
-          900: "#171717",
+          50: "#f8f9fa",
+          100: "#f1f3f5",
+          200: "#e9ecef",
+          300: "#dee2e6",
+          400: "#adb5bd",
+          500: "#6c757d",
+          600: "#495057",
+          700: "#343a40",
         },
       },
       fontFamily: {
+        display: ["var(--font-display)", "Georgia", "serif"],
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
-        mono: ["var(--font-mono)", "monospace"],
       },
       fontSize: {
         "2xs": "0.625rem",
+      },
+      borderRadius: {
+        'pill': '9999px',
       },
     },
   },

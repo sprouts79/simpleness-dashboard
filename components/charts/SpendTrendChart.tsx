@@ -30,20 +30,20 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   const spend = payload.find((p: any) => p.dataKey === "spend")?.value;
   const roas = payload.find((p: any) => p.dataKey === "roas")?.value;
   return (
-    <div className="bg-white border border-[var(--color-border)] rounded-lg px-3 py-2 shadow-sm text-xs">
-      <p className="font-medium mb-1">{label}</p>
+    <div className="card px-4 py-3 text-sm">
+      <p className="font-display font-semibold text-navy mb-2">{label}</p>
       {spend !== undefined && (
-        <p>
+        <p className="text-gray-600">
           Spend:{" "}
-          <span className="tabular-nums">
+          <span className="tabular-nums font-medium text-navy">
             NOK {spend.toLocaleString("no-NO")}
           </span>
         </p>
       )}
       {roas !== undefined && (
-        <p>
+        <p className="text-gray-600">
           ROAS:{" "}
-          <span className="tabular-nums">{roas.toFixed(2)}x</span>
+          <span className="tabular-nums font-medium text-navy">{roas.toFixed(2)}x</span>
         </p>
       )}
     </div>
@@ -60,12 +60,12 @@ export default function SpendTrendChart({ data }: Props) {
   const tickInterval = n <= 7 ? 0 : n <= 30 ? 6 : n <= 90 ? 14 : 30;
 
   return (
-    <ResponsiveContainer width="100%" height={220}>
-      <ComposedChart data={formatted} margin={{ top: 4, right: 12, bottom: 0, left: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-200)" vertical={false} />
+    <ResponsiveContainer width="100%" height={240}>
+      <ComposedChart data={formatted} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#e9ecef" vertical={false} />
         <XAxis
           dataKey="label"
-          tick={{ fontSize: 11, fill: "var(--color-gray-400)" }}
+          tick={{ fontSize: 12, fill: "#6c757d" }}
           tickLine={false}
           axisLine={false}
           interval={tickInterval}
@@ -73,37 +73,39 @@ export default function SpendTrendChart({ data }: Props) {
         <YAxis
           yAxisId="spend"
           orientation="left"
-          tick={{ fontSize: 11, fill: "var(--color-gray-400)" }}
+          tick={{ fontSize: 12, fill: "#6c757d" }}
           tickLine={false}
           axisLine={false}
           tickFormatter={formatNok}
-          width={40}
+          width={44}
         />
         <YAxis
           yAxisId="roas"
           orientation="right"
-          tick={{ fontSize: 11, fill: "var(--color-gray-400)" }}
+          tick={{ fontSize: 12, fill: "#6c757d" }}
           tickLine={false}
           axisLine={false}
           tickFormatter={(v) => `${v.toFixed(1)}x`}
           domain={[0, "auto"]}
-          width={40}
+          width={44}
         />
-        <Tooltip content={<CustomTooltip />} cursor={{ fill: "var(--color-gray-50)" }} />
+        <Tooltip content={<CustomTooltip />} cursor={{ fill: "#f8f9fa" }} />
         <Bar
           yAxisId="spend"
           dataKey="spend"
-          fill="var(--color-gray-200)"
-          radius={[2, 2, 0, 0]}
+          fill="#e8f4f5"
+          stroke="#4a9ba5"
+          strokeWidth={1}
+          radius={[4, 4, 0, 0]}
           name="Spend"
-          maxBarSize={24}
+          maxBarSize={28}
         />
         <Line
           yAxisId="roas"
           type="monotone"
           dataKey="roas"
-          stroke="var(--color-black)"
-          strokeWidth={2}
+          stroke="#1e3a5f"
+          strokeWidth={2.5}
           dot={false}
           name="ROAS"
         />

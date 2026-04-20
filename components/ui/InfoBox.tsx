@@ -5,11 +5,11 @@ interface Props {
 
 export default function InfoBox({ children, title }: Props) {
   return (
-    <div className="max-w-xl rounded-lg border border-[var(--color-border)] px-5 py-4 text-sm bg-[var(--color-gray-50)]">
+    <div className="card max-w-xl px-6 py-5 text-sm">
       {title && (
-        <p className="text-[11px] font-medium uppercase tracking-wider text-[var(--color-gray-400)] mb-3">
-          {title}
-        </p>
+        <div className="fieldset-header mt-0 mb-4">
+          <span>{title}</span>
+        </div>
       )}
       {children}
     </div>
