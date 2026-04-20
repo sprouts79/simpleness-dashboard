@@ -262,11 +262,11 @@ export default function ReachClient({
                   size="large"
                 />
                 <KpiCard
-                  label="Snitt Nye"
+                  label="Snitt Nye per mnd"
                   value={formatReach(kpis.avgNetNewReach)}
                 />
                 <KpiCard
-                  label="Snitt % Nye"
+                  label="Snitt % Nye per mnd"
                   value={`${kpis.avgNetNewPct.toFixed(1)}%`}
                   note={netNewStatus}
                   highlight={kpis.avgNetNewPct < 18}
