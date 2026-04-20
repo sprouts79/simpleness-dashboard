@@ -218,7 +218,7 @@ export default function ReachClient({
               "text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors",
               syncing
                 ? "bg-[var(--color-surface)] text-[rgba(9,10,8,0.45)] cursor-not-allowed border border-[var(--color-border)]"
-                : "bg-[var(--color-accent)] text-[var(--color-black)] hover:opacity-90"
+                : "bg-[#89FF58] text-[var(--color-black)] hover:opacity-90"
             )}
           >
             {syncing ? "Henter..." : "Oppdater"}
@@ -238,7 +238,7 @@ export default function ReachClient({
           <button
             onClick={handleSync}
             disabled={syncing}
-            className="text-sm font-semibold px-5 py-2.5 rounded-lg bg-[var(--color-accent)] text-[var(--color-black)] hover:opacity-90 transition-colors"
+            className="text-sm font-semibold px-5 py-2.5 rounded-lg bg-[#89FF58] text-[var(--color-black)] hover:opacity-90 transition-colors"
           >
             {syncing ? "Henter..." : "Oppdater"}
           </button>
