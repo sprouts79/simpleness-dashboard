@@ -145,6 +145,8 @@ export interface Ad {
   roas: number;
   cpa: number;
   impressions: number;
+  purchases: number;
+  reach: number;
   netNew?: number;
   netNewPct?: number;
 }

@@ -155,14 +155,14 @@ export default function CreativeClient({
     return grouped;
   }, [cohorts, ads]);
 
-  // Top 10 by spend
-  const topBySpend = useMemo(() => 
-    [...ads].sort((a, b) => b.spend - a.spend).slice(0, 10),
+  // Top 10 by purchases (which ads drive most conversions)
+  const topByPurchases = useMemo(() =>
+    [...ads].sort((a, b) => b.purchases - a.purchases).slice(0, 10),
   [ads]);
 
-  // Top 10 by net new reach (which ads reach the most new people)
-  const topByNetNew = useMemo(() => 
-    [...ads].sort((a, b) => (b.netNew || 0) - (a.netNew || 0)).slice(0, 10),
+  // Top 10 by reach (which ads reach the most people)
+  const topByReach = useMemo(() =>
+    [...ads].sort((a, b) => b.reach - a.reach).slice(0, 10),
   [ads]);
   
   // State for expanded ad in top lists
@@ -459,16 +459,16 @@ export default function CreativeClient({
       <div className="grid grid-cols-2 gap-6">
         {/* Top by Spend */}
         <div>
-          <SectionHeader title="Topp 10 etter Spend" subtitle="Annonser som får mest budsjett" />
+          <SectionHeader title="Hvilke annonser får flest kjøp?" />
           <div className="rounded-xl bg-[var(--color-surface)] overflow-hidden">
             <div className="divide-y divide-[var(--color-border)]">
-              {topBySpend.map((ad, i) => {
-                const isExpanded = expandedAdId === `spend-${ad.id}`;
+              {topByPurchases.map((ad, i) => {
+                const isExpanded = expandedAdId === `purchases-${ad.id}`;
                 return (
                   <div key={ad.id}>
-                    <div 
+                    <div
                       className="flex items-center gap-4 px-4 py-3 hover:bg-white transition-colors cursor-pointer"
-                      onClick={() => setExpandedAdId(isExpanded ? null : `spend-${ad.id}`)}
+                      onClick={() => setExpandedAdId(isExpanded ? null : `purchases-${ad.id}`)}
                     >
                       <span className="w-6 text-sm font-mono text-[rgba(9,10,8,0.4)]">{i + 1}</span>
                       <div className="w-10 h-10 rounded-lg bg-[rgba(9,10,8,0.06)] overflow-hidden flex-shrink-0">
@@ -480,12 +480,10 @@ export default function CreativeClient({
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{ad.name}</p>
-                        <p className="text-xs text-[rgba(9,10,8,0.5)]">CTR {ad.ctr.toFixed(1)}% · ROAS {ad.roas?.toFixed(1) || "-"}x</p>
+                        <p className="text-xs text-[rgba(9,10,8,0.5)]">ROAS {ad.roas?.toFixed(1) || "-"}× · CPA {ad.cpa > 0 ? `${Math.round(ad.cpa)} kr` : "-"}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-mono font-semibold">
-                          {ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : Math.round(ad.spend)}
-                        </p>
+                        <p className="text-sm font-mono font-semibold">{ad.purchases} kjøp</p>
                       </div>
                     </div>
                     {isExpanded && (
@@ -499,11 +497,11 @@ export default function CreativeClient({
                             )}
                           </div>
                           <div className="flex-1 grid grid-cols-2 gap-x-4 gap-y-2 text-sm py-2">
+                            <div><span className="text-[rgba(9,10,8,0.5)]">Kjøp</span><p className="font-mono font-semibold">{ad.purchases}</p></div>
+                            <div><span className="text-[rgba(9,10,8,0.5)]">ROAS</span><p className="font-mono font-semibold">{ad.roas?.toFixed(1) || "-"}×</p></div>
+                            <div><span className="text-[rgba(9,10,8,0.5)]">CPA</span><p className="font-mono font-semibold">{ad.cpa > 0 ? `${Math.round(ad.cpa)} kr` : "-"}</p></div>
                             <div><span className="text-[rgba(9,10,8,0.5)]">Spend</span><p className="font-mono font-semibold">{ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : Math.round(ad.spend)}</p></div>
-                            <div><span className="text-[rgba(9,10,8,0.5)]">CTR</span><p className="font-mono font-semibold">{ad.ctr.toFixed(2)}%</p></div>
-                            <div><span className="text-[rgba(9,10,8,0.5)]">CPM</span><p className="font-mono font-semibold">{Math.round(ad.cpm)}</p></div>
-                            <div><span className="text-[rgba(9,10,8,0.5)]">ROAS</span><p className="font-mono font-semibold">{ad.roas?.toFixed(1) || "-"}x</p></div>
-                            <div><span className="text-[rgba(9,10,8,0.5)]">Nye brukere</span><p className="font-mono font-semibold">{ad.netNew ? (ad.netNew >= 1000 ? `${Math.round(ad.netNew / 1000)}k` : ad.netNew) : "-"}</p></div>
+                            <div><span className="text-[rgba(9,10,8,0.5)]">CTR</span><p className="font-mono font-semibold">{ad.ctr.toFixed(1)}%</p></div>
                             <div><span className="text-[rgba(9,10,8,0.5)]">Impressions</span><p className="font-mono font-semibold">{ad.impressions >= 1000 ? `${Math.round(ad.impressions / 1000)}k` : ad.impressions}</p></div>
                           </div>
                         </div>
@@ -518,23 +516,21 @@ export default function CreativeClient({
 
         {/* Top by Net New Reach */}
         <div>
-          <SectionHeader title="Topp 10 etter Nye brukere" subtitle="Annonser som treffer flest nye mennesker" />
+          <SectionHeader title="Hvilke annonser når flest mennesker?" />
           <div className="rounded-xl bg-[var(--color-surface)] overflow-hidden">
             <div className="divide-y divide-[var(--color-border)]">
-              {topByNetNew.map((ad, i) => {
-                const isExpanded = expandedAdId === `netnew-${ad.id}`;
-                const netNewFormatted = ad.netNew 
-                  ? (ad.netNew >= 1000000 
-                      ? `${(ad.netNew / 1000000).toFixed(1)}M` 
-                      : ad.netNew >= 1000 
-                        ? `${Math.round(ad.netNew / 1000)}k` 
-                        : ad.netNew)
-                  : "-";
+              {topByReach.map((ad, i) => {
+                const isExpanded = expandedAdId === `reach-${ad.id}`;
+                const reachFormatted = ad.reach >= 1000000
+                  ? `${(ad.reach / 1000000).toFixed(1)}M`
+                  : ad.reach >= 1000
+                    ? `${Math.round(ad.reach / 1000)}K`
+                    : `${ad.reach}`;
                 return (
                   <div key={ad.id}>
-                    <div 
+                    <div
                       className="flex items-center gap-4 px-4 py-3 hover:bg-white transition-colors cursor-pointer"
-                      onClick={() => setExpandedAdId(isExpanded ? null : `netnew-${ad.id}`)}
+                      onClick={() => setExpandedAdId(isExpanded ? null : `reach-${ad.id}`)}
                     >
                       <span className="w-6 text-sm font-mono text-[rgba(9,10,8,0.4)]">{i + 1}</span>
                       <div className="w-10 h-10 rounded-lg bg-[rgba(9,10,8,0.06)] overflow-hidden flex-shrink-0">
@@ -546,10 +542,10 @@ export default function CreativeClient({
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{ad.name}</p>
-                        <p className="text-xs text-[rgba(9,10,8,0.5)]">CTR {ad.ctr.toFixed(1)}% · {ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : Math.round(ad.spend)} spend</p>
+                        <p className="text-xs text-[rgba(9,10,8,0.5)]">CPM {Math.round(ad.cpm)} kr · {ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : Math.round(ad.spend)} spend</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-mono font-semibold">{netNewFormatted}</p>
+                        <p className="text-sm font-mono font-semibold">{reachFormatted}</p>
                       </div>
                     </div>
                     {isExpanded && (
@@ -563,12 +559,12 @@ export default function CreativeClient({
                             )}
                           </div>
                           <div className="flex-1 grid grid-cols-2 gap-x-4 gap-y-2 text-sm py-2">
-                            <div><span className="text-[rgba(9,10,8,0.5)]">Nye brukere</span><p className="font-mono font-semibold">{netNewFormatted}</p></div>
-                            <div><span className="text-[rgba(9,10,8,0.5)]">Nye %</span><p className="font-mono font-semibold">{ad.netNewPct?.toFixed(1) || "-"}%</p></div>
+                            <div><span className="text-[rgba(9,10,8,0.5)]">Reach</span><p className="font-mono font-semibold">{reachFormatted}</p></div>
+                            <div><span className="text-[rgba(9,10,8,0.5)]">CPM</span><p className="font-mono font-semibold">{Math.round(ad.cpm)} kr</p></div>
                             <div><span className="text-[rgba(9,10,8,0.5)]">Spend</span><p className="font-mono font-semibold">{ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : Math.round(ad.spend)}</p></div>
-                            <div><span className="text-[rgba(9,10,8,0.5)]">CTR</span><p className="font-mono font-semibold">{ad.ctr.toFixed(2)}%</p></div>
-                            <div><span className="text-[rgba(9,10,8,0.5)]">CPM</span><p className="font-mono font-semibold">{Math.round(ad.cpm)}</p></div>
-                            <div><span className="text-[rgba(9,10,8,0.5)]">ROAS</span><p className="font-mono font-semibold">{ad.roas?.toFixed(1) || "-"}x</p></div>
+                            <div><span className="text-[rgba(9,10,8,0.5)]">CTR</span><p className="font-mono font-semibold">{ad.ctr.toFixed(1)}%</p></div>
+                            <div><span className="text-[rgba(9,10,8,0.5)]">Frekvens</span><p className="font-mono font-semibold">{ad.impressions > 0 && ad.reach > 0 ? (ad.impressions / ad.reach).toFixed(1) : "-"}</p></div>
+                            <div><span className="text-[rgba(9,10,8,0.5)]">ROAS</span><p className="font-mono font-semibold">{ad.roas?.toFixed(1) || "-"}×</p></div>
                           </div>
                         </div>
                       </div>

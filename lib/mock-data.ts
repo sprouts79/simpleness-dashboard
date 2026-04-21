@@ -515,6 +515,8 @@ export const ADS: Record<string, Ad[]> = {
       roas: parseFloat((2.2 + Math.random() * 3.4).toFixed(2)),
       cpa: Math.round(140 + Math.random() * 180),
       impressions: Math.round(40000 + Math.random() * 280000),
+      purchases: Math.round(5 + Math.random() * 50),
+      reach: Math.round(10000 + Math.random() * 80000),
     };
   }),
   kokkeloren: [],

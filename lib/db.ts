@@ -508,6 +508,8 @@ export async function getAds(clientId: string): Promise<Ad[]> {
     roas: r.roas ?? 0,
     cpa: r.cpa ?? 0,
     impressions: r.impressions ?? 0,
+    purchases: r.purchases ?? 0,
+    reach: r.reach ?? 0,
   }));
 }
 
@@ -569,6 +571,8 @@ export async function getTopAds(clientId: string, days: number, limit = 10): Pro
         roas: agg.spend > 0 ? agg.purchaseValue / agg.spend : 0,
         cpa: agg.purchases > 0 ? agg.spend / agg.purchases : 0,
         impressions: imp,
+        purchases: agg.purchases,
+        reach: 0, // not available from weekly aggregation
       };
     })
     .sort((a, b) => b.spend - a.spend)
