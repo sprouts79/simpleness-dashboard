@@ -797,11 +797,11 @@ export async function getMonthlyReachData(
 
     const totalNetNew = rows.reduce((s, r) => s + (r.net_new_reach ?? 0), 0);
     const totalSpend = rows.reduce((s, r) => s + (r.spend ?? 0), 0);
-    const totalWeeklyReach = rows.reduce((s, r) => s + (r.weekly_reach ?? 0), 0);
     const avgCpm = rows.reduce((s, r) => s + (r.cpm ?? 0), 0) / rows.length;
     const avgFrequency = rows.reduce((s, r) => s + (r.frequency ?? 0), 0) / rows.length;
 
-    const netNewPct = totalWeeklyReach > 0 ? (totalNetNew / totalWeeklyReach) * 100 : 0;
+    // Use rollingReach (cumulative unique) as denominator — not sum of weekly reach (overcounts)
+    const netNewPct = rollingReach > 0 ? (totalNetNew / rollingReach) * 100 : 0;
     const cpmNetNew = totalNetNew > 0 ? totalSpend / (totalNetNew / 1000) : 0;
 
     result.push({
