@@ -411,29 +411,22 @@ export interface WeeklyReachRow {
 }
 
 /**
- * Fetches weekly reach data using a fixed-window-start methodology.
+ * Fetches weekly reach data using a SLIDING lookback window.
  *
- * windowStart: fixed for ALL weeks in the period.
+ * For each week W with lookbackDays L:
+ *   slidingStart = weekStart - L days
+ *   R_full = unique reach over [slidingStart, weekEnd]
+ *   R_prev = unique reach over [slidingStart, weekStart − 1]
+ *   net_new = R_full − R_prev  (people reached this week not seen in previous L days)
  *
- * Setting windowStart = since (period start, 0 extension):
- *   - First week ≈ 100% net new (no one is "previously reached" before the period)
- *   - Each week: net_new = people this week not seen since period start
- *   This is the "Monthly Rolling Reach" default — pure period-based incremental reach.
- *
- * Setting windowStart earlier (extended lookback):
- *   - First week will already have "previously reached" from before the display period
- *   - Net new = truly new vs a longer historical window
- *
- * For each week:
- *   R_full = unique reach over [windowStart, weekEnd]
- *   R_prev = unique reach over [windowStart, weekStart − 1]
- *   net_new = R_full − R_prev  (always ≥ 0)
+ * This matches how the reference app (Ad Insights) calculates net new reach:
+ * each week is compared to its OWN lookback window, not a fixed start date.
  */
 export async function fetchWeeklyReachRows(
   accountId: string,
   since: string,       // start of display period (fetch weekly metrics from here)
   until: string,
-  windowStart: string, // fixed window start for all reach calculations (= since or earlier)
+  lookbackDays = 91,   // sliding window: how far back to check for "previously reached"
 ): Promise<WeeklyReachRow[]> {
   // One bulk call for per-week metrics
   const fields = "reach,impressions,spend,frequency";
@@ -441,23 +434,22 @@ export async function fetchWeeklyReachRows(
   const url = `${BASE}/${accountId}/insights?fields=${fields}&time_range=${timeRange}&time_increment=7&level=account&limit=52&access_token=${token()}`;
   const rows = await paginate<any>(url);
 
-  // Process weeks in batches of 4 to avoid hitting Meta's rate limit
-  // (each week needs 2 API calls; all-parallel on 12+ weeks = 24+ concurrent requests)
+  // Process weeks in batches of 3 (each week = 2 sliding API calls)
   const results: WeeklyReachRow[] = [];
-  for (let i = 0; i < rows.length; i += 4) {
-    const batch = rows.slice(i, i + 4);
+  for (let i = 0; i < rows.length; i += 3) {
+    const batch = rows.slice(i, i + 3);
     const batchResults = await Promise.all(
       batch.map(async (r) => {
         const weekStart: string = r.date_start;
         const weekEnd: string = r.date_stop;
-        const prevWindowEnd = subtractDays(weekStart, 1);
+        const prevEnd = subtractDays(weekStart, 1);
 
-        const hasPrevWindow = prevWindowEnd >= windowStart;
+        // Sliding window: lookbackDays before THIS week's start
+        const slidingStart = subtractDays(weekStart, lookbackDays);
+
         const [fullData, prevData] = await Promise.all([
-          fetchReach(accountId, windowStart, weekEnd),
-          hasPrevWindow
-            ? fetchReach(accountId, windowStart, prevWindowEnd)
-            : Promise.resolve({ reach: 0, impressions: 0, spend: 0, frequency: 0 }),
+          fetchReach(accountId, slidingStart, weekEnd),
+          fetchReach(accountId, slidingStart, prevEnd),
         ]);
 
         return {

@@ -17,18 +17,16 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import ReachCompositionChart from "@/components/charts/ReachCompositionChart";
 import InfoBox from "@/components/ui/InfoBox";
 import { CHART_BAR_COLOR, CHART_BAR_STACKED, CHART_LINE_COLOR } from "@/lib/chart-colors";
-import { MonthlyReachRow, WeeklyReachRow } from "@/lib/types";
+import { MonthlyReachRow } from "@/lib/types";
 
 type PeriodValue = "3m" | "6m";
-type LookbackValue = 0 | 90 | 180 | 360;
 
-const PERIOD_OPTIONS: { value: PeriodValue; label: string }[] = [
-  { value: "3m", label: "Siste 3 mnd" },
-  { value: "6m", label: "Siste 6 mnd" },
+const PERIOD_OPTIONS: { value: PeriodValue; label: string; months: number }[] = [
+  { value: "3m", label: "Siste 3 mnd", months: 3 },
+  { value: "6m", label: "Siste 6 mnd", months: 6 },
 ];
 
-const LOOKBACK_OPTIONS: { value: LookbackValue; label: string }[] = [
-  { value: 0, label: "Ingen" },
+const LOOKBACK_OPTIONS: { value: number; label: string }[] = [
   { value: 90, label: "3 mnd" },
   { value: 180, label: "6 mnd" },
   { value: 360, label: "12 mnd" },
@@ -51,7 +49,7 @@ function formatNokShort(n: number) {
 }
 
 function getNetNewColor(pct: number): { bg: string; text: string } {
-  const normalized = Math.min(Math.max(pct, 0), 25) / 25;
+  const normalized = Math.min(Math.max(pct, 0), 40) / 40;
   const r = Math.round(200 - (200 - 34) * normalized);
   const g = Math.round(50 + (140 - 50) * normalized);
   const b = Math.round(50 - (50 - 34) * normalized);
@@ -89,13 +87,11 @@ const selectStyle = {
 export default function ReachClient({
   clientId,
   data,
-  weeklyData,
   currentLookback,
   currentPeriod,
 }: {
   clientId: string;
   data: MonthlyReachRow[];
-  weeklyData: WeeklyReachRow[];
   currentLookback: number;
   currentPeriod: PeriodValue;
 }) {
@@ -103,10 +99,10 @@ export default function ReachClient({
   const [syncing, setSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
-  const periodMonths = currentPeriod === "6m" ? 6 : 3;
+  const periodMonths = PERIOD_OPTIONS.find(p => p.value === currentPeriod)?.months ?? 6;
   const filtered = data.slice(0, periodMonths);
 
-  function navigate(period: PeriodValue, lookback: LookbackValue) {
+  function navigate(period: PeriodValue, lookback: number) {
     router.push(`?period=${period}&lookback=${lookback}`);
   }
 
@@ -167,7 +163,7 @@ export default function ReachClient({
     ? { level: "warning" as const, label: "Moderat metning" }
     : { level: "critical" as const, label: "Høy metning" };
 
-  const lookbackLabel = LOOKBACK_OPTIONS.find((o) => o.value === currentLookback)?.label ?? "Ingen";
+  const lookbackLabel = LOOKBACK_OPTIONS.find(o => o.value === currentLookback)?.label ?? `${currentLookback}d`;
 
   return (
     <div className="space-y-8">
@@ -179,7 +175,7 @@ export default function ReachClient({
             <span className="text-sm text-[rgba(9,10,8,0.5)]">Periode</span>
             <select
               value={currentPeriod}
-              onChange={(e) => navigate(e.target.value as PeriodValue, currentLookback as LookbackValue)}
+              onChange={(e) => navigate(e.target.value as PeriodValue, currentLookback)}
               className="text-sm font-semibold bg-[var(--color-surface)] border-0 rounded-lg px-4 py-2.5 text-[var(--color-black)] cursor-pointer appearance-none pr-10"
               style={selectStyle}
             >
@@ -193,7 +189,7 @@ export default function ReachClient({
             <span className="text-sm text-[rgba(9,10,8,0.5)]">Lookback</span>
             <select
               value={currentLookback}
-              onChange={(e) => navigate(currentPeriod, parseInt(e.target.value) as LookbackValue)}
+              onChange={(e) => navigate(currentPeriod, parseInt(e.target.value))}
               className="text-sm font-semibold bg-[var(--color-surface)] border-0 rounded-lg px-4 py-2.5 text-[var(--color-black)] cursor-pointer appearance-none pr-10"
               style={selectStyle}
             >
@@ -224,13 +220,13 @@ export default function ReachClient({
       </div>
 
       {/* Empty state */}
-      {filtered.length === 0 && weeklyData.length === 0 && (
+      {filtered.length === 0 && (
         <div className="rounded-xl border border-[var(--color-border)] p-12 text-center">
           <p className="text-base text-[rgba(9,10,8,0.5)] mb-2">
             Ingen data ennå for denne perioden.
           </p>
           <p className="text-sm text-[rgba(9,10,8,0.4)] mb-6">
-            Trykk Hent data for å hente fra Meta.
+            Trykk Hent data for å synkronisere fra Meta.
           </p>
           <button
             onClick={handleSync}
@@ -242,25 +238,16 @@ export default function ReachClient({
         </div>
       )}
 
-      {(filtered.length > 0 || weeklyData.length > 0) && (
+      {filtered.length > 0 && (
         <>
           {/* KPI cards */}
           {kpis && (
             <div>
-              <SectionHeader title="Oppsummering" />
+              <SectionHeader title="Oppsummering" subtitle={`Lookback: ${lookbackLabel}`} />
               <div className="grid grid-cols-4 gap-4">
-                <KpiCard
-                  label="Total Spend"
-                  value={formatNokShort(kpis.totalSpend)}
-                />
-                <KpiCard
-                  label="Rolling Reach"
-                  value={formatReach(kpis.totalReach)}
-                />
-                <KpiCard
-                  label="Snitt nye per mnd"
-                  value={formatReach(kpis.avgNetNewReach)}
-                />
+                <KpiCard label="Total Spend" value={formatNokShort(kpis.totalSpend)} />
+                <KpiCard label="Rolling Reach" value={formatReach(kpis.totalReach)} />
+                <KpiCard label="Snitt nye per mnd" value={formatReach(kpis.avgNetNewReach)} />
                 <KpiCard
                   label="Snitt % nye"
                   value={`${kpis.avgNetNewPct.toFixed(1)}%`}
@@ -272,151 +259,92 @@ export default function ReachClient({
           )}
 
           {/* Reach Composition chart */}
-          {chartData.length > 0 && (
-            <div>
-              <SectionHeader title="Nye brukere per måned" />
-              <div className="rounded-xl border border-[var(--color-border)] p-5 bg-white">
-                <ReachCompositionChart data={chartData} />
-                <div className="flex gap-6 mt-4 text-sm text-[rgba(9,10,8,0.6)]">
-                  <span className="flex items-center gap-2">
-                    <span className="w-3.5 h-3.5 rounded-sm inline-block" style={{ backgroundColor: CHART_BAR_COLOR }} />
-                    Tidligere nådd
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <span className="w-3.5 h-3.5 rounded-sm inline-block" style={{ backgroundColor: CHART_BAR_STACKED }} />
-                    Nye
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: CHART_LINE_COLOR }} />
-                    % Nye
-                  </span>
-                </div>
+          <div>
+            <SectionHeader title="Nye brukere per måned" />
+            <div className="rounded-xl border border-[var(--color-border)] p-5 bg-white">
+              <ReachCompositionChart data={chartData} />
+              <div className="flex gap-6 mt-4 text-sm text-[rgba(9,10,8,0.6)]">
+                <span className="flex items-center gap-2">
+                  <span className="w-3.5 h-3.5 rounded-sm inline-block" style={{ backgroundColor: CHART_BAR_COLOR }} />
+                  Tidligere nådd
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="w-3.5 h-3.5 rounded-sm inline-block" style={{ backgroundColor: CHART_BAR_STACKED }} />
+                  Nye
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: CHART_LINE_COLOR }} />
+                  % Nye
+                </span>
               </div>
             </div>
-          )}
+          </div>
 
           {/* Cost per 1k Net New Reach */}
-          {chartData.length > 0 && (
-            <div>
-              <SectionHeader title="Kost nye brukere per måned" />
-              <div className="rounded-xl border border-[var(--color-border)] p-5 bg-white">
-                <ResponsiveContainer width="100%" height={260}>
-                  <LineChart data={chartData} margin={{ top: 8, right: 16, bottom: 4, left: 4 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0de" vertical={false} />
-                    <XAxis
-                      dataKey="month"
-                      tick={{ fontSize: 13, fill: "rgba(9,10,8,0.5)", fontFamily: "var(--font-mono)" }}
-                      tickLine={false}
-                      axisLine={false}
-                      dy={8}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 13, fill: "rgba(9,10,8,0.5)", fontFamily: "var(--font-mono)" }}
-                      tickLine={false}
-                      axisLine={false}
-                      width={56}
-                      tickFormatter={(v) => `${Math.round(v)} kr`}
-                    />
-                    <Tooltip content={<CpmTooltip />} cursor={{ stroke: "rgba(9,10,8,0.06)" }} />
-                    <Line
-                      type="monotone"
-                      dataKey="cpmNetNew"
-                      stroke={CHART_LINE_COLOR}
-                      strokeWidth={3}
-                      dot={{ fill: CHART_LINE_COLOR, strokeWidth: 0, r: 4 }}
-                      activeDot={{ fill: CHART_LINE_COLOR, strokeWidth: 0, r: 5 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+          <div>
+            <SectionHeader title="Kost nye brukere per måned" />
+            <div className="rounded-xl border border-[var(--color-border)] p-5 bg-white">
+              <ResponsiveContainer width="100%" height={260}>
+                <LineChart data={chartData} margin={{ top: 8, right: 16, bottom: 4, left: 4 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0de" vertical={false} />
+                  <XAxis dataKey="month" tick={{ fontSize: 13, fill: "rgba(9,10,8,0.5)", fontFamily: "var(--font-mono)" }} tickLine={false} axisLine={false} dy={8} />
+                  <YAxis tick={{ fontSize: 13, fill: "rgba(9,10,8,0.5)", fontFamily: "var(--font-mono)" }} tickLine={false} axisLine={false} width={56} tickFormatter={(v) => `${Math.round(v)} kr`} />
+                  <Tooltip content={<CpmTooltip />} cursor={{ stroke: "rgba(9,10,8,0.06)" }} />
+                  <Line type="monotone" dataKey="cpmNetNew" stroke={CHART_LINE_COLOR} strokeWidth={3} dot={{ fill: CHART_LINE_COLOR, strokeWidth: 0, r: 4 }} activeDot={{ fill: CHART_LINE_COLOR, strokeWidth: 0, r: 5 }} />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
-          )}
+          </div>
 
-          {/* Weekly breakdown table */}
-          {weeklyData.length > 0 && (
-            <div>
-              <SectionHeader title="Per uke" subtitle={`Lookback: ${lookbackLabel}`} />
-              <div className="rounded-xl bg-[var(--color-surface)] overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-[var(--color-border)]">
-                      {["Uke", "Reach", "Nye", "% Nye", "Spend", "Frekvens", "Kost/1k nye"].map((h) => (
-                        <th
-                          key={h}
-                          className={clsx(
-                            "py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)]",
-                            h === "Uke" ? "text-left px-5" : "text-right px-4"
-                          )}
-                        >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {weeklyData.map((row) => (
-                      <tr
-                        key={row.weekStart}
-                        className="border-b border-[var(--color-border)] last:border-0 hover:bg-white transition-colors"
+          {/* Monthly breakdown table */}
+          <div>
+            <SectionHeader title="Per måned" subtitle={`Lookback: ${lookbackLabel}`} />
+            <div className="rounded-xl bg-[var(--color-surface)] overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--color-border)]">
+                    {["Måned", "Reach", "Nye", "% Nye", "Spend", "Frekvens", "Kost/1k nye"].map((h) => (
+                      <th
+                        key={h}
+                        className={clsx(
+                          "py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)]",
+                          h === "Måned" ? "text-left px-5" : "text-right px-4"
+                        )}
                       >
-                        <td className="px-5 py-3 font-medium text-sm whitespace-nowrap">
-                          {row.weekLabel}
-                        </td>
-                        <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
-                          {formatReach(row.reach)}
-                        </td>
-                        <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
-                          {formatReach(row.netNew)}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <span
-                            className="text-sm px-2 py-1 rounded font-medium"
-                            style={{
-                              fontFamily: "var(--font-mono)",
-                              backgroundColor: getNetNewColor(row.netNewPct).bg,
-                              color: getNetNewColor(row.netNewPct).text,
-                            }}
-                          >
-                            {row.netNewPct.toFixed(1)}%
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
-                          {formatNok(row.spend)}
-                        </td>
-                        <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
-                          {row.frequency.toFixed(1)}×
-                        </td>
-                        <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>
-                          {Math.round(row.cpmNetNew)} kr
-                        </td>
-                      </tr>
+                        {h}
+                      </th>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((row) => (
+                    <tr key={row.monthKey} className="border-b border-[var(--color-border)] last:border-0 hover:bg-white transition-colors">
+                      <td className="px-5 py-3 font-medium text-sm whitespace-nowrap">{row.monthLabel}</td>
+                      <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>{formatReach(row.rollingReach)}</td>
+                      <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>{formatReach(row.netNew)}</td>
+                      <td className="px-4 py-3 text-right">
+                        <span className="text-sm px-2 py-1 rounded font-medium" style={{ fontFamily: "var(--font-mono)", backgroundColor: getNetNewColor(row.netNewPct).bg, color: getNetNewColor(row.netNewPct).text }}>
+                          {row.netNewPct.toFixed(1)}%
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>{formatNok(row.spend)}</td>
+                      <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>{row.frequency.toFixed(1)}×</td>
+                      <td className="px-4 py-3 text-right text-sm" style={{ fontFamily: "var(--font-mono)" }}>{Math.round(row.cpmNetNew)} kr</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          )}
+          </div>
 
           {/* Info */}
           <InfoBox title="Forklaring">
             <dl className="space-y-2.5">
               {[
-                {
-                  term: "Rolling Reach",
-                  def: "Totalt antall unike personer nådd kumulativt i det valgte vinduet.",
-                },
-                {
-                  term: "Nye",
-                  def: "Nye folk nådd denne uken — personer som ikke har sett annonsene dine i lookback-perioden.",
-                },
-                {
-                  term: "% Nye",
-                  def: "Andel av ukens rekkevidde som er nye folk. Over 25 % = frisk målgruppe. Under 15 % = vurder kreativ refresh.",
-                },
-                {
-                  term: "Lookback",
-                  def: "Hvor langt tilbake vi ser for å avgjøre om en person er \"ny\". Ingen = kun perioden selv. 3–12 mnd gir mer realistisk bilde.",
-                },
+                { term: "Rolling Reach", def: "Totalt antall unike personer nådd kumulativt i perioden." },
+                { term: "Nye", def: `Nye folk nådd denne måneden — personer som ikke har sett annonsene dine de siste ${lookbackLabel}.` },
+                { term: "% Nye", def: "Andel av månedlig rekkevidde som er nye folk. Over 25 % = frisk målgruppe. Under 15 % = vurder kreativ refresh." },
+                { term: "Lookback", def: "Hvor langt tilbake vi ser for å avgjøre om en person er \"ny\". Lengre lookback gir mer konservativt (lavere) % nye." },
               ].map(({ term, def }) => (
                 <div key={term} className="grid grid-cols-[140px_1fr] gap-3">
                   <dt className="font-semibold text-[rgba(9,10,8,0.75)] leading-snug pt-px">{term}</dt>

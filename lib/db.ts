@@ -761,7 +761,7 @@ function formatMonthLabel(monthKey: string): string {
 
 export async function getMonthlyReachData(
   clientId: string,
-  lookbackDays = 0
+  lookbackDays = 90
 ): Promise<MonthlyReachRow[]> {
   // Exclude current calendar month (incomplete) and weeks started < 7 days ago
   const currentMonthStart = new Date().toISOString().substring(0, 7) + "-01";

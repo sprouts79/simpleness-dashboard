@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { getMonthlyReachData, getWeeklyReachData } from "@/lib/db";
+import { getMonthlyReachData } from "@/lib/db";
 import ReachClient from "@/components/reach/ReachClient";
 
 export default async function ReachPage({
@@ -12,21 +12,17 @@ export default async function ReachPage({
 }) {
   const { client: clientId } = await params;
   const sp = await searchParams;
-  const lookback = parseInt(sp.lookback ?? "0", 10);
-  const periodWeeks = sp.period === "6m" ? 26 : 13; // default 3m = ~13 weeks
+  const lookback = parseInt(sp.lookback ?? "90", 10); // default 90 days (3 mnd)
+  const period = sp.period === "3m" ? "3m" : "6m"; // default 6m
 
-  const [monthlyData, weeklyData] = await Promise.all([
-    getMonthlyReachData(clientId, lookback),
-    getWeeklyReachData(clientId, lookback, periodWeeks),
-  ]);
+  const data = await getMonthlyReachData(clientId, lookback);
 
   return (
     <ReachClient
       clientId={clientId}
-      data={monthlyData}
-      weeklyData={weeklyData}
+      data={data}
       currentLookback={lookback}
-      currentPeriod={sp.period === "6m" ? "6m" : "3m"}
+      currentPeriod={period}
     />
   );
 }

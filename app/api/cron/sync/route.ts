@@ -116,8 +116,8 @@ export async function GET(req: NextRequest) {
 
       // ── Reach ──────────────────────────────────────────────────────────────
       const reachSince = daysAgoInTz(365, tz); // 12 months — covers gaps in ad spend
-      const windowStart = daysAgoInTz(365 + 91, tz); // 91-day baseline before display period
-      const weeklyRows = await fetchWeeklyReachRows(client.meta_account_id, reachSince, until, windowStart);
+      // Sliding 90-day lookback: each week checks if person was seen in previous 90 days
+      const weeklyRows = await fetchWeeklyReachRows(client.meta_account_id, reachSince, until, 90);
       const reachUpsert = weeklyRows.map((r) => {
         const netNew = Math.max(0, r.cumulativeReach - r.prevWindowReach);
         const cpm = r.impressions > 0 ? (r.spend / r.impressions) * 1000 : 0;
@@ -134,7 +134,7 @@ export async function GET(req: NextRequest) {
           cpm,
           cpm_net_new: cpmNetNew,
           frequency: r.frequency,
-          lookback_days: 0,
+          lookback_days: 90,
           synced_at: new Date().toISOString(),
         };
       });
