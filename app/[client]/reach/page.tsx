@@ -115,8 +115,8 @@ export default async function ReachPage({
 }) {
   const { client: clientId } = await params;
   const sp = await searchParams;
-  const lookback = parseInt(sp.lookback ?? "0", 10);
-  const period = sp.period === "3m" ? "3m" : "6m";
+  const lookback = parseInt(sp.lookback ?? "90", 10); // default 3 mnd lookback
+  const period = sp.period === "3m" ? "3m" : "6m"; // default 6 mnd
   const periodMonths = period === "3m" ? 3 : 6;
 
   const client = await getClient(clientId);

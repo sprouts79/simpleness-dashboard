@@ -27,10 +27,8 @@ const PERIOD_OPTIONS: { value: PeriodValue; label: string; months: number }[] = 
 ];
 
 const LOOKBACK_OPTIONS: { value: number; label: string }[] = [
-  { value: 0, label: "Ingen" },
   { value: 90, label: "3 mnd" },
   { value: 180, label: "6 mnd" },
-  { value: 360, label: "12 mnd" },
 ];
 
 function formatReach(n: number) {
