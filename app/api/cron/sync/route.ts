@@ -115,9 +115,10 @@ export async function GET(req: NextRequest) {
         .upsert(adsUpsert, { onConflict: "ad_id,client_id" });
 
       // ── Reach ──────────────────────────────────────────────────────────────
-      const reachSince = daysAgoInTz(365, tz); // 12 months — covers gaps in ad spend
-      // Sliding 90-day lookback: each week checks if person was seen in previous 90 days
-      const weeklyRows = await fetchWeeklyReachRows(client.meta_account_id, reachSince, until, 90);
+      // 6-month display period + 90-day lookback baseline before the display period
+      const reachSince = daysAgoInTz(180, tz);
+      const windowStart = daysAgoInTz(270, tz); // 180 + 90 = 270
+      const weeklyRows = await fetchWeeklyReachRows(client.meta_account_id, reachSince, until, windowStart);
       const reachUpsert = weeklyRows.map((r) => {
         const netNew = Math.max(0, r.cumulativeReach - r.prevWindowReach);
         const cpm = r.impressions > 0 ? (r.spend / r.impressions) * 1000 : 0;

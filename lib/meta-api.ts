@@ -411,22 +411,25 @@ export interface WeeklyReachRow {
 }
 
 /**
- * Fetches weekly reach data using a SLIDING lookback window.
+ * Fetches weekly reach data with a FIXED baseline window.
  *
- * For each week W with lookbackDays L:
- *   slidingStart = weekStart - L days
- *   R_full = unique reach over [slidingStart, weekEnd]
- *   R_prev = unique reach over [slidingStart, weekStart − 1]
- *   net_new = R_full − R_prev  (people reached this week not seen in previous L days)
+ * windowStart is fixed for ALL weeks — it defines the start of the reach baseline.
+ * Typically set to (displayPeriodStart − lookbackDays) so the baseline covers
+ * the lookback period BEFORE the display period.
  *
- * This matches how the reference app (Ad Insights) calculates net new reach:
- * each week is compared to its OWN lookback window, not a fixed start date.
+ * For each week W:
+ *   R_full = unique reach over [windowStart, weekEnd]
+ *   R_prev = unique reach over [windowStart, weekStart − 1]
+ *   net_new = R_full − R_prev (people reached this week not seen since windowStart)
+ *
+ * This matches how the reference app calculates net new: each week's net new
+ * is relative to a fixed historical baseline, not a sliding window.
  */
 export async function fetchWeeklyReachRows(
   accountId: string,
   since: string,       // start of display period (fetch weekly metrics from here)
   until: string,
-  lookbackDays = 91,   // sliding window: how far back to check for "previously reached"
+  windowStart: string, // fixed baseline start (typically since − lookbackDays)
 ): Promise<WeeklyReachRow[]> {
   // One bulk call for per-week metrics
   const fields = "reach,impressions,spend,frequency";
@@ -434,22 +437,22 @@ export async function fetchWeeklyReachRows(
   const url = `${BASE}/${accountId}/insights?fields=${fields}&time_range=${timeRange}&time_increment=7&level=account&limit=52&access_token=${token()}`;
   const rows = await paginate<any>(url);
 
-  // Process weeks in batches of 3 (each week = 2 sliding API calls)
+  // Process weeks in batches of 4 (each week = 2 API calls)
   const results: WeeklyReachRow[] = [];
-  for (let i = 0; i < rows.length; i += 3) {
-    const batch = rows.slice(i, i + 3);
+  for (let i = 0; i < rows.length; i += 4) {
+    const batch = rows.slice(i, i + 4);
     const batchResults = await Promise.all(
       batch.map(async (r) => {
         const weekStart: string = r.date_start;
         const weekEnd: string = r.date_stop;
         const prevEnd = subtractDays(weekStart, 1);
 
-        // Sliding window: lookbackDays before THIS week's start
-        const slidingStart = subtractDays(weekStart, lookbackDays);
-
+        const hasPrevWindow = prevEnd >= windowStart;
         const [fullData, prevData] = await Promise.all([
-          fetchReach(accountId, slidingStart, weekEnd),
-          fetchReach(accountId, slidingStart, prevEnd),
+          fetchReach(accountId, windowStart, weekEnd),
+          hasPrevWindow
+            ? fetchReach(accountId, windowStart, prevEnd)
+            : Promise.resolve({ reach: 0, impressions: 0, spend: 0, frequency: 0 }),
         ]);
 
         return {

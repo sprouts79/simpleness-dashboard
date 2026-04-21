@@ -148,12 +148,13 @@ export async function POST(req: NextRequest) {
 
   let reachSynced = 0;
   if (syncType === "all" || syncType === "reach") try {
-    const reachDays = months ? Math.ceil(months * 30.44) + 14 : 365; // 12 months default
+    // Display period: default 6 months; lookback: default 90 days (3 mnd)
+    const reachDays = months ? Math.ceil(months * 30.44) : 180;
+    const effectiveLookback = lookbackDays || 90;
     const reachSince = daysAgoInTz(reachDays, tz);
-    // Sliding lookback: each week compares to its own previous N days
-    // Default 90 days (~3 months) — matches reference app behavior
-    const slidingLookback = lookbackDays || 90;
-    const weeklyRows = await fetchWeeklyReachRows(accountId, reachSince, until, slidingLookback);
+    // Fixed baseline: lookback period BEFORE the display period
+    const windowStart = daysAgoInTz(reachDays + effectiveLookback, tz);
+    const weeklyRows = await fetchWeeklyReachRows(accountId, reachSince, until, windowStart);
 
     const upsertRows = weeklyRows.map((r) => {
       const netNew = Math.max(0, r.cumulativeReach - r.prevWindowReach);
@@ -171,7 +172,7 @@ export async function POST(req: NextRequest) {
         cpm,
         cpm_net_new: cpmNetNew,
         frequency: r.frequency,
-        lookback_days: slidingLookback,
+        lookback_days: effectiveLookback,
         synced_at: new Date().toISOString(),
       };
     });
