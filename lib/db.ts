@@ -16,6 +16,7 @@ import {
   ReachCompositionPoint,
   ReachMonthRow,
   MonthlyReachRow,
+  WeeklyReachRow,
   AdCohort,
   CreativeChurnPoint,
   Ad,
@@ -402,6 +403,7 @@ export async function getCampaigns(clientId: string, since: string, until: strin
         reach: agg.reach,
       };
     })
+    .filter((c) => c.spend > 0) // only campaigns with spend in the selected period
     .sort((a, b) => b.spend - a.spend);
 }
 
@@ -818,4 +820,36 @@ export async function getMonthlyReachData(
 
   // Return newest-first
   return result.sort((a, b) => b.monthKey.localeCompare(a.monthKey));
+}
+
+// ─── Weekly Reach (for table display) ───────────────────────────────────────
+
+export async function getWeeklyReachData(
+  clientId: string,
+  lookbackDays = 0,
+  periodWeeks = 13, // default ~3 months
+): Promise<WeeklyReachRow[]> {
+  const { data, error } = await supabase
+    .from("meta_reach_weekly")
+    .select("week_start,weekly_reach,cumulative_reach,net_new_reach,pct_net_new,spend,cpm_net_new,frequency")
+    .eq("client_id", clientId)
+    .eq("lookback_days", lookbackDays)
+    .not("synced_at", "is", null)
+    .lte("week_start", daysAgo(6)) // only complete weeks
+    .order("week_start", { ascending: false })
+    .limit(periodWeeks);
+
+  if (error || !data?.length) return [];
+
+  return data.map((r) => ({
+    weekLabel: formatWeekLabel(r.week_start),
+    weekStart: r.week_start,
+    reach: r.cumulative_reach ?? 0,
+    weeklyReach: r.weekly_reach ?? 0,
+    netNew: r.net_new_reach ?? 0,
+    netNewPct: r.pct_net_new ?? 0,
+    spend: r.spend ?? 0,
+    frequency: r.frequency ?? 0,
+    cpmNetNew: r.cpm_net_new ?? 0,
+  }));
 }

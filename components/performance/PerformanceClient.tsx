@@ -10,18 +10,18 @@ import clsx from "clsx";
 import { useState } from "react";
 
 const PERIOD_OPTIONS: { value: PeriodKey; label: string }[] = [
-  { value: "today", label: "I gar" },
+  { value: "today", label: "I går" },
   { value: "7d", label: "Siste 7 dager" },
   { value: "30d", label: "Siste 30 dager" },
-  { value: "prev_month", label: "Forrige maned" },
-  { value: "3m", label: "Siste 3 maneder" },
-  { value: "6m", label: "Siste 6 maneder" },
-  { value: "12m", label: "Siste ar" },
+  { value: "prev_month", label: "Forrige måned" },
+  { value: "3m", label: "Siste 3 måneder" },
+  { value: "6m", label: "Siste 6 måneder" },
+  { value: "12m", label: "Siste 12 måneder" },
 ];
 
 const COMPARE_OPTIONS: { value: CompareKey; label: string }[] = [
   { value: "period", label: "Forrige periode" },
-  { value: "year", label: "Forrige ar" },
+  { value: "year", label: "Forrige år" },
 ];
 
 function formatNok(n: number) {

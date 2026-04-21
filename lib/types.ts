@@ -170,3 +170,15 @@ export interface MonthlyReachRow {
   cpmNetNew: number;    // spend / (netNew / 1000)
   frequency: number;
 }
+
+export interface WeeklyReachRow {
+  weekLabel: string;    // "7. apr"
+  weekStart: string;    // "2026-04-07" for sorting/keying
+  reach: number;        // cumulative_reach
+  weeklyReach: number;
+  netNew: number;
+  netNewPct: number;
+  spend: number;
+  frequency: number;
+  cpmNetNew: number;
+}
