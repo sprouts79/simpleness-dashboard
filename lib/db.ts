@@ -800,8 +800,8 @@ export async function getMonthlyReachData(
     const avgCpm = rows.reduce((s, r) => s + (r.cpm ?? 0), 0) / rows.length;
     const avgFrequency = rows.reduce((s, r) => s + (r.frequency ?? 0), 0) / rows.length;
 
-    // Use rollingReach (cumulative unique) as denominator — not sum of weekly reach (overcounts)
-    const netNewPct = rollingReach > 0 ? (totalNetNew / rollingReach) * 100 : 0;
+    // Average per-week % (each week's netNew/weeklyReach is correct for its own 7-day window)
+    const netNewPct = rows.reduce((s, r) => s + (r.pct_net_new ?? 0), 0) / rows.length;
     const cpmNetNew = totalNetNew > 0 ? totalSpend / (totalNetNew / 1000) : 0;
 
     result.push({

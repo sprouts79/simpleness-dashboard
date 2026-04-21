@@ -142,15 +142,12 @@ export default function ReachClient({
     }
   }
 
-  const totalNetNew = filtered.reduce((s, r) => s + r.netNew, 0);
-  const totalReach = filtered[0]?.rollingReach ?? 0;
-
   const kpis = filtered.length === 0 ? null : {
     totalSpend: filtered.reduce((s, r) => s + r.spend, 0),
-    totalReach,
-    avgNetNewReach: Math.round(totalNetNew / filtered.length),
-    // Use totalNetNew / rollingReach — NOT sum(weeklyReach) which overcounts
-    avgNetNewPct: totalReach > 0 ? (totalNetNew / totalReach) * 100 : 0,
+    totalReach: filtered[0].rollingReach,
+    avgNetNewReach: Math.round(filtered.reduce((s, r) => s + r.netNew, 0) / filtered.length),
+    // Average of monthly % values (each based on per-week averages — correct denominator)
+    avgNetNewPct: filtered.reduce((s, r) => s + r.netNewPct, 0) / filtered.length,
   };
 
   const chartData = [...filtered].reverse().map((r) => ({
