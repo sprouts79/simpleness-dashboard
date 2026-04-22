@@ -1,11 +1,14 @@
 /**
- * GET /api/cron/sync
+ * GET /api/cron/sync — Daily automatic sync (06:00 UTC / 08:00 CET)
  *
- * Called daily by Vercel Cron. Syncs performance + ads + reach for all active clients.
- * Vercel automatically passes Authorization: Bearer <CRON_SECRET> — we verify it.
+ * Syncs these tables automatically every day:
+ *   1. meta_performance_daily (90 days) — Performance tab + Puls page
+ *   2. meta_ads (90 days) — Creative tab gallery + top lists
+ *   3. meta_reach_weekly (6 mnd + 90d lookback) — Puls page Net New %
+ *   4. meta_ad_weekly (12 weeks) — Creative cohort table + top ads
  *
- * Schedule: daily at 06:00 UTC (08:00 CET / 08:00 CEST)
- * Meta data for the previous day is typically fully settled by then.
+ * NOT synced by cron (live from Meta API on each page load):
+ *   - Reach tab — computed directly from Meta API per month
  */
 
 import { NextRequest, NextResponse } from "next/server";
