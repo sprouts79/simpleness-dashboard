@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
   const accountId = client.meta_account_id;
 
   const tz = await fetchAccountTimezone(accountId);
-  const since = daysAgoInTz(365, tz); // 12 months
+  const since = daysAgoInTz(90, tz); // 90 days — avoids Meta "response too large" errors
   const until = daysAgoInTz(1, tz);
   const errors: string[] = [];
 

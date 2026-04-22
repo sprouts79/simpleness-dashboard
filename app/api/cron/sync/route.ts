@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
   for (const client of clients) {
     try {
       const tz = await fetchAccountTimezone(client.meta_account_id);
-      const since = daysAgoInTz(365, tz); // 12 months of performance data
+      const since = daysAgoInTz(90, tz); // 90 days — avoids "response too large" for campaign-level data
       const until = daysAgoInTz(1, tz);
 
       // ── Performance ────────────────────────────────────────────────────────
