@@ -69,23 +69,27 @@ const PERIOD_LABELS: Record<PeriodKey, string> = {
 };
 
 export function getPeriodRange(period: PeriodKey): { since: string; until: string } {
-  const yesterday = daysAgo(1); // always use yesterday — today's data is incomplete
-  if (period === "today") return { since: yesterday, until: yesterday };
-  if (period === "7d") return { since: daysAgo(7), until: yesterday };
-  if (period === "30d") return { since: daysAgo(30), until: yesterday };
-  if (period === "prev_month") {
-    const now = new Date();
+  const now = new Date();
+  const yesterday = daysAgo(1);
+
+  // Helper: last N complete calendar months (e.g. 3m in April = Jan 1 – Mar 31)
+  function lastNMonths(n: number) {
     const firstOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastOfPrevMonth = new Date(firstOfThisMonth.getTime() - 86400000);
-    const firstOfPrevMonth = new Date(lastOfPrevMonth.getFullYear(), lastOfPrevMonth.getMonth(), 1);
+    const firstMonth = new Date(lastOfPrevMonth.getFullYear(), lastOfPrevMonth.getMonth() - (n - 1), 1);
     return {
-      since: firstOfPrevMonth.toISOString().split("T")[0],
+      since: firstMonth.toISOString().split("T")[0],
       until: lastOfPrevMonth.toISOString().split("T")[0],
     };
   }
-  if (period === "3m") return { since: daysAgo(90), until: yesterday };
-  if (period === "6m") return { since: daysAgo(180), until: yesterday };
-  return { since: daysAgo(365), until: yesterday }; // 12m
+
+  if (period === "today") return { since: yesterday, until: yesterday };
+  if (period === "7d") return { since: daysAgo(7), until: yesterday };
+  if (period === "30d") return { since: daysAgo(30), until: yesterday };
+  if (period === "prev_month") return lastNMonths(1);
+  if (period === "3m") return lastNMonths(3);
+  if (period === "6m") return lastNMonths(6);
+  return lastNMonths(12); // 12m
 }
 
 export function getCompareRange(
@@ -344,23 +348,35 @@ export async function getSpendTrend(
     .neq("campaign_id", "")
     .order("date");
 
-  if (!data?.length) return MOCK_SPEND_TREND[clientId] ?? [];
-
   // Aggregate by date (multiple campaign rows per day → sum)
   const byDate = new Map<string, { spend: number; purchaseValue: number }>();
-  for (const r of data) {
-    const existing = byDate.get(r.date) ?? { spend: 0, purchaseValue: 0 };
-    byDate.set(r.date, {
-      spend: existing.spend + (r.spend ?? 0),
-      purchaseValue: existing.purchaseValue + (r.purchase_value ?? 0),
-    });
+  if (data?.length) {
+    for (const r of data) {
+      const existing = byDate.get(r.date) ?? { spend: 0, purchaseValue: 0 };
+      byDate.set(r.date, {
+        spend: existing.spend + (r.spend ?? 0),
+        purchaseValue: existing.purchaseValue + (r.purchase_value ?? 0),
+      });
+    }
   }
 
-  return Array.from(byDate.entries()).map(([date, vals]) => ({
-    date,
-    spend: Math.round(vals.spend),
-    roas: vals.spend > 0 ? parseFloat((vals.purchaseValue / vals.spend).toFixed(2)) : 0,
-  }));
+  // Fill ALL days in the range (days without spend = 0)
+  const result: SpendTrendPoint[] = [];
+  const d = new Date(since + "T00:00:00");
+  const end = new Date(until + "T00:00:00");
+  while (d <= end) {
+    const dateStr = d.toISOString().split("T")[0];
+    const vals = byDate.get(dateStr) ?? { spend: 0, purchaseValue: 0 };
+    result.push({
+      date: dateStr,
+      spend: Math.round(vals.spend),
+      roas: vals.spend > 0 ? parseFloat((vals.purchaseValue / vals.spend).toFixed(2)) : 0,
+    });
+    d.setDate(d.getDate() + 1);
+  }
+
+  if (!result.length) return MOCK_SPEND_TREND[clientId] ?? [];
+  return result;
 }
 
 // ─── Campaigns ───────────────────────────────────────────────────────────────
