@@ -5,63 +5,83 @@ import { usePathname } from "next/navigation";
 import { Client } from "@/lib/types";
 import clsx from "clsx";
 import PulseIcon from "@/components/ui/PulseIcon";
+import ClientPicker from "./ClientPicker";
 
-// Alle klient-avatarer er sort. Klienter skilles på navn + initial.
-const AVATAR_BG = "#171717";
+const CLIENT_SUBNAV = [
+  { label: "Performance", path: "performance" },
+  { label: "Reach", path: "reach" },
+  { label: "Creative", path: "creative" },
+] as const;
 
 export default function Sidebar({ clients }: { clients: Client[] }) {
   const pathname = usePathname();
   const isPulse = pathname === "/";
   const isGuide = pathname === "/guide";
 
+  // Aktiv klient = første path-segment matcher en client.slug
+  const slug = pathname.split("/")[1];
+  const activeClient = clients.find((c) => c.slug === slug);
+
   return (
     <aside className="w-64 flex-shrink-0 h-full overflow-y-auto bg-[var(--color-card)] border-r border-[var(--color-border)] flex flex-col">
-      {/* Klient-liste */}
-      <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto">
-        <PulseLink active={isPulse} />
+      {/* Toppnav: Pulse + ClientPicker + per-klient sub-nav */}
+      <nav className="flex-1 px-2 py-4 overflow-y-auto">
+        {/* Pulse — global */}
+        <Link
+          href="/"
+          className={clsx(
+            "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors",
+            isPulse
+              ? "bg-neutral-100 text-neutral-900"
+              : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+          )}
+        >
+          <span className="w-7 h-7 flex items-center justify-center flex-shrink-0">
+            <PulseIcon className="w-2.5 h-2.5" />
+          </span>
+          <span className="flex-1 truncate font-medium">Puls</span>
+        </Link>
 
-        <p className="px-2.5 pt-4 pb-1.5 text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
-          Klienter
-        </p>
-
-        {clients.length === 0 && (
-          <p className="px-3 py-2 text-xs text-neutral-500 leading-relaxed">
-            Ingen klienter. Legg til i Innstillinger.
+        {/* Klient-velger */}
+        <div className="mt-5">
+          <p className="px-2.5 pb-1.5 text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
+            Klient
           </p>
-        )}
+          <ClientPicker clients={clients} />
+        </div>
 
-        {clients.map((client) => {
-          const isActive = pathname.startsWith(`/${client.slug}`);
-          return (
-            <Link
-              key={client.id}
-              href={`/${client.slug}/performance`}
-              className={clsx(
-                "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors",
-                isActive
-                  ? "bg-neutral-100 text-neutral-900"
-                  : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
-              )}
-            >
-              <span
-                className="w-7 h-7 rounded-md text-[11px] font-semibold flex items-center justify-center flex-shrink-0 text-white"
-                style={{ backgroundColor: AVATAR_BG }}
-              >
-                {client.name.charAt(0).toUpperCase()}
-              </span>
-              <span className="flex-1 truncate font-medium">{client.name}</span>
-            </Link>
-          );
-        })}
+        {/* Per-klient sub-nav */}
+        {activeClient && (
+          <div className="mt-1 space-y-0.5">
+            {CLIENT_SUBNAV.map((item) => {
+              const href = `/${activeClient.slug}/${item.path}`;
+              const active = pathname.endsWith(item.path);
+              return (
+                <Link
+                  key={item.path}
+                  href={href}
+                  className={clsx(
+                    "flex items-center gap-2.5 pl-12 pr-2.5 py-1.5 rounded-lg text-sm transition-colors",
+                    active
+                      ? "bg-neutral-100 text-neutral-900 font-medium"
+                      : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+                  )}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </nav>
 
-      {/* Bottom-actions — speiler adlaunch (Innstillinger ligger i footer) */}
+      {/* Bottom-actions */}
       <div className="px-2 py-2 border-t border-neutral-200 space-y-0.5">
         <BottomLink href="/guide" active={isGuide} icon="guide">Guide</BottomLink>
         <BottomLink href="/docs/index.html" active={false} external icon="docs">Dokumentasjon</BottomLink>
       </div>
 
-      {/* Brand-footer — eksakt struktur som adlaunch (ikon + stack + høyre-action) */}
+      {/* Brand-footer */}
       <div className="px-4 py-3 border-t border-neutral-200 flex items-center gap-2.5">
         <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
           <PulseIcon className="w-2 h-2" />
@@ -81,25 +101,6 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
   );
 }
 
-function PulseLink({ active }: { active: boolean }) {
-  return (
-    <Link
-      href="/"
-      className={clsx(
-        "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors",
-        active
-          ? "bg-neutral-100 text-neutral-900"
-          : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
-      )}
-    >
-      <span className="w-7 h-7 flex items-center justify-center flex-shrink-0">
-        <PulseIcon className="w-2.5 h-2.5" />
-      </span>
-      <span className="flex-1 truncate font-medium">Puls</span>
-    </Link>
-  );
-}
-
 function BottomLink({
   href,
   active,
@@ -110,7 +111,7 @@ function BottomLink({
   href: string;
   active: boolean;
   external?: boolean;
-  icon: "guide" | "docs" | "settings";
+  icon: "guide" | "docs";
   children: React.ReactNode;
 }) {
   const className = clsx(
@@ -128,20 +129,12 @@ function BottomLink({
   );
 
   if (external) {
-    return (
-      <a href={href} className={className}>
-        {inner}
-      </a>
-    );
+    return <a href={href} className={className}>{inner}</a>;
   }
-  return (
-    <Link href={href} className={className}>
-      {inner}
-    </Link>
-  );
+  return <Link href={href} className={className}>{inner}</Link>;
 }
 
-function Icon({ name }: { name: "guide" | "docs" | "settings" }) {
+function Icon({ name }: { name: "guide" | "docs" }) {
   if (name === "guide") {
     return (
       <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,17 +142,9 @@ function Icon({ name }: { name: "guide" | "docs" | "settings" }) {
       </svg>
     );
   }
-  if (name === "docs") {
-    return (
-      <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    );
-  }
   return (
     <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
     </svg>
   );
 }
