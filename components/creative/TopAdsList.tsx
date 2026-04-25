@@ -2,7 +2,22 @@
 
 import { useState } from "react";
 import { Ad, CohortMetric } from "@/lib/types";
-import clsx from "clsx";
+import Badge from "../ui/Badge";
+import PillSelect from "../ui/PillSelect";
+
+const FORMAT_BADGE_COLOR: Record<Ad["format"], "purple" | "blue" | "orange" | "amber"> = {
+  video:    "purple",
+  static:   "blue",
+  carousel: "orange",
+  story:    "amber",
+};
+
+const FORMAT_LABEL: Record<Ad["format"], string> = {
+  video:    "Video",
+  static:   "Bilde",
+  carousel: "Karusell",
+  story:    "Story",
+};
 
 type TopPeriod = "week" | "month" | "quarter";
 
@@ -110,8 +125,8 @@ function PreviewModal({
 function MetricCell({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-2xs text-[rgba(9,10,8,0.45)] uppercase tracking-wide leading-none mb-0.5">{label}</p>
-      <p className="text-sm font-semibold" style={{ fontFamily: "var(--font-mono)" }}>{value}</p>
+      <p className="text-[10px] text-[var(--color-fg-subtle)] uppercase tracking-wider leading-none mb-1 font-medium">{label}</p>
+      <p className="text-sm font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)" }}>{value}</p>
     </div>
   );
 }
@@ -134,7 +149,7 @@ function AdCard({
 
   return (
     <div
-      className="rounded-xl border border-[var(--color-border)] overflow-hidden bg-white cursor-pointer group hover:border-[var(--color-link)] transition-colors"
+      className="rounded-xl border border-[var(--color-border)] overflow-hidden bg-white cursor-pointer group hover:border-[var(--color-border-strong)] hover:shadow-sm transition-all"
       onClick={onOpen}
     >
       {/* Thumbnail — forced 9:16 portrait crop for consistency */}
@@ -149,32 +164,37 @@ function AdCard({
         ) : (
           <div className="aspect-[9/16] flex items-center justify-center">
             <div className="text-center">
-              <p className="text-2xl mb-1">{ad.format === "video" ? "▶" : "▣"}</p>
-              <p className="text-[10px] text-[rgba(9,10,8,0.3)] capitalize">{ad.format}</p>
+              <p className="text-2xl mb-1 opacity-30">{ad.format === "video" ? "▶" : "▣"}</p>
+              <p className="text-[10px] text-[var(--color-fg-disabled)] capitalize">{ad.format}</p>
             </div>
           </div>
         )}
 
         {/* Rank */}
         <span
-          className="absolute top-2 left-2 w-5 h-5 rounded-full bg-black/60 text-white text-[10px] font-bold flex items-center justify-center"
+          className="absolute top-2 left-2 w-5 h-5 rounded-full bg-[var(--color-fg)]/70 backdrop-blur-sm text-white text-[10px] font-bold flex items-center justify-center tabular-nums"
           style={{ fontFamily: "var(--font-mono)" }}
         >
           {rank}
         </span>
 
-        {/* Active sort metric badge */}
+        {/* Format badge */}
+        <span className="absolute top-2 right-2">
+          <Badge color={FORMAT_BADGE_COLOR[ad.format]}>{FORMAT_LABEL[ad.format]}</Badge>
+        </span>
+
+        {/* Active sort metric — bottom right */}
         <span
-          className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded"
+          className="absolute bottom-2 right-2 bg-[var(--color-fg)]/70 backdrop-blur-sm text-white text-[10px] font-semibold px-1.5 py-0.5 rounded tabular-nums"
           style={{ fontFamily: "var(--font-mono)" }}
         >
           {formatMetricValue(getMetricValue(ad, metric), metric)}
         </span>
 
-        {/* Hover overlay — play icon for video, dim-only for images */}
+        {/* Hover overlay — play icon for video */}
         <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
           {ad.format === "video" && (
-            <div className="w-10 h-10 rounded-full bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow">
+            <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow">
               {isLoading ? (
                 <span className="text-xs">...</span>
               ) : (
@@ -187,7 +207,7 @@ function AdCard({
 
       {/* KPIs — always Spend · ROAS · CTR · CPA */}
       <div className="p-3">
-        <p className="text-sm font-medium leading-tight mb-2.5 line-clamp-2 h-9">{ad.name}</p>
+        <p className="text-sm font-medium leading-tight mb-2.5 line-clamp-2 h-9 text-[var(--color-fg)]">{ad.name}</p>
         <div className="grid grid-cols-2 gap-x-3 gap-y-2">
           <MetricCell
             label="Spend"
@@ -248,44 +268,26 @@ export default function TopAdsList({
 
   if (!adsMap[period].length) {
     return (
-      <div className="rounded-xl border border-[var(--color-border)] p-10 text-center">
-        <p className="text-base text-[rgba(9,10,8,0.5)]">Ingen annonsedata for perioden.</p>
+      <div className="rounded-xl border border-[var(--color-border)] bg-white p-10 text-center">
+        <p className="text-sm text-[var(--color-fg-muted)]">Ingen annonsedata for perioden.</p>
       </div>
     );
   }
 
   return (
     <>
-      {/* Controls */}
-      <div className="flex items-center gap-4 mb-5">
-        <select
+      {/* Controls — Shopify-aktig pille-knapper */}
+      <div className="flex items-center gap-2 mb-5">
+        <PillSelect
           value={period}
-          onChange={(e) => setPeriod(e.target.value as TopPeriod)}
-          className="text-sm font-semibold bg-[var(--color-surface)] border-0 rounded-lg px-4 py-2.5 text-[var(--color-black)] cursor-pointer appearance-none pr-10"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23090a08' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'right 12px center',
-          }}
-        >
-          {PERIOD_OPTIONS.map(({ value, label }) => (
-            <option key={value} value={value}>{label}</option>
-          ))}
-        </select>
-        <select
+          onChange={(v) => setPeriod(v as TopPeriod)}
+          options={PERIOD_OPTIONS}
+        />
+        <PillSelect
           value={metric}
-          onChange={(e) => setMetric(e.target.value as CohortMetric)}
-          className="text-sm font-semibold bg-[var(--color-surface)] border-0 rounded-lg px-4 py-2.5 text-[var(--color-black)] cursor-pointer appearance-none pr-10"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23090a08' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'right 12px center',
-          }}
-        >
-          {METRIC_OPTIONS.map((m) => (
-            <option key={m.value} value={m.value}>Sorter: {m.label}</option>
-          ))}
-        </select>
+          onChange={(v) => setMetric(v as CohortMetric)}
+          options={METRIC_OPTIONS.map((m) => ({ value: m.value, label: `Sorter: ${m.label}` }))}
+        />
       </div>
 
       {/* Card grid — horizontal, left to right: #1 · #2 · #3 … */}

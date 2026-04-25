@@ -1,4 +1,6 @@
 import clsx from "clsx";
+import DeltaPill from "./DeltaPill";
+import StatusDot from "./StatusDot";
 
 type StatusLevel = "good" | "warning" | "critical";
 
@@ -11,14 +13,15 @@ interface KpiCardProps {
   status?: { level: StatusLevel; label: string; description?: string };
   size?: "default" | "large";
   highlight?: boolean;
-  invertDelta?: boolean; // lower is better (CPA, CPMn, Frequency)
+  invertDelta?: boolean; // lower is better (CPA, CPM, Frequency)
 }
 
-function formatDelta(delta: number) {
-  const sign = delta > 0 ? "+" : "";
-  return `${sign}${delta.toFixed(1)}%`;
-}
-
+/**
+ * KPI Card — Shopify-aktig oppsett:
+ *   ─ Tittel (underline, dempet)
+ *   ─ Stort sort tall + inline delta-pil
+ *   ─ Optional status-prikk eller note nederst
+ */
 export default function KpiCard({
   label,
   value,
@@ -30,79 +33,57 @@ export default function KpiCard({
   highlight = false,
   invertDelta = false,
 }: KpiCardProps) {
-  const isNeutral = delta === undefined || delta === 0;
-  const isGood = invertDelta ? (delta ?? 0) < 0 : (delta ?? 0) > 0;
-
   return (
     <div
       className={clsx(
-        "rounded-2xl px-6 py-5 min-h-[140px] flex flex-col",
-        highlight 
-          ? "bg-white border-2 border-[var(--color-black)]" 
-          : "bg-[var(--color-surface)]"
+        "rounded-xl border bg-white px-5 py-4 min-h-[140px] flex flex-col transition-colors",
+        highlight
+          ? "border-[var(--color-fg)]/15 ring-1 ring-[var(--color-fg)]/5"
+          : "border-[var(--color-border)]"
       )}
     >
-      {/* Label */}
-      <span className="inline-block text-xs font-medium text-[rgba(9,10,8,0.55)] mb-2 pb-1 border-b border-[rgba(9,10,8,0.1)]">
-        {label}
-      </span>
+      {/* Eyebrow tittel (Shopify-aktig underline) */}
+      <p className="section-title">{label}</p>
 
-      {/* Big number */}
-      <p
-        className={clsx(
-          "font-bold tabular-nums leading-none",
-          size === "large" ? "text-5xl" : "text-4xl"
+      {/* Big number + inline delta — på samme linje, Shopify-pattern */}
+      <div className="mt-3 flex items-baseline gap-2 flex-wrap">
+        <p
+          className={clsx(
+            "font-bold tabular-nums leading-none text-[var(--color-fg)]",
+            size === "large" ? "text-4xl" : "text-3xl"
+          )}
+          style={{ fontFamily: "var(--font-mono)" }}
+        >
+          {value}
+        </p>
+        {delta !== undefined && (
+          <DeltaPill delta={delta} invert={invertDelta} />
         )}
-        style={{ fontFamily: "var(--font-mono)" }}
-      >
-        {value}
-      </p>
+      </div>
 
-      {/* Status badge if present */}
-      {status && (
-        <div className="mt-auto pt-3">
-          <span
-            className={clsx(
-              "inline-flex items-center gap-1.5 text-xs",
-              {
-                "text-[#3d8a12]": status.level === "good",
-                "text-[#9a7010]": status.level === "warning",
-                "text-[#9a4c4c]": status.level === "critical",
-              }
-            )}
-          >
-            <span
-              className={clsx("w-1.5 h-1.5 rounded-full", {
-                "bg-[#3d8a12]": status.level === "good",
-                "bg-[#b47814]": status.level === "warning",
-                "bg-[#b45c5c]": status.level === "critical",
-              })}
-            />
-            {status.label}
-          </span>
-        </div>
+      {/* Delta context-label (sub-line) */}
+      {delta !== undefined && deltaLabel && (
+        <p className="text-xs text-[var(--color-fg-subtle)] mt-1.5">
+          {deltaLabel}
+        </p>
       )}
-
-      {/* Note if present (simple text) */}
-      {note && !status && (
-        <p className="text-sm text-[rgba(9,10,8,0.45)] mt-2">
-          {note}
+      {delta !== undefined && !deltaLabel && (
+        <p className="text-xs text-[var(--color-fg-subtle)] mt-1.5">
+          vs forrige uke
         </p>
       )}
 
-      {/* Delta row */}
-      {delta !== undefined && (
-        <p
-          className={clsx("text-sm font-medium mt-3", {
-            "delta-up": isGood,
-            "delta-down": !isGood && !isNeutral,
-            "delta-neutral": isNeutral,
-          })}
-        >
-          {formatDelta(delta)}{" "}
-          <span className="font-normal text-[rgba(9,10,8,0.45)]">
-            {deltaLabel ?? "vs forrige uke"}
-          </span>
+      {/* Status — bottom-aligned */}
+      {status && (
+        <div className="mt-auto pt-3">
+          <StatusDot level={status.level} label={status.label} />
+        </div>
+      )}
+
+      {/* Note (når ingen status) */}
+      {note && !status && (
+        <p className="text-sm text-[var(--color-fg-muted)] mt-2 leading-snug">
+          {note}
         </p>
       )}
     </div>

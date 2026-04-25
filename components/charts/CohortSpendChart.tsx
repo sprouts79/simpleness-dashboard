@@ -11,12 +11,11 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { AdCohort } from "@/lib/types";
+import { CHART_COLORS, CHART_GRID_COLOR, CHART_AXIS_COLOR } from "@/lib/chart-colors";
 
 interface Props {
   cohorts: AdCohort[];
 }
-
-import { CHART_COLORS } from "@/lib/chart-colors";
 
 // Re-export for backwards compatibility
 export const COHORT_COLORS = CHART_COLORS;
@@ -39,28 +38,28 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   const total = validPayload.reduce((sum: number, p: any) => sum + (p.value || 0), 0);
   
   return (
-    <div className="bg-white border border-[var(--color-border)] rounded-xl px-4 py-3 shadow-lg min-w-[180px] max-w-[240px]">
-      <p className="font-semibold text-sm mb-2">{label}</p>
-      <div className="space-y-1.5 max-h-[200px] overflow-auto">
+    <div className="bg-white border border-[var(--color-border)] rounded-lg px-3 py-2.5 shadow-sm min-w-[180px] max-w-[240px]">
+      <p className="text-xs font-medium text-[var(--color-fg-muted)] mb-2">{label}</p>
+      <div className="space-y-1 max-h-[200px] overflow-auto">
         {validPayload.slice(0, 6).map((entry: any, idx: number) => (
           <div key={idx} className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 min-w-0">
-              <div 
-                className="w-2.5 h-2.5 rounded-full flex-shrink-0" 
+            <div className="flex items-center gap-1.5 min-w-0">
+              <div
+                className="w-2 h-2 rounded-full flex-shrink-0"
                 style={{ backgroundColor: entry.color }}
               />
-              <span className="text-xs text-[rgba(9,10,8,0.7)] truncate">{entry.name}</span>
+              <span className="text-xs text-[var(--color-fg-muted)] truncate">{entry.name}</span>
             </div>
-            <span className="text-xs font-mono font-semibold">{formatSpend(entry.value)}</span>
+            <span className="text-xs font-semibold tabular-nums text-[var(--color-fg)]" style={{ fontFamily: "var(--font-mono)" }}>{formatSpend(entry.value)}</span>
           </div>
         ))}
         {validPayload.length > 6 && (
-          <p className="text-xs text-[rgba(9,10,8,0.4)]">+{validPayload.length - 6} flere</p>
+          <p className="text-xs text-[var(--color-fg-disabled)]">+{validPayload.length - 6} flere</p>
         )}
       </div>
-      <div className="pt-2 mt-2 border-t border-[var(--color-border)] flex justify-between">
-        <span className="text-xs text-[rgba(9,10,8,0.5)]">Total</span>
-        <span className="text-sm font-mono font-bold">{formatSpend(total)}</span>
+      <div className="pt-1.5 mt-1.5 border-t border-[var(--color-border)] flex justify-between">
+        <span className="text-xs text-[var(--color-fg-muted)]">Total</span>
+        <span className="text-sm font-bold tabular-nums text-[var(--color-fg)]" style={{ fontFamily: "var(--font-mono)" }}>{formatSpend(total)}</span>
       </div>
     </div>
   );
@@ -76,11 +75,11 @@ function CohortLegend({ labels, colors }: { labels: string[], colors: string[] }
     <div className="flex flex-wrap gap-x-4 gap-y-2 mb-4">
       {reversedLabels.map((label, idx) => (
         <div key={label} className="flex items-center gap-2">
-          <div 
-            className="w-3 h-3 rounded-sm flex-shrink-0" 
+          <div
+            className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
             style={{ backgroundColor: reversedColors[idx] }}
           />
-          <span className="text-xs text-[rgba(9,10,8,0.7)]">{label}</span>
+          <span className="text-xs text-[var(--color-fg-muted)]">{label}</span>
         </div>
       ))}
     </div>
@@ -155,7 +154,7 @@ export default function CohortSpendChart({ cohorts }: Props) {
 
   if (chartData.length === 0) {
     return (
-      <div className="h-[300px] flex items-center justify-center text-[rgba(9,10,8,0.4)]">
+      <div className="h-[300px] flex items-center justify-center text-sm text-[var(--color-fg-muted)]">
         Ingen kohort-data tilgjengelig
       </div>
     );
@@ -166,22 +165,22 @@ export default function CohortSpendChart({ cohorts }: Props) {
       <CohortLegend labels={cohortLabels} colors={COHORT_COLORS} />
       <ResponsiveContainer width="100%" height={300}>
       <AreaChart data={chartData} margin={{ top: 8, right: 16, bottom: 4, left: 4 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e0e0de" vertical={false} />
+        <CartesianGrid strokeDasharray="0" stroke={CHART_GRID_COLOR} vertical={false} />
         <XAxis
           dataKey="week"
-          tick={{ fontSize: 11, fill: "rgba(9,10,8,0.5)", fontFamily: "var(--font-mono)" }}
+          tick={{ fontSize: 11, fill: CHART_AXIS_COLOR, fontFamily: "var(--font-mono)" }}
           tickLine={false}
           axisLine={false}
           dy={8}
         />
         <YAxis
-          tick={{ fontSize: 11, fill: "rgba(9,10,8,0.5)", fontFamily: "var(--font-mono)" }}
+          tick={{ fontSize: 11, fill: CHART_AXIS_COLOR, fontFamily: "var(--font-mono)" }}
           tickLine={false}
           axisLine={false}
           tickFormatter={formatSpend}
           width={48}
         />
-        <Tooltip content={<CustomTooltip />} cursor={{ strokeDasharray: "3 3" }} />
+        <Tooltip content={<CustomTooltip />} cursor={{ stroke: CHART_AXIS_COLOR, strokeDasharray: "3 3" }} />
         
         {/* Stack areas for each cohort */}
         {cohortLabels.map((label, idx) => (

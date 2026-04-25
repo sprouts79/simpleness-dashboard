@@ -9,10 +9,9 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Cell,
 } from "recharts";
 import { ReachCompositionPoint } from "@/lib/types";
-import { CHART_BAR_COLOR, CHART_BAR_STACKED, CHART_LINE_COLOR } from "@/lib/chart-colors";
+import { CHART_BAR_COLOR, CHART_BAR_STACKED, CHART_LINE_COLOR, CHART_GRID_COLOR, CHART_AXIS_COLOR } from "@/lib/chart-colors";
 
 interface Props {
   data: ReachCompositionPoint[];
@@ -32,28 +31,28 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   const pct = payload.find((p: any) => p.dataKey === "netNewPct")?.value ?? 0;
   const total = prevReached + netNew;
   return (
-    <div className="bg-white border border-[var(--color-border)] rounded-xl px-4 py-3 shadow-md min-w-[200px]">
-      <p className="font-semibold text-base mb-3">{label}</p>
+    <div className="bg-white border border-[var(--color-border)] rounded-lg px-3 py-2.5 shadow-sm min-w-[200px]">
+      <p className="text-xs font-medium text-[var(--color-fg-muted)] mb-2">{label}</p>
       <div className="space-y-2">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: CHART_BAR_STACKED }} />
-            <span className="text-xs font-semibold text-[rgba(9,10,8,0.6)]">Nye</span>
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: CHART_BAR_STACKED }} />
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-fg-subtle)]">Nye</span>
           </div>
-          <p className="font-bold text-lg" style={{ fontFamily: "var(--font-mono)" }}>
-            {formatReach(netNew)} <span className="text-sm font-medium text-[rgba(9,10,8,0.5)]">({pct}%)</span>
+          <p className="font-bold text-base tabular-nums text-[var(--color-fg)]" style={{ fontFamily: "var(--font-mono)" }}>
+            {formatReach(netNew)} <span className="text-xs font-medium text-[var(--color-fg-muted)]">({pct} %)</span>
           </p>
         </div>
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: CHART_BAR_COLOR }} />
-            <span className="text-xs font-semibold text-[rgba(9,10,8,0.6)]">Tidligere nådd</span>
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: CHART_BAR_COLOR }} />
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-fg-subtle)]">Tidligere nådd</span>
           </div>
-          <p className="font-bold text-lg" style={{ fontFamily: "var(--font-mono)" }}>{formatReach(prevReached)}</p>
+          <p className="font-bold text-base tabular-nums text-[var(--color-fg)]" style={{ fontFamily: "var(--font-mono)" }}>{formatReach(prevReached)}</p>
         </div>
         <div className="pt-2 border-t border-[var(--color-border)]">
-          <span className="text-sm text-[rgba(9,10,8,0.5)]">Total reach</span>
-          <p className="font-bold text-lg" style={{ fontFamily: "var(--font-mono)" }}>{formatReach(total)}</p>
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-fg-subtle)]">Total reach</span>
+          <p className="font-bold text-base tabular-nums text-[var(--color-fg)] mt-0.5" style={{ fontFamily: "var(--font-mono)" }}>{formatReach(total)}</p>
         </div>
       </div>
     </div>
@@ -64,10 +63,10 @@ export default function ReachCompositionChart({ data }: Props) {
   return (
     <ResponsiveContainer width="100%" height={280}>
       <ComposedChart data={data} margin={{ top: 8, right: 16, bottom: 4, left: 4 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e0e0de" vertical={false} />
+        <CartesianGrid strokeDasharray="0" stroke={CHART_GRID_COLOR} vertical={false} />
         <XAxis
           dataKey="month"
-          tick={{ fontSize: 13, fill: "rgba(9,10,8,0.5)", fontFamily: "var(--font-mono)" }}
+          tick={{ fontSize: 11, fill: CHART_AXIS_COLOR, fontFamily: "var(--font-mono)" }}
           tickLine={false}
           axisLine={false}
           dy={8}
@@ -75,7 +74,7 @@ export default function ReachCompositionChart({ data }: Props) {
         <YAxis
           yAxisId="reach"
           orientation="left"
-          tick={{ fontSize: 13, fill: "rgba(9,10,8,0.5)", fontFamily: "var(--font-mono)" }}
+          tick={{ fontSize: 11, fill: CHART_AXIS_COLOR, fontFamily: "var(--font-mono)" }}
           tickLine={false}
           axisLine={false}
           tickFormatter={formatReach}
@@ -84,45 +83,45 @@ export default function ReachCompositionChart({ data }: Props) {
         <YAxis
           yAxisId="pct"
           orientation="right"
-          tick={{ fontSize: 13, fill: "rgba(9,10,8,0.5)", fontFamily: "var(--font-mono)" }}
+          tick={{ fontSize: 11, fill: CHART_AXIS_COLOR, fontFamily: "var(--font-mono)" }}
           tickLine={false}
           axisLine={false}
           tickFormatter={(v) => `${v}%`}
           domain={[0, 100]}
           width={48}
         />
-        <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(9,10,8,0.03)" }} />
+        <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.03)" }} />
 
-        {/* Previously reached — lightest beige */}
+        {/* Previously reached — sort */}
         <Bar
           yAxisId="reach"
           dataKey="previouslyReached"
           stackId="reach"
           fill={CHART_BAR_COLOR}
           name="Prev. reached"
-          maxBarSize={32}
+          maxBarSize={28}
         />
 
-        {/* Net New — third darkest (stacked) */}
+        {/* Net New — mint stacked */}
         <Bar
           yAxisId="reach"
           dataKey="netNew"
           stackId="reach"
           fill={CHART_BAR_STACKED}
           name="Nye"
-          maxBarSize={32}
+          maxBarSize={28}
           radius={[3, 3, 0, 0]}
         />
 
-        {/* Net New % line — dark brown */}
+        {/* Net New % line — deep grønn */}
         <Line
           yAxisId="pct"
           type="monotone"
           dataKey="netNewPct"
           stroke={CHART_LINE_COLOR}
-          strokeWidth={3}
-          dot={{ fill: CHART_LINE_COLOR, strokeWidth: 0, r: 4 }}
-          activeDot={{ fill: CHART_LINE_COLOR, strokeWidth: 0, r: 5 }}
+          strokeWidth={2}
+          dot={false}
+          activeDot={{ fill: CHART_LINE_COLOR, strokeWidth: 2, stroke: "#fff", r: 4 }}
           name="Net New %"
         />
       </ComposedChart>

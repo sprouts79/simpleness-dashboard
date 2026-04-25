@@ -3,32 +3,62 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Simpleness Design Tokens */
+/* ============================================================
+   Simpleness Visual System — implementert per visual-system.md
+   Kanon: adlaunch-uttrykk (sort + sparsom grønn, Shopify-aktig)
+   ============================================================ */
+
 :root {
+  /* Foundation */
   --color-white: #ffffff;
-  --color-black: #090a08;
-  --color-accent: #41BD0E;
-  --color-link: #515b12;
-  --color-green-moss: #515b12;
-  --color-green-deep: #41bd0e;
-  --color-green-clear: #89ff58;
-  --color-green-mint: #dff7cc;
-  --color-green-pale: #f6ffee;
+  --color-bg: #ffffff;
+  --color-surface: #fafafa;       /* off-white app bg */
+  --color-card: #ffffff;
+  --color-muted: #f5f5f5;
+
+  /* Text */
+  --color-fg: #171717;             /* primær tekst */
+  --color-fg-muted: #525252;       /* dempet tekst */
+  --color-fg-subtle: #737373;      /* enda mer dempet */
+  --color-fg-disabled: #a3a3a3;
+
+  /* Borders */
+  --color-border: #e5e5e5;
+  --color-border-strong: #d4d4d4;
+
+  /* Accent — grønn-skala (sparsom bruk) */
+  --color-moss:  #515b12;          /* lenker, interactive tekst */
+  --color-deep:  #41bd0e;          /* status-prikker, success */
+  --color-mint:  #dff7cc;          /* chip-bg, soft accent */
+  --color-clear: #89ff58;          /* RESERVERT — hero/sidebar-active */
+  --color-pale:  #f6ffee;
 
   /* Status */
-  --color-status-green: #16a34a;
-  --color-status-yellow: #d97706;
-  --color-status-red: #dc2626;
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-error:   #dc2626;
 
-  /* Surfaces */
-  --color-surface: #f8f8f7;
-  --color-border: #e8e8e6;
-  --color-sidebar: #090a08;
+  /* Categorical (badges) */
+  --color-badge-blue-bg:    #dbeafe;
+  --color-badge-blue-fg:    #1d4ed8;
+  --color-badge-purple-bg:  #f3e8ff;
+  --color-badge-purple-fg:  #7e22ce;
+  --color-badge-orange-bg:  #fed7aa;
+  --color-badge-orange-fg:  #c2410c;
+  --color-badge-amber-bg:   #fef3c7;
+  --color-badge-amber-fg:   #a16207;
 
   /* Typography */
-  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-jakarta: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', monospace;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+
+  /* Backwards-compat aliaser (legacy components leser disse) */
+  --color-black: var(--color-fg);
+  --color-accent: var(--color-deep);
+  --color-link: var(--color-moss);
+  --color-status-green: var(--color-success);
+  --color-status-yellow: var(--color-warning);
+  --color-status-red:    var(--color-error);
 }
 
 * {
@@ -39,98 +69,118 @@
 
 html, body {
   height: 100%;
-  background: var(--color-white);
-  color: var(--color-black);
+  background: var(--color-surface);
+  color: var(--color-fg);
   font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
-/* 
-  TYPOGRAPHY SYSTEM — 37signals-inspirert
-  ========================================
-  
-  HEADINGS (use sparingly, one H1 per page max)
-  - H1: Page titles only. Bold, 32px. One per page.
-  - H2: Section headers. Semibold, 20px. Use for major sections.
-  - H3: Subsection headers. Medium, 17px. Use within sections.
-  
-  BODY TEXT
-  - Default body: 16px, regular weight. Always.
-  - Small text: 14px minimum. Never smaller.
-  - Labels/captions: 13px, medium weight, slightly muted.
-  
-  EMPHASIS RULES
-  - Bold: Use for single words/phrases that need emphasis, never full sentences.
-  - Semibold: Use for interactive elements (buttons, links).
-  - ALL CAPS: Only for small labels/eyebrows (12-13px), always with letter-spacing.
-  
-  DATA/NUMBERS
-  - Always mono font for numbers.
-  - Large KPIs: 28-36px, bold.
-  - Table data: 15px minimum.
-*/
+/* ============================================================
+   TYPOGRAPHY — text-as-interface
+   Hierarki gjennom størrelse og vekt, ikke farge eller dekor.
+   ============================================================ */
 
 h1, .h1 {
-  font-size: 2rem; /* 32px */
+  font-size: 2rem;             /* 32px */
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.02em;
 }
 
 h2, .h2 {
-  font-size: 1.25rem; /* 20px */
+  font-size: 1.25rem;          /* 20px */
   font-weight: 600;
   line-height: 1.3;
   letter-spacing: -0.01em;
 }
 
 h3, .h3 {
-  font-size: 1.0625rem; /* 17px */
+  font-size: 1.0625rem;        /* 17px */
   font-weight: 500;
   line-height: 1.4;
 }
 
-/* Section eyebrow labels */
+/* Eyebrow / section label — bevisst smal og dempet */
 .label {
-  font-size: 0.8125rem; /* 13px */
+  font-size: 0.75rem;          /* 12px */
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: rgba(9,10,8,0.5);
+  color: var(--color-fg-muted);
 }
 
-/* Small helper text */
+/* Caption — secondary supporting text */
 .caption {
-  font-size: 0.875rem; /* 14px */
-  color: rgba(9,10,8,0.55);
+  font-size: 0.875rem;         /* 14px */
+  color: var(--color-fg-muted);
 }
 
-/* Ensure minimum readable size */
 small, .text-small {
-  font-size: 0.875rem; /* 14px - never smaller */
+  font-size: 0.875rem;         /* 14px minimum */
 }
 
-/* Number / data values always mono */
-.mono {
+/* Mono — kun tall, IDer, kode. Aldri vanlig tekst. */
+.mono, .tabular {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
-/* Delta badges */
+/* ============================================================
+   DELTA — Shopify-style inline change indicators
+   ↗ +12.4 %  (grønn) eller  ↘ -3.1 %  (rød). Subtle.
+   ============================================================ */
+
 .delta-up {
-  color: var(--color-status-green);
+  color: var(--color-success);
 }
 .delta-down {
-  color: var(--color-status-red);
+  color: var(--color-error);
 }
 .delta-neutral {
-  color: rgba(9,10,8,0.4);
+  color: var(--color-fg-disabled);
 }
 
-/* Sidebar link active state */
+/* ============================================================
+   SECTION TITLE — Shopify-aktig underline-effekt
+   Ligner skjermbildet: liten underline under tittel-tekst.
+   ============================================================ */
+
+.section-title {
+  font-size: 0.875rem;         /* 14px */
+  font-weight: 600;
+  color: var(--color-fg);
+  text-decoration: underline;
+  text-decoration-color: var(--color-border);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+/* ============================================================
+   FILTER PILL — Shopify-style dropdown buttons
+   Bruk for date range, currency, etc.
+   ============================================================ */
+
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-fg);
+  transition: border-color 0.2s ease;
+}
+.filter-pill:hover {
+  border-color: var(--color-border-strong);
+}
+
+/* Sidebar link active state — kept for backwards compat */
 .sidebar-link-active {
-  background: rgba(65, 189, 14, 0.15);
-  color: var(--color-accent);
+  background: var(--color-mint);
+  color: var(--color-fg);
 }

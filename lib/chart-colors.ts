@@ -1,7 +1,12 @@
-// Shared color palette for charts - brown/earth tones from design system
-// Gradient from light (oldest) to dark (newest) - avoids green/yellow/red used in heatmap
+// Chart-fargepalett — Simpleness Visual System
+//
+// Bevisst sparsom: ett primært element i sort, sekundære i nøytral grå,
+// success/positive accent i deep grønn (#41BD0E). Brun-paletten i
+// CHART_COLORS er reservert for cohort-heatmap (gradient fra lys til mørk).
+
+// Cohort heatmap — beholdes som brun-skala (gradient leser bedre enn ensfargede skift)
 export const CHART_COLORS = [
-  "#f5f0e8", // Cream/lightest (oldest)
+  "#f5f0e8", // lysest (eldst)
   "#e8dcc8",
   "#d4c4a8",
   "#c4a77d",
@@ -12,10 +17,13 @@ export const CHART_COLORS = [
   "#4e391d",
   "#3a2a15",
   "#2a1e10",
-  "#1a120a", // Darkest brown (newest)
+  "#1a120a", // mørkest (nyest)
 ];
 
-// For bar/line charts that need a single accent color
-export const CHART_BAR_COLOR = "#f5f0e8"; // Lightest beige (default bar)
-export const CHART_BAR_STACKED = "#d4c4a8"; // Third color (for stacked bars)
-export const CHART_LINE_COLOR = "#41BD0E"; // Strong green (accent from design system)
+// Bar / line / area charts — Shopify-stil minimalisme
+export const CHART_BAR_COLOR    = "#171717"; // Sort — primær bar (data-fokus)
+export const CHART_BAR_STACKED  = "#dff7cc"; // Mint — stacked / sekundær
+export const CHART_LINE_COLOR   = "#41bd0e"; // Deep grønn — primær linje (accent)
+export const CHART_LINE_COMPARE = "#a3a3a3"; // Nøytral grå — sammenligningslinje
+export const CHART_GRID_COLOR   = "#f0f0f0"; // Super lys gridline
+export const CHART_AXIS_COLOR   = "#737373"; // Akse-tekst (dempet)

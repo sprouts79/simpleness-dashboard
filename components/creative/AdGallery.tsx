@@ -2,6 +2,21 @@
 
 import { useState, useEffect } from "react";
 import { Ad } from "@/lib/types";
+import Badge from "../ui/Badge";
+
+const FORMAT_BADGE_COLOR: Record<Ad["format"], "purple" | "blue" | "orange" | "amber"> = {
+  video:    "purple",
+  static:   "blue",
+  carousel: "orange",
+  story:    "amber",
+};
+
+const FORMAT_LABEL: Record<Ad["format"], string> = {
+  video:    "Video",
+  static:   "Bilde",
+  carousel: "Karusell",
+  story:    "Story",
+};
 
 // ─── Video/image modal ────────────────────────────────────────────────────────
 
@@ -70,27 +85,32 @@ function AdTile({ ad }: { ad: Ad }) {
   return (
     <>
       <div
-        className="rounded-xl border border-[var(--color-border)] bg-white cursor-pointer hover:border-[var(--color-link)] transition-colors overflow-hidden"
+        className="rounded-xl border border-[var(--color-border)] bg-white cursor-pointer hover:border-[var(--color-border-strong)] hover:shadow-sm transition-all overflow-hidden"
         onClick={() => setOpen(true)}
       >
-        {/* Thumbnail — forced 9:16 portrait crop for consistency */}
-        {ad.thumbnailUrl && !imgError ? (
-          <img
-            src={ad.thumbnailUrl}
-            alt={ad.name}
-            onError={() => setImgError(true)}
-            className="w-full aspect-[9/16] object-cover block"
-          />
-        ) : (
-          <div className="aspect-[9/16] bg-[#f8f8f7] flex items-center justify-center">
-            <span className="text-3xl opacity-30">{ad.format === "video" ? "▶" : "▣"}</span>
-          </div>
-        )}
+        {/* Thumbnail */}
+        <div className="relative">
+          {ad.thumbnailUrl && !imgError ? (
+            <img
+              src={ad.thumbnailUrl}
+              alt={ad.name}
+              onError={() => setImgError(true)}
+              className="w-full aspect-[9/16] object-cover block"
+            />
+          ) : (
+            <div className="aspect-[9/16] bg-[var(--color-surface)] flex items-center justify-center">
+              <span className="text-3xl opacity-30">{ad.format === "video" ? "▶" : "▣"}</span>
+            </div>
+          )}
+          <span className="absolute top-2 right-2">
+            <Badge color={FORMAT_BADGE_COLOR[ad.format]}>{FORMAT_LABEL[ad.format]}</Badge>
+          </span>
+        </div>
 
         {/* Metrics */}
         <div className="px-3 py-3">
-          <p className="text-sm font-semibold leading-snug mb-2 line-clamp-2">{ad.name}</p>
-          <div className="flex gap-3 text-sm text-[rgba(9,10,8,0.5)]" style={{ fontFamily: "var(--font-mono)" }}>
+          <p className="text-sm font-medium leading-snug mb-2 line-clamp-2 text-[var(--color-fg)]">{ad.name}</p>
+          <div className="flex gap-3 text-xs text-[var(--color-fg-muted)] tabular-nums" style={{ fontFamily: "var(--font-mono)" }}>
             <span>{ad.spend >= 1000 ? `${Math.round(ad.spend / 1000)}k` : Math.round(ad.spend)} kr</span>
             {ad.roas > 0 && <span>{ad.roas.toFixed(1)}×</span>}
             {ad.ctr > 0 && <span>{ad.ctr.toFixed(1)}%</span>}
