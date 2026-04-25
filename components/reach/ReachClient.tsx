@@ -207,12 +207,7 @@ export default function ReachClient({
           <button
             onClick={handleSync}
             disabled={syncing}
-            className={clsx(
-              "text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors",
-              syncing
-                ? "bg-[var(--color-surface)] text-[rgba(9,10,8,0.45)] cursor-not-allowed border border-[var(--color-border)]"
-                : "bg-[#89FF58] text-[var(--color-black)] hover:opacity-90"
-            )}
+            className="text-sm font-medium px-4 py-2 rounded-lg bg-neutral-900 text-white hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {syncing ? "Henter..." : "Hent data"}
           </button>
@@ -221,17 +216,17 @@ export default function ReachClient({
 
       {/* Empty state */}
       {filtered.length === 0 && (
-        <div className="rounded-xl border border-[var(--color-border)] p-12 text-center">
-          <p className="text-base text-[rgba(9,10,8,0.5)] mb-2">
+        <div className="rounded-xl border border-neutral-200 bg-white p-12 text-center">
+          <p className="text-base text-neutral-700 mb-2">
             Ingen data ennå for denne perioden.
           </p>
-          <p className="text-sm text-[rgba(9,10,8,0.4)] mb-6">
+          <p className="text-sm text-neutral-500 mb-6">
             Trykk Hent data for å synkronisere fra Meta.
           </p>
           <button
             onClick={handleSync}
             disabled={syncing}
-            className="text-sm font-semibold px-5 py-2.5 rounded-lg bg-[#89FF58] text-[var(--color-black)] hover:opacity-90 transition-colors"
+            className="text-sm font-medium px-4 py-2 rounded-lg bg-neutral-900 text-white hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {syncing ? "Henter..." : "Hent data"}
           </button>

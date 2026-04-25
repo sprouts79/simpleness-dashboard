@@ -226,12 +226,7 @@ export default function CreativeClient({
           <button
             onClick={handleSync}
             disabled={syncing}
-            className={clsx(
-              "text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors",
-              syncing
-                ? "bg-[var(--color-surface)] text-[rgba(9,10,8,0.45)] cursor-not-allowed border border-[var(--color-border)]"
-                : "bg-[#89FF58] text-[var(--color-black)] hover:opacity-90"
-            )}
+            className="text-sm font-medium px-4 py-2 rounded-lg bg-neutral-900 text-white hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {syncing ? "Henter..." : "Oppdater"}
           </button>
