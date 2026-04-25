@@ -16,7 +16,6 @@ function avatarColor(client: { id: string; name: string }) {
 export default function Sidebar({ clients }: { clients: Client[] }) {
   const pathname = usePathname();
   const isPulse = pathname === "/";
-  const isAdmin = pathname === "/admin";
   const isGuide = pathname === "/guide";
 
   return (
@@ -60,14 +59,13 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
         })}
       </nav>
 
-      {/* Bottom-actions — speiler adlaunch */}
+      {/* Bottom-actions — speiler adlaunch (Innstillinger ligger i footer) */}
       <div className="px-3 py-3 border-t border-neutral-200 space-y-1">
         <BottomLink href="/guide" active={isGuide} icon="guide">Guide</BottomLink>
         <BottomLink href="/docs/index.html" active={false} external icon="docs">Dokumentasjon</BottomLink>
-        <BottomLink href="/admin" active={isAdmin} icon="settings">Innstillinger</BottomLink>
       </div>
 
-      {/* Brand-footer — speiler adlaunch eksakt */}
+      {/* Brand-footer — eksakt struktur som adlaunch (ikon + stack + høyre-action) */}
       <div className="px-4 py-3 border-t border-neutral-200 flex items-center gap-2.5">
         <div className="w-5 h-5 rounded-md bg-neutral-900 text-white flex items-center justify-center flex-shrink-0">
           <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
@@ -78,6 +76,12 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
           <p className="text-xs text-neutral-900 truncate">Simple Dashboard</p>
           <p className="text-[10px] text-neutral-500">betaversjon 1.0</p>
         </div>
+        <Link
+          href="/admin"
+          className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors font-medium flex-shrink-0"
+        >
+          Admin
+        </Link>
       </div>
     </aside>
   );
