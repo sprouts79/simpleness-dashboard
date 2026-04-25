@@ -1,16 +1,26 @@
 interface PulseIconProps {
   className?: string;
+  strokeWidth?: number;
 }
 
 /**
- * Pulse-indikator — neon-grønn dot. Matcher Shopify's "live counter"-stil
- * (eks. "● 28 live visitors"). Brukes som signatur for Puls-knappen og
- * brand-marken.
+ * Pulse-ikon — lightning bolt. Stroke-stil matcher Guide- og Dokumentasjon-
+ * ikonene i sidebaren. Bruker currentColor — kan tones med text-color
+ * på forelder (eks. neon-grønn i brand-footer).
  */
-export default function PulseIcon({ className = "" }: PulseIconProps) {
+export default function PulseIcon({ className = "", strokeWidth = 1.5 }: PulseIconProps) {
   return (
-    <span
-      className={`inline-block rounded-full bg-[#89FF58] flex-shrink-0 ${className}`}
-    />
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+    </svg>
   );
 }

@@ -66,9 +66,7 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
               : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
           )}
         >
-          <span className="w-4 h-4 flex items-center justify-center flex-shrink-0">
-            <PulseIcon className="w-2 h-2" />
-          </span>
+          <PulseIcon className="w-4 h-4 flex-shrink-0" />
           <span className="font-medium">Puls</span>
         </Link>
         <BottomLink href="/guide" active={isGuide} icon="guide">Guide</BottomLink>
@@ -77,8 +75,8 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
 
       {/* Brand-footer */}
       <div className="px-4 py-3 border-t border-neutral-200 flex items-center gap-2.5">
-        <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
-          <PulseIcon className="w-2 h-2" />
+        <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 text-[#41bd0e]">
+          <PulseIcon className="w-4 h-4" strokeWidth={2} />
         </div>
         <div className="flex-1 min-w-0 leading-tight">
           <p className="text-xs text-neutral-900 truncate">Simple Dashboard</p>
