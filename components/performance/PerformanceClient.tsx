@@ -110,7 +110,7 @@ export default function PerformanceClient({
   const deltaLabel = kpis.compareLabel;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Period selector + compare toggle */}
       <div className="flex items-center gap-3">
         <PillSelect

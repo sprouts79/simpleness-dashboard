@@ -72,7 +72,7 @@ export default function SpendTrendChart({ data }: Props) {
   const tickInterval = n <= 7 ? 0 : n <= 30 ? 6 : n <= 90 ? 14 : 30;
 
   return (
-    <ResponsiveContainer width="100%" height={280}>
+    <ResponsiveContainer width="100%" height={240}>
       <ComposedChart data={formatted} margin={{ top: 8, right: 16, bottom: 4, left: 4 }}>
         <CartesianGrid strokeDasharray="0" stroke={CHART_GRID_COLOR} vertical={false} />
         <XAxis

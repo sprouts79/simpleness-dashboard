@@ -10,7 +10,7 @@ interface SectionHeaderProps {
  */
 export default function SectionHeader({ title, subtitle, action }: SectionHeaderProps) {
   return (
-    <div className="flex items-baseline justify-between gap-4 mb-4">
+    <div className="flex items-baseline justify-between gap-4 mb-3">
       <div className="min-w-0">
         <h2 className="section-title">{title}</h2>
         {subtitle && <p className="text-sm text-neutral-600 mt-1 leading-snug">{subtitle}</p>}

@@ -167,7 +167,7 @@ export default function ReachClient({
   const lookbackLabel = LOOKBACK_OPTIONS.find(o => o.value === currentLookback)?.label ?? `${currentLookback}d`;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
 
       {/* Controls */}
       <div className="flex items-center justify-between">

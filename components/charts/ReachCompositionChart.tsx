@@ -61,7 +61,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function ReachCompositionChart({ data }: Props) {
   return (
-    <ResponsiveContainer width="100%" height={280}>
+    <ResponsiveContainer width="100%" height={240}>
       <ComposedChart data={data} margin={{ top: 8, right: 16, bottom: 4, left: 4 }}>
         <CartesianGrid strokeDasharray="0" stroke={CHART_GRID_COLOR} vertical={false} />
         <XAxis

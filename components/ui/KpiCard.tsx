@@ -11,19 +11,20 @@ interface KpiCardProps {
   deltaLabel?: string;
   note?: string;
   status?: { level: StatusLevel; label: string; description?: string };
+  /** @deprecated — alle KPIer bruker samme size i Shopify-stil. Beholdt for API-kompat. */
   size?: "default" | "large";
   highlight?: boolean;
   invertDelta?: boolean;
 }
 
 /**
- * KPI Card — Shopify-aktig:
+ * KPI Card — Shopify-stil:
  *   ─ Title (normal case, font-semibold med subtle underline)
- *   ─ Stort sort tall + inline delta-pil
+ *   ─ Stort tall (text-2xl) + inline delta-pil
  *   ─ Optional sub-info (delta-label, status, note)
  *
  * Naturlig høyde — strekker seg ikke unødig. Grid-container må sette
- * items-start for å unngå stretch når kort har ulikt innhold.
+ * items-start for å unngå stretch.
  */
 export default function KpiCard({
   label,
@@ -32,25 +33,21 @@ export default function KpiCard({
   deltaLabel,
   note,
   status,
-  size = "default",
   highlight = false,
   invertDelta = false,
 }: KpiCardProps) {
   return (
     <div
       className={clsx(
-        "rounded-xl border bg-white px-4 py-3.5",
+        "rounded-xl border bg-white p-4",
         highlight ? "border-neutral-300 ring-1 ring-neutral-100" : "border-neutral-200"
       )}
     >
       <p className="section-title">{label}</p>
 
-      <div className="mt-2.5 flex items-baseline gap-2 flex-wrap">
+      <div className="mt-2 flex items-baseline gap-2 flex-wrap">
         <p
-          className={clsx(
-            "font-bold tabular-nums leading-none text-neutral-900",
-            size === "large" ? "text-3xl" : "text-2xl"
-          )}
+          className="text-2xl font-bold tabular-nums leading-none text-neutral-900"
           style={{ fontFamily: "var(--font-mono)" }}
         >
           {value}
@@ -58,12 +55,12 @@ export default function KpiCard({
         {delta !== undefined && <DeltaPill delta={delta} invert={invertDelta} />}
       </div>
 
-      {delta !== undefined && (
-        <p className="text-xs text-neutral-500 mt-1">{deltaLabel ?? "vs forrige uke"}</p>
+      {delta !== undefined && deltaLabel && (
+        <p className="text-xs text-neutral-500 mt-1">{deltaLabel}</p>
       )}
 
       {status && (
-        <div className="mt-2.5">
+        <div className="mt-2">
           <StatusDot level={status.level} label={status.label} />
         </div>
       )}
