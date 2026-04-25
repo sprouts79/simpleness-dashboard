@@ -24,19 +24,16 @@ export default async function ClientLayout({
 
   return (
     <div className="flex flex-col h-full">
-      <header className="border-b border-[var(--color-border)] bg-white sticky top-0 z-10">
-        <div className="px-8 pt-6 pb-0">
-          <div className="flex items-center justify-between mb-4">
+      <header className="border-b border-neutral-200 bg-white sticky top-0 z-10">
+        <div className="px-8 pt-5 pb-0">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold">{client.name}</h1>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded border border-[var(--color-border)] text-[rgba(9,10,8,0.45)] tracking-wide">
-                META ADS
+              <h1 className="text-xl font-bold text-neutral-900">{client.name}</h1>
+              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded uppercase tracking-wider bg-neutral-100 text-neutral-700">
+                Meta Ads
               </span>
             </div>
-            <span
-              className="text-xs text-[rgba(9,10,8,0.4)] capitalize"
-              style={{ fontFamily: "var(--font-mono)" }}
-            >
+            <span className="text-xs text-neutral-500 capitalize tabular-nums" style={{ fontFamily: "var(--font-mono)" }}>
               {now}
             </span>
           </div>
@@ -44,9 +41,7 @@ export default async function ClientLayout({
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-8 py-6">
-        {children}
-      </div>
+      <div className="flex-1 overflow-y-auto px-8 py-6">{children}</div>
     </div>
   );
 }

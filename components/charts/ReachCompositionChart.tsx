@@ -92,7 +92,7 @@ export default function ReachCompositionChart({ data }: Props) {
         />
         <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.03)" }} />
 
-        {/* Previously reached — sort */}
+        {/* Previously reached — primær grønn (deep) */}
         <Bar
           yAxisId="reach"
           dataKey="previouslyReached"

@@ -13,12 +13,12 @@ interface KpiCardProps {
   status?: { level: StatusLevel; label: string; description?: string };
   size?: "default" | "large";
   highlight?: boolean;
-  invertDelta?: boolean; // lower is better (CPA, CPM, Frequency)
+  invertDelta?: boolean;
 }
 
 /**
  * KPI Card — Shopify-aktig oppsett:
- *   ─ Tittel (underline, dempet)
+ *   ─ Eyebrow-tittel (uppercase, dempet)
  *   ─ Stort sort tall + inline delta-pil
  *   ─ Optional status-prikk eller note nederst
  */
@@ -36,55 +36,42 @@ export default function KpiCard({
   return (
     <div
       className={clsx(
-        "rounded-xl border bg-white px-5 py-4 min-h-[140px] flex flex-col transition-colors",
-        highlight
-          ? "border-[var(--color-fg)]/15 ring-1 ring-[var(--color-fg)]/5"
-          : "border-[var(--color-border)]"
+        "rounded-xl border bg-white px-4 py-3.5 flex flex-col",
+        highlight ? "border-neutral-300 ring-1 ring-neutral-100" : "border-neutral-200"
       )}
     >
-      {/* Eyebrow tittel (Shopify-aktig underline) */}
-      <p className="section-title">{label}</p>
+      {/* Eyebrow tittel */}
+      <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">{label}</p>
 
-      {/* Big number + inline delta — på samme linje, Shopify-pattern */}
-      <div className="mt-3 flex items-baseline gap-2 flex-wrap">
+      {/* Big number + inline delta */}
+      <div className="mt-2.5 flex items-baseline gap-2 flex-wrap">
         <p
           className={clsx(
-            "font-bold tabular-nums leading-none text-[var(--color-fg)]",
-            size === "large" ? "text-4xl" : "text-3xl"
+            "font-bold tabular-nums leading-none text-neutral-900",
+            size === "large" ? "text-3xl" : "text-2xl"
           )}
           style={{ fontFamily: "var(--font-mono)" }}
         >
           {value}
         </p>
-        {delta !== undefined && (
-          <DeltaPill delta={delta} invert={invertDelta} />
-        )}
+        {delta !== undefined && <DeltaPill delta={delta} invert={invertDelta} />}
       </div>
 
-      {/* Delta context-label (sub-line) */}
-      {delta !== undefined && deltaLabel && (
-        <p className="text-xs text-[var(--color-fg-subtle)] mt-1.5">
-          {deltaLabel}
-        </p>
-      )}
-      {delta !== undefined && !deltaLabel && (
-        <p className="text-xs text-[var(--color-fg-subtle)] mt-1.5">
-          vs forrige uke
-        </p>
+      {/* Delta context */}
+      {delta !== undefined && (
+        <p className="text-xs text-neutral-500 mt-1">{deltaLabel ?? "vs forrige uke"}</p>
       )}
 
       {/* Status — bottom-aligned */}
       {status && (
-        <div className="mt-auto pt-3">
+        <div className="mt-auto pt-2.5">
           <StatusDot level={status.level} label={status.label} />
         </div>
       )}
 
       {/* Note (når ingen status) */}
       {note && !status && (
-        <p className="text-sm text-[var(--color-fg-muted)] mt-2 leading-snug">
-          {note}
-        </p>
+        <p className="text-sm text-neutral-600 mt-1.5 leading-snug">{note}</p>
       )}
     </div>
   );

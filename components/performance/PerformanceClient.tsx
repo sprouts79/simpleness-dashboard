@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import KpiCard from "@/components/ui/KpiCard";
 import SectionHeader from "@/components/ui/SectionHeader";
+import PillSelect from "@/components/ui/PillSelect";
 import SpendTrendChart from "@/components/charts/SpendTrendChart";
 import { CHART_BAR_COLOR, CHART_LINE_COLOR } from "@/lib/chart-colors";
 import { PerformanceKpis, SpendTrendPoint, Campaign, PeriodKey, CompareKey } from "@/lib/types";
@@ -111,36 +112,26 @@ export default function PerformanceClient({
   return (
     <div className="space-y-8">
       {/* Period selector + compare toggle */}
-      <div className="flex items-center gap-4">
-        {/* Period dropdown */}
-        <select
+      <div className="flex items-center gap-3">
+        <PillSelect
           value={period}
-          onChange={(e) => navigate(e.target.value as PeriodKey, compare)}
-          className="text-sm font-semibold bg-[var(--color-surface)] border-0 rounded-lg px-4 py-2.5 text-[var(--color-black)] cursor-pointer appearance-none pr-10"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23090a08' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'right 12px center',
-          }}
-        >
-          {PERIOD_OPTIONS.map(({ value, label }) => (
-            <option key={value} value={value}>{label}</option>
-          ))}
-        </select>
+          onChange={(v) => navigate(v as PeriodKey, compare)}
+          options={PERIOD_OPTIONS}
+        />
 
-        <span className="text-sm text-[rgba(9,10,8,0.4)]">vs.</span>
+        <span className="text-sm text-neutral-500">vs.</span>
 
         {/* Compare toggle */}
-        <div className="flex bg-[var(--color-surface)] rounded-lg p-1 gap-1">
+        <div className="inline-flex bg-neutral-100 rounded-lg p-0.5">
           {COMPARE_OPTIONS.map(({ value, label }) => (
             <button
               key={value}
               onClick={() => navigate(period, value)}
               className={clsx(
-                "text-sm font-semibold px-4 py-2 rounded-md transition-colors whitespace-nowrap",
+                "text-xs font-medium px-3 py-1.5 rounded-md transition-colors whitespace-nowrap",
                 compare === value
-                  ? "bg-white text-[var(--color-black)] shadow-sm"
-                  : "text-[rgba(9,10,8,0.5)] hover:text-[var(--color-black)]"
+                  ? "bg-white text-neutral-900 shadow-sm"
+                  : "text-neutral-500 hover:text-neutral-900"
               )}
             >
               {label}

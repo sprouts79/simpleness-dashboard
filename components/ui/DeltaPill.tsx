@@ -1,15 +1,12 @@
 import clsx from "clsx";
 
 interface DeltaPillProps {
-  delta: number;          // -12.4 means -12.4 %
-  invert?: boolean;       // true if "lower is better" (CPA, CPM, frequency)
+  delta: number;          // -12.4 = -12.4 %
+  invert?: boolean;       // true = "lower is better" (CPA, CPM, frekvens)
   className?: string;
 }
 
-/**
- * Shopify-style inline delta indicator: ↗ +12.4 %  or  ↘ -3.1 %
- * Color-coded by direction + intent (invert flips green/red for "lower-is-better" metrics).
- */
+/** Shopify-style inline delta indicator: ↗ +12.4 %  or  ↘ -3.1 % */
 export default function DeltaPill({ delta, invert = false, className }: DeltaPillProps) {
   const isNeutral = delta === 0;
   const isUp = delta > 0;
@@ -23,9 +20,9 @@ export default function DeltaPill({ delta, invert = false, className }: DeltaPil
       className={clsx(
         "inline-flex items-center gap-0.5 text-xs font-medium tabular-nums",
         {
-          "text-[var(--color-success)]": isGood && !isNeutral,
-          "text-[var(--color-error)]":   !isGood && !isNeutral,
-          "text-[var(--color-fg-disabled)]": isNeutral,
+          "text-green-700":   isGood && !isNeutral,
+          "text-red-600":     !isGood && !isNeutral,
+          "text-neutral-400": isNeutral,
         },
         className
       )}
