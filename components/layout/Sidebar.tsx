@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Client } from "@/lib/types";
 import clsx from "clsx";
+import PulseIcon from "@/components/ui/PulseIcon";
 
 // Avatar-palett — neutral grå-skala. Speiler adlaunch-sidebar.
 const AVATAR_PALETTE = ["#171717", "#404040", "#525252", "#737373"];
@@ -68,9 +69,7 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
       {/* Brand-footer — eksakt struktur som adlaunch (ikon + stack + høyre-action) */}
       <div className="px-4 py-3 border-t border-neutral-200 flex items-center gap-2.5">
         <div className="w-5 h-5 rounded-md bg-neutral-900 text-white flex items-center justify-center flex-shrink-0">
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 12h3l3-9 4 18 3-9h5" />
-          </svg>
+          <PulseIcon className="w-3.5 h-3.5" />
         </div>
         <div className="flex-1 min-w-0 leading-tight">
           <p className="text-xs text-neutral-900 truncate">Simple Dashboard</p>
@@ -99,9 +98,7 @@ function PulseLink({ active }: { active: boolean }) {
       )}
     >
       <span className="w-8 h-8 rounded-lg bg-neutral-900 text-white flex items-center justify-center flex-shrink-0">
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 12h3l3-9 4 18 3-9h5" />
-        </svg>
+        <PulseIcon className="w-5 h-5" />
       </span>
       <span className="flex-1 truncate font-medium">Puls</span>
     </Link>
