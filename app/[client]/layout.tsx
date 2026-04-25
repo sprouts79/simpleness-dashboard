@@ -1,8 +1,7 @@
 import { getClient } from "@/lib/db";
 import { notFound } from "next/navigation";
+import DataSources from "@/components/ui/DataSources";
 
-// Force all client pages (performance, reach, creative) to be server-rendered
-// on every request so they always show the latest data from Supabase.
 export const dynamic = "force-dynamic";
 
 export default async function ClientLayout({
@@ -16,8 +15,24 @@ export default async function ClientLayout({
   const client = await getClient(slug);
   if (!client) notFound();
 
-  // Klient-navn ligger i sidebar-pickeren — ikke vis det her igjen.
-  // Denne layouten er nå en pass-through; legges igjen som hook-punkt
-  // hvis vi senere trenger klient-spesifikk header (eks. live-status).
-  return <>{children}</>;
+  const now = new Date().toLocaleDateString("no-NO", {
+    month: "short",
+    year: "numeric",
+  });
+
+  return (
+    <>
+      {/* Sub-header: datakilder + sist oppdatert. Klient-navn ligger i sidebar. */}
+      <div className="flex items-center justify-between mb-5">
+        <DataSources sources={["meta"]} />
+        <span
+          className="text-xs text-neutral-500 capitalize tabular-nums"
+          style={{ fontFamily: "var(--font-mono)" }}
+        >
+          {now}
+        </span>
+      </div>
+      {children}
+    </>
+  );
 }

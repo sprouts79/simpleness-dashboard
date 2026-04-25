@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getPulseData } from "@/lib/db";
 import InfoBox from "@/components/ui/InfoBox";
 import DeltaPill from "@/components/ui/DeltaPill";
+import DataSources from "@/components/ui/DataSources";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,11 @@ export default async function PulsePage() {
 
   return (
     <div>
+      {/* Sub-header: datakilder */}
+      <div className="flex items-center justify-between mb-5">
+        <DataSources sources={["meta"]} />
+      </div>
+
       {/* Header */}
       <div className="flex items-baseline justify-between mb-6">
         <div>
