@@ -6,13 +6,8 @@ import { Client } from "@/lib/types";
 import clsx from "clsx";
 import PulseIcon from "@/components/ui/PulseIcon";
 
-// Avatar-palett — neutral grå-skala. Speiler adlaunch-sidebar.
-const AVATAR_PALETTE = ["#171717", "#404040", "#525252", "#737373"];
-
-function avatarColor(client: { id: string; name: string }) {
-  const seed = (client.id || client.name).split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-  return AVATAR_PALETTE[seed % AVATAR_PALETTE.length];
-}
+// Alle klient-avatarer er sort. Klienter skilles på navn + initial.
+const AVATAR_BG = "#171717";
 
 export default function Sidebar({ clients }: { clients: Client[] }) {
   const pathname = usePathname();
@@ -50,7 +45,7 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
             >
               <span
                 className="w-7 h-7 rounded-md text-[11px] font-semibold flex items-center justify-center flex-shrink-0 text-white"
-                style={{ backgroundColor: avatarColor({ id: client.id, name: client.name }) }}
+                style={{ backgroundColor: AVATAR_BG }}
               >
                 {client.name.charAt(0).toUpperCase()}
               </span>
