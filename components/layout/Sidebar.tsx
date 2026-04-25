@@ -68,8 +68,8 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
 
       {/* Brand-footer — eksakt struktur som adlaunch (ikon + stack + høyre-action) */}
       <div className="px-4 py-3 border-t border-neutral-200 flex items-center gap-2.5">
-        <div className="w-5 h-5 rounded-md bg-neutral-900 text-white flex items-center justify-center flex-shrink-0">
-          <PulseIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
+        <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
+          <PulseIcon className="w-2 h-2" />
         </div>
         <div className="flex-1 min-w-0 leading-tight">
           <p className="text-xs text-neutral-900 truncate">Simple Dashboard</p>
@@ -97,8 +97,8 @@ function PulseLink({ active }: { active: boolean }) {
           : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
       )}
     >
-      <span className="w-8 h-8 rounded-lg bg-neutral-900 text-white flex items-center justify-center flex-shrink-0">
-        <PulseIcon className="w-5 h-5" />
+      <span className="w-8 h-8 flex items-center justify-center flex-shrink-0">
+        <PulseIcon className="w-2.5 h-2.5" />
       </span>
       <span className="flex-1 truncate font-medium">Puls</span>
     </Link>
