@@ -14,6 +14,7 @@ import {
 import clsx from "clsx";
 import KpiCard from "@/components/ui/KpiCard";
 import SectionHeader from "@/components/ui/SectionHeader";
+import RefreshButton from "@/components/ui/RefreshButton";
 import ReachCompositionChart from "@/components/charts/ReachCompositionChart";
 import InfoBox from "@/components/ui/InfoBox";
 import { CHART_BAR_COLOR, CHART_BAR_STACKED, CHART_LINE_COLOR } from "@/lib/chart-colors";
@@ -204,13 +205,7 @@ export default function ReachClient({
           {syncStatus && (
             <span className="text-sm text-[rgba(9,10,8,0.55)]">{syncStatus}</span>
           )}
-          <button
-            onClick={handleSync}
-            disabled={syncing}
-            className="text-sm font-medium px-4 py-2 rounded-lg bg-neutral-900 text-white hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          >
-            {syncing ? "Henter..." : "Hent data"}
-          </button>
+          <RefreshButton onClick={handleSync} loading={syncing} label="Hent data" loadingLabel="Henter…" />
         </div>
       </div>
 
@@ -223,13 +218,9 @@ export default function ReachClient({
           <p className="text-sm text-neutral-500 mb-6">
             Trykk Hent data for å synkronisere fra Meta.
           </p>
-          <button
-            onClick={handleSync}
-            disabled={syncing}
-            className="text-sm font-medium px-4 py-2 rounded-lg bg-neutral-900 text-white hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          >
-            {syncing ? "Henter..." : "Hent data"}
-          </button>
+          <div className="inline-block">
+            <RefreshButton onClick={handleSync} loading={syncing} label="Hent data" loadingLabel="Henter…" />
+          </div>
         </div>
       )}
 

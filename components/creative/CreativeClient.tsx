@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import SectionHeader from "@/components/ui/SectionHeader";
 import KpiCard from "@/components/ui/KpiCard";
+import RefreshButton from "@/components/ui/RefreshButton";
 import CohortSpendChart, { COHORT_COLORS } from "@/components/charts/CohortSpendChart";
 import { Ad, AdCohort, CreativeChurnPoint, CohortMetric } from "@/lib/types";
 import clsx from "clsx";
@@ -223,13 +224,7 @@ export default function CreativeClient({
           {syncStatus && (
             <span className="text-sm text-[rgba(9,10,8,0.55)]">{syncStatus}</span>
           )}
-          <button
-            onClick={handleSync}
-            disabled={syncing}
-            className="text-sm font-medium px-4 py-2 rounded-lg bg-neutral-900 text-white hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          >
-            {syncing ? "Henter..." : "Oppdater"}
-          </button>
+          <RefreshButton onClick={handleSync} loading={syncing} label="Oppdater" loadingLabel="Henter…" />
         </div>
       </div>
 
