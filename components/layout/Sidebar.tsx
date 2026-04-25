@@ -67,7 +67,7 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
         <BottomLink href="/admin" active={isAdmin} icon="settings">Innstillinger</BottomLink>
       </div>
 
-      {/* Brand-footer — speiler adlaunch */}
+      {/* Brand-footer — speiler adlaunch eksakt */}
       <div className="px-4 py-3 border-t border-neutral-200 flex items-center gap-2.5">
         <div className="w-5 h-5 rounded-md bg-neutral-900 text-white flex items-center justify-center flex-shrink-0">
           <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
@@ -75,8 +75,8 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
           </svg>
         </div>
         <div className="flex-1 min-w-0 leading-tight">
-          <p className="text-xs text-neutral-900 truncate font-medium">Simple Dashboard</p>
-          <p className="text-[10px] text-neutral-500">beta v.1</p>
+          <p className="text-xs text-neutral-900 truncate">Simple Dashboard</p>
+          <p className="text-[10px] text-neutral-500">betaversjon 1.0</p>
         </div>
       </div>
     </aside>

@@ -212,16 +212,16 @@ export default function PerformanceClient({
       {/* Campaign table */}
       <div>
         <SectionHeader title="Kampanjer" />
-        <div className="rounded-xl bg-[var(--color-surface)] overflow-hidden">
+        <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
           <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-[var(--color-border)]">
+            <thead className="bg-neutral-50 border-b border-neutral-200">
+              <tr>
                 {["Kampanje", "Spend", "ROAS", "CPA", "CPM", "Frekvens", "CTR", "Reach"].map((h) => (
                   <th
                     key={h}
                     className={clsx(
-                      "py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)]",
-                      h === "Kampanje" ? "text-left px-5" : "text-right px-4"
+                      "py-2.5 text-xs font-medium text-neutral-500",
+                      h === "Kampanje" ? "text-left px-4" : "text-right px-3"
                     )}
                   >
                     {h}

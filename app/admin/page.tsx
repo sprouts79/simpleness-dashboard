@@ -122,8 +122,8 @@ export default function AdminPage() {
 
   return (
     <div className="px-8 py-8 max-w-lg">
-      <h1 className="text-2xl font-bold mb-1">Legg til kunde</h1>
-      <p className="text-sm text-[rgba(9,10,8,0.45)] mb-8">
+      <h1 className="text-2xl font-bold text-neutral-900 mb-1">Legg til kunde</h1>
+      <p className="text-sm text-neutral-500 mb-8">
         Velg en Meta-konto fra listen, gi den et navn og slug, og lagre.
       </p>
 
@@ -131,7 +131,7 @@ export default function AdminPage() {
 
         {/* Meta account picker */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.45)] mb-1.5">
+          <label className="block text-sm font-medium text-neutral-700 mb-1.5">
             Meta Ad Account
           </label>
 
@@ -164,7 +164,7 @@ export default function AdminPage() {
 
         {/* Name */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.45)] mb-1.5">
+          <label className="block text-sm font-medium text-neutral-700 mb-1.5">
             Kundenavn i dashbordet
           </label>
           <input
@@ -179,8 +179,8 @@ export default function AdminPage() {
 
         {/* Slug */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-widest text-[rgba(9,10,8,0.45)] mb-1.5">
-            Slug <span className="normal-case font-normal text-[rgba(9,10,8,0.35)]">— URL: /{slug || "slug"}/performance</span>
+          <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+            Slug <span className="font-normal text-neutral-400">— URL: /{slug || "slug"}/performance</span>
           </label>
           <input
             type="text"
@@ -196,12 +196,7 @@ export default function AdminPage() {
         <button
           type="submit"
           disabled={!canSubmit}
-          className={clsx(
-            "w-full py-2.5 rounded-lg text-sm font-semibold transition-opacity",
-            canSubmit
-              ? "bg-[var(--color-accent)] text-[var(--color-black)] hover:opacity-90"
-              : "bg-[var(--color-surface)] text-[rgba(9,10,8,0.3)] cursor-not-allowed border border-[var(--color-border)]"
-          )}
+          className="w-full py-2.5 rounded-lg text-sm font-medium bg-neutral-900 text-white hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           {submitting ? (result?.message.includes("henter") ? "Henter data..." : "Legger til...") : "Legg til kunde"}
         </button>
@@ -209,12 +204,12 @@ export default function AdminPage() {
         {/* Feedback */}
         {result && (
           <div
-            className="rounded-lg px-4 py-3 text-sm"
-            style={{
-              background: result.ok ? "rgba(137,255,88,0.10)" : "rgba(239,68,68,0.08)",
-              border: `1px solid ${result.ok ? "rgba(137,255,88,0.30)" : "rgba(239,68,68,0.25)"}`,
-              color: result.ok ? "var(--color-black)" : "#b91c1c",
-            }}
+            className={clsx(
+              "rounded-lg px-4 py-3 text-sm border",
+              result.ok
+                ? "bg-[#dff7cc] border-[#41bd0e]/30 text-neutral-900"
+                : "bg-red-50 border-red-200 text-red-700"
+            )}
           >
             {result.message}
           </div>

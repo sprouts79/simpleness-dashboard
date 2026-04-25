@@ -24,8 +24,8 @@ export default async function PulsePage() {
           <p className="text-sm text-neutral-500 mt-1">Alle kunder · Siste 7 dager</p>
         </div>
         <div className="text-right">
-          <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">Total spend 7d</p>
-          <p className="text-xl font-bold tabular-nums text-neutral-900 mt-1" style={{ fontFamily: "var(--font-mono)" }}>
+          <p className="text-sm text-neutral-500">Total spend 7 d</p>
+          <p className="text-xl font-bold tabular-nums text-neutral-900 mt-0.5" style={{ fontFamily: "var(--font-mono)" }}>
             {fmt(totalSpend, "NOK ")}
           </p>
         </div>
@@ -93,7 +93,7 @@ export default async function PulsePage() {
 
 function Th({ children, align = "right" }: { children: React.ReactNode; align?: "left" | "right" }) {
   return (
-    <th className={`${align === "left" ? "text-left px-4" : "text-right px-3"} py-2.5 text-xs font-medium text-neutral-500 uppercase tracking-wider`}>
+    <th className={`${align === "left" ? "text-left px-4" : "text-right px-3"} py-2.5 text-xs font-medium text-neutral-500`}>
       {children}
     </th>
   );

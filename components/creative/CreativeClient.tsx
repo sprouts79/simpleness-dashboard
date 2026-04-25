@@ -286,11 +286,11 @@ export default function CreativeClient({
                 const cohortColor = colorMap.get(cohort.cohortDate) || COHORT_COLORS[0];
               
               return (
-                <div 
+                <div
                   key={cohort.cohortDate}
                   className={clsx(
-                    "rounded-xl bg-[var(--color-surface)] overflow-hidden transition-all",
-                    isExpanded && "ring-2 ring-[var(--color-black)]"
+                    "rounded-xl border bg-white overflow-hidden transition-all",
+                    isExpanded ? "border-neutral-300 ring-1 ring-neutral-100" : "border-neutral-200"
                   )}
                 >
                   {/* Card header */}
@@ -449,7 +449,7 @@ export default function CreativeClient({
             title="Spend fordelt per kohort over tid" 
             subtitle="Se hvordan ulike kohorter bidrar til total spend uke for uke"
           />
-          <div className="rounded-xl bg-[var(--color-surface)] p-5">
+          <div className="rounded-xl border border-neutral-200 bg-white p-4">
             <CohortSpendChart cohorts={cohorts} />
           </div>
         </div>
@@ -460,8 +460,8 @@ export default function CreativeClient({
         {/* Top by Spend */}
         <div>
           <SectionHeader title="Hvilke annonser får flest kjøp?" />
-          <div className="rounded-xl bg-[var(--color-surface)] overflow-hidden">
-            <div className="divide-y divide-[var(--color-border)]">
+          <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
+            <div className="divide-y divide-neutral-100">
               {topByPurchases.map((ad, i) => {
                 const isExpanded = expandedAdId === `purchases-${ad.id}`;
                 return (
@@ -517,8 +517,8 @@ export default function CreativeClient({
         {/* Top by Net New Reach */}
         <div>
           <SectionHeader title="Hvilke annonser når flest mennesker?" />
-          <div className="rounded-xl bg-[var(--color-surface)] overflow-hidden">
-            <div className="divide-y divide-[var(--color-border)]">
+          <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
+            <div className="divide-y divide-neutral-100">
               {topByReach.map((ad, i) => {
                 const isExpanded = expandedAdId === `reach-${ad.id}`;
                 const reachFormatted = ad.reach >= 1000000

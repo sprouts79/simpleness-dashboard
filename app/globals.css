@@ -57,6 +57,22 @@ html, body {
 }
 
 /* ============================================================
+   SECTION TITLE — Shopify-stil
+   Normal case + subtle underline. Brukes på kort-titler og
+   seksjons-headere. Ingen ALL CAPS.
+   ============================================================ */
+
+.section-title {
+  font-size: 0.875rem;        /* 14px */
+  font-weight: 600;
+  color: var(--color-fg);
+  text-decoration: underline;
+  text-decoration-color: var(--color-border);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+/* ============================================================
    FILTER PILL — Shopify-style dropdown buttons
    Brukes av PillSelect.tsx
    ============================================================ */

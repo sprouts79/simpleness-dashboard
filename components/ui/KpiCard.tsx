@@ -17,8 +17,8 @@ interface KpiCardProps {
 }
 
 /**
- * KPI Card — Shopify-aktig oppsett:
- *   ─ Eyebrow-tittel (uppercase, dempet)
+ * KPI Card — Shopify-aktig:
+ *   ─ Title (normal case, font-semibold med subtle underline — section-title)
  *   ─ Stort sort tall + inline delta-pil
  *   ─ Optional status-prikk eller note nederst
  */
@@ -40,10 +40,8 @@ export default function KpiCard({
         highlight ? "border-neutral-300 ring-1 ring-neutral-100" : "border-neutral-200"
       )}
     >
-      {/* Eyebrow tittel */}
-      <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">{label}</p>
+      <p className="section-title">{label}</p>
 
-      {/* Big number + inline delta */}
       <div className="mt-2.5 flex items-baseline gap-2 flex-wrap">
         <p
           className={clsx(
@@ -57,19 +55,16 @@ export default function KpiCard({
         {delta !== undefined && <DeltaPill delta={delta} invert={invertDelta} />}
       </div>
 
-      {/* Delta context */}
       {delta !== undefined && (
         <p className="text-xs text-neutral-500 mt-1">{deltaLabel ?? "vs forrige uke"}</p>
       )}
 
-      {/* Status — bottom-aligned */}
       {status && (
         <div className="mt-auto pt-2.5">
           <StatusDot level={status.level} label={status.label} />
         </div>
       )}
 
-      {/* Note (når ingen status) */}
       {note && !status && (
         <p className="text-sm text-neutral-600 mt-1.5 leading-snug">{note}</p>
       )}

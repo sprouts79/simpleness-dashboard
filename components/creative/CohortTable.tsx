@@ -81,20 +81,20 @@ export default function CohortTable({ cohorts, metric }: Props) {
   const totalAdCount = cohorts.reduce((s, c) => s + c.adCount, 0);
 
   return (
-    <div className="overflow-x-auto rounded-xl bg-[var(--color-surface)]">
+    <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white">
       <table className="text-sm w-full">
-        <thead>
-          <tr className="border-b border-[var(--color-border)]">
-            <th className="text-left px-5 py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)] whitespace-nowrap">
+        <thead className="bg-neutral-50 border-b border-neutral-200">
+          <tr>
+            <th className="text-left px-4 py-2.5 text-xs font-medium text-neutral-500 whitespace-nowrap">
               Kohort
             </th>
-            <th className="text-center px-4 py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)]">
+            <th className="text-center px-3 py-2.5 text-xs font-medium text-neutral-500">
               Ads
             </th>
             {weekCols.map((w) => (
               <th
                 key={w}
-                className="text-center px-4 py-3.5 text-sm font-medium text-[rgba(9,10,8,0.5)] whitespace-nowrap"
+                className="text-center px-3 py-2.5 text-xs font-medium text-neutral-500 whitespace-nowrap"
               >
                 Uke {w}
               </th>
