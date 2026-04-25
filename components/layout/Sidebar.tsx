@@ -24,33 +24,13 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
 
   return (
     <aside className="w-64 flex-shrink-0 h-full overflow-y-auto bg-[var(--color-card)] border-r border-[var(--color-border)] flex flex-col">
-      {/* Toppnav: Pulse + ClientPicker + per-klient sub-nav */}
+      {/* Toppnav: ClientPicker + per-klient sub-nav */}
       <nav className="flex-1 px-2 py-4 overflow-y-auto">
-        {/* Pulse — global */}
-        <Link
-          href="/"
-          className={clsx(
-            "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors",
-            isPulse
-              ? "bg-neutral-100 text-neutral-900"
-              : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
-          )}
-        >
-          <span className="w-7 h-7 flex items-center justify-center flex-shrink-0">
-            <PulseIcon className="w-2.5 h-2.5" />
-          </span>
-          <span className="flex-1 truncate font-medium">Puls</span>
-        </Link>
+        <p className="px-2.5 pb-1.5 text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
+          Klient
+        </p>
+        <ClientPicker clients={clients} />
 
-        {/* Klient-velger */}
-        <div className="mt-5">
-          <p className="px-2.5 pb-1.5 text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
-            Klient
-          </p>
-          <ClientPicker clients={clients} />
-        </div>
-
-        {/* Per-klient sub-nav */}
         {activeClient && (
           <div className="mt-1 space-y-0.5">
             {CLIENT_SUBNAV.map((item) => {
@@ -75,8 +55,22 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
         )}
       </nav>
 
-      {/* Bottom-actions */}
+      {/* Bottom-actions: Puls (global) + Guide + Dokumentasjon */}
       <div className="px-2 py-2 border-t border-neutral-200 space-y-0.5">
+        <Link
+          href="/"
+          className={clsx(
+            "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors",
+            isPulse
+              ? "bg-neutral-100 text-neutral-900"
+              : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
+          )}
+        >
+          <span className="w-4 h-4 flex items-center justify-center flex-shrink-0">
+            <PulseIcon className="w-2 h-2" />
+          </span>
+          <span className="font-medium">Puls</span>
+        </Link>
         <BottomLink href="/guide" active={isGuide} icon="guide">Guide</BottomLink>
         <BottomLink href="/docs/index.html" active={false} external icon="docs">Dokumentasjon</BottomLink>
       </div>
