@@ -16,7 +16,7 @@ export default async function PulsePage() {
   const totalSpend = pulseData.reduce((s, r) => s + r.spend7d, 0);
 
   return (
-    <div className="px-8 py-8">
+    <div>
       {/* Header */}
       <div className="flex items-baseline justify-between mb-6">
         <div>

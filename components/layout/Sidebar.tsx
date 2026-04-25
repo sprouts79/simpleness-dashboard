@@ -23,7 +23,7 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
   const activeClient = clients.find((c) => c.slug === slug);
 
   return (
-    <aside className="w-64 flex-shrink-0 h-full overflow-y-auto bg-[var(--color-card)] border-r border-[var(--color-border)] flex flex-col">
+    <aside className="w-64 flex-shrink-0 h-full overflow-y-auto bg-white flex flex-col">
       {/* Toppnav: ClientPicker + per-klient sub-nav */}
       <nav className="flex-1 px-2 py-3 overflow-y-auto">
         <ClientPicker clients={clients} />

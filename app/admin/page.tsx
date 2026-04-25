@@ -121,7 +121,7 @@ export default function AdminPage() {
   const canSubmit = selectedAccountId && name && slug && !submitting && !selectedAccount?.alreadyAdded;
 
   return (
-    <div className="px-8 py-8 max-w-lg">
+    <div className="max-w-lg">
       <h1 className="text-2xl font-bold text-neutral-900 mb-1">Legg til kunde</h1>
       <p className="text-sm text-neutral-500 mb-8">
         Velg en Meta-konto fra listen, gi den et navn og slug, og lagre.
