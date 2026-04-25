@@ -143,7 +143,7 @@ export default function PerformanceClient({
       {/* Primary KPIs */}
       <div>
         <SectionHeader title="Oppsummering" />
-        <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-3 gap-4 mb-4 items-start">
           <KpiCard
             label="Spend"
             value={formatNok(kpis.spend)}
@@ -167,7 +167,7 @@ export default function PerformanceClient({
             size="large"
           />
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-4 items-start">
           <KpiCard
             label="CPMn"
             value={kpis.cpmn > 0 ? `${Math.round(kpis.cpmn)} kr` : "-"}

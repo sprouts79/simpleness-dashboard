@@ -18,9 +18,12 @@ interface KpiCardProps {
 
 /**
  * KPI Card — Shopify-aktig:
- *   ─ Title (normal case, font-semibold med subtle underline — section-title)
+ *   ─ Title (normal case, font-semibold med subtle underline)
  *   ─ Stort sort tall + inline delta-pil
- *   ─ Optional status-prikk eller note nederst
+ *   ─ Optional sub-info (delta-label, status, note)
+ *
+ * Naturlig høyde — strekker seg ikke unødig. Grid-container må sette
+ * items-start for å unngå stretch når kort har ulikt innhold.
  */
 export default function KpiCard({
   label,
@@ -36,7 +39,7 @@ export default function KpiCard({
   return (
     <div
       className={clsx(
-        "rounded-xl border bg-white px-4 py-3.5 flex flex-col",
+        "rounded-xl border bg-white px-4 py-3.5",
         highlight ? "border-neutral-300 ring-1 ring-neutral-100" : "border-neutral-200"
       )}
     >
@@ -60,7 +63,7 @@ export default function KpiCard({
       )}
 
       {status && (
-        <div className="mt-auto pt-2.5">
+        <div className="mt-2.5">
           <StatusDot level={status.level} label={status.label} />
         </div>
       )}

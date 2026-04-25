@@ -20,8 +20,12 @@ export default async function RootLayout({
       <body>
         <div className="flex h-screen overflow-hidden">
           <Sidebar clients={clients} />
+          {/* Cap content-bredden til 1400px så grafer/KPIer ikke "flytende"
+              strekker over hele en 1920px+ skjerm. Left-aligned, marg på høyre. */}
           <main className="flex-1 overflow-y-auto bg-neutral-50">
-            {children}
+            <div className="max-w-[1400px]">
+              {children}
+            </div>
           </main>
         </div>
       </body>

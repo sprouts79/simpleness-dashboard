@@ -229,7 +229,7 @@ export default function CreativeClient({
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4 items-start">
         <KpiCard label="Aktive annonser" value={String(kpis.activeAds)} />
         <KpiCard label="Aktive kohorter" value={String(kpis.activeCohorts)} />
         <KpiCard label="Total Spend" value={`${Math.round(kpis.totalSpend / 1000)}k`} />

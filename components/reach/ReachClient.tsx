@@ -230,7 +230,7 @@ export default function ReachClient({
           {kpis && (
             <div>
               <SectionHeader title="Oppsummering" subtitle={`Lookback: ${lookbackLabel}`} />
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-4 gap-4 items-start">
                 <KpiCard label="Total Spend" value={formatNokShort(kpis.totalSpend)} />
                 <KpiCard label="Rolling Reach" value={formatReach(kpis.totalReach)} />
                 <KpiCard label="Snitt nye per mnd" value={formatReach(kpis.avgNetNewReach)} />
