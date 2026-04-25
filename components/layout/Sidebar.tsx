@@ -22,10 +22,10 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
   return (
     <aside className="w-64 flex-shrink-0 h-full overflow-y-auto bg-[var(--color-card)] border-r border-[var(--color-border)] flex flex-col">
       {/* Klient-liste */}
-      <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto">
         <PulseLink active={isPulse} />
 
-        <p className="px-3 pt-4 pb-2 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+        <p className="px-2.5 pt-4 pb-1.5 text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
           Klienter
         </p>
 
@@ -42,14 +42,14 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
               key={client.id}
               href={`/${client.slug}/performance`}
               className={clsx(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors",
+                "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors",
                 isActive
                   ? "bg-neutral-100 text-neutral-900"
                   : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
               )}
             >
               <span
-                className="w-8 h-8 rounded-lg text-xs font-semibold flex items-center justify-center flex-shrink-0 text-white"
+                className="w-7 h-7 rounded-md text-[11px] font-semibold flex items-center justify-center flex-shrink-0 text-white"
                 style={{ backgroundColor: avatarColor({ id: client.id, name: client.name }) }}
               >
                 {client.name.charAt(0).toUpperCase()}
@@ -61,7 +61,7 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
       </nav>
 
       {/* Bottom-actions — speiler adlaunch (Innstillinger ligger i footer) */}
-      <div className="px-3 py-3 border-t border-neutral-200 space-y-1">
+      <div className="px-2 py-2 border-t border-neutral-200 space-y-0.5">
         <BottomLink href="/guide" active={isGuide} icon="guide">Guide</BottomLink>
         <BottomLink href="/docs/index.html" active={false} external icon="docs">Dokumentasjon</BottomLink>
       </div>
@@ -91,13 +91,13 @@ function PulseLink({ active }: { active: boolean }) {
     <Link
       href="/"
       className={clsx(
-        "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors",
+        "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors",
         active
           ? "bg-neutral-100 text-neutral-900"
           : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
       )}
     >
-      <span className="w-8 h-8 flex items-center justify-center flex-shrink-0">
+      <span className="w-7 h-7 flex items-center justify-center flex-shrink-0">
         <PulseIcon className="w-2.5 h-2.5" />
       </span>
       <span className="flex-1 truncate font-medium">Puls</span>
@@ -119,9 +119,9 @@ function BottomLink({
   children: React.ReactNode;
 }) {
   const className = clsx(
-    "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all",
+    "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors",
     active
-      ? "bg-neutral-100 text-neutral-900 shadow-sm"
+      ? "bg-neutral-100 text-neutral-900"
       : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
   );
 
