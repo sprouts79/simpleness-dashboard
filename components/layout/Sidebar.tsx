@@ -69,7 +69,7 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
       {/* Brand-footer — eksakt struktur som adlaunch (ikon + stack + høyre-action) */}
       <div className="px-4 py-3 border-t border-neutral-200 flex items-center gap-2.5">
         <div className="w-5 h-5 rounded-md bg-neutral-900 text-white flex items-center justify-center flex-shrink-0">
-          <PulseIcon className="w-3.5 h-3.5" />
+          <PulseIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
         </div>
         <div className="flex-1 min-w-0 leading-tight">
           <p className="text-xs text-neutral-900 truncate">Simple Dashboard</p>

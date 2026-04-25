@@ -1,29 +1,32 @@
 interface PulseIconProps {
   className?: string;
-  /** Skru av neon-aksent (rendrer alt i currentColor). Default: aksent på. */
+  /** Skru av neon og bruk currentColor i stedet. */
   monochrome?: boolean;
+  strokeWidth?: number;
 }
 
 /**
- * Puls-ikon — Simpleness-signatur. Seks vertikale capsules i pulsbølge-form
- * med neon-grønn aksent (#89FF58) på den nest største. Bruker currentColor
- * for resten — fungerer både på lys og mørk bakgrunn.
+ * Puls-ikon — pulsbølge-linje. Default neon-grønn stroke (#89FF58),
+ * passer best på mørk bakgrunn. Bruk monochrome=true for å arve currentColor.
  */
-export default function PulseIcon({ className = "", monochrome = false }: PulseIconProps) {
-  const accent = monochrome ? "currentColor" : "#89FF58";
+export default function PulseIcon({
+  className = "",
+  monochrome = false,
+  strokeWidth = 2,
+}: PulseIconProps) {
+  const stroke = monochrome ? "currentColor" : "#89FF58";
   return (
     <svg
       viewBox="0 0 24 24"
       className={className}
-      fill="currentColor"
+      fill="none"
+      stroke={stroke}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <ellipse cx="2.5" cy="12" rx="1" ry="3" />
-      <ellipse cx="6.5" cy="12" rx="1.4" ry="6" />
-      <ellipse cx="11" cy="12" rx="1.6" ry="9" />
-      <ellipse cx="15.5" cy="12" rx="1.6" ry="9" fill={accent} />
-      <ellipse cx="19.5" cy="12" rx="1.4" ry="5" />
-      <ellipse cx="22.5" cy="12" rx="1" ry="2.5" />
+      <path d="M3 12h3l3-9 4 18 3-9h5" />
     </svg>
   );
 }
