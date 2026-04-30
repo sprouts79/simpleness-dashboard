@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import SectionHeader from "@/components/ui/SectionHeader";
 import KpiCard from "@/components/ui/KpiCard";
@@ -221,6 +222,16 @@ export default function CreativeClient({
           </button>
         </div>
         <div className="flex items-center gap-4">
+          <Link
+            href={`/${clientId}/creative/lab`}
+            className="text-sm font-medium text-neutral-700 hover:text-neutral-900 px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 transition-colors"
+            title="Per-ad cohort drill-down (eksperimentell)"
+          >
+            Kreativ-laboratorium
+            <span className="ml-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-200 text-amber-900 uppercase tracking-wider">
+              Ny
+            </span>
+          </Link>
           {syncStatus && (
             <span className="text-sm text-[rgba(9,10,8,0.55)]">{syncStatus}</span>
           )}

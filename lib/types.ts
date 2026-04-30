@@ -184,3 +184,32 @@ export interface WeeklyReachRow {
   frequency: number;
   cpmNetNew: number;
 }
+
+// Lab — per-ad weekly trajectory for cohort drill-down (creative/lab page)
+export interface AdLabWeek {
+  weekStart: string;   // "YYYY-MM-DD" (Monday)
+  spend: number;
+  impressions: number;
+  clicks: number;
+  purchases: number;
+  purchaseValue: number;
+  videoViews3s: number;
+  videoViewsThruplays: number;
+}
+
+export interface AdLabRow {
+  adId: string;
+  adName: string;
+  format: "video" | "static" | "carousel" | "story" | "unknown";
+  thumbnailUrl: string;
+  campaignId: string;
+  campaignName: string;
+  adsetId: string;
+  adsetName: string;
+  cohortDate: string;   // "YYYY-MM-DD" — Monday of week of first spend
+  cohortLabel: string;  // "Uke 17"
+  weeks: AdLabWeek[];
+  totalSpend: number;
+  totalPurchases: number;
+  totalPurchaseValue: number;
+}

@@ -23,7 +23,9 @@ import {
   daysAgoInTz,
 } from "@/lib/meta-api";
 
-export const maxDuration = 300;
+export const maxDuration = 800;
+
+const CONCURRENCY = 4;
 
 export async function GET(req: NextRequest) {
   // Verify Vercel cron secret
@@ -32,19 +34,39 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Fetch all clients with a Meta account ID
-  const { data: clients, error: clientErr } = await supabase
+  const { data: clientsRaw, error: clientErr } = await supabase
     .from("clients")
     .select("id, meta_account_id")
     .not("meta_account_id", "is", null);
 
-  if (clientErr || !clients?.length) {
+  if (clientErr || !clientsRaw?.length) {
     return NextResponse.json({ error: "No clients found" }, { status: 500 });
   }
 
+  // Determine staleness from most recent meta_ads.refreshed_at per client.
+  // Used to sort stale-first so timeouts don't perpetually starve the same accounts.
+  const lastRefreshByClient = new Map<string, string>();
+  for (const c of clientsRaw) {
+    const { data: row } = await supabase
+      .from("meta_ads")
+      .select("refreshed_at")
+      .eq("client_id", c.id)
+      .order("refreshed_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    lastRefreshByClient.set(c.id, row?.refreshed_at ?? "");
+  }
+
+  // Sort: empty string (never synced) first, then oldest refresh first.
+  const clients = [...clientsRaw].sort((a, b) => {
+    const av = lastRefreshByClient.get(a.id) ?? "";
+    const bv = lastRefreshByClient.get(b.id) ?? "";
+    return av.localeCompare(bv);
+  });
+
   const results: Record<string, { ok: boolean; adsSynced?: number; performanceSynced?: number; reachSynced?: number; cohortSynced?: number; error?: string }> = {};
 
-  for (const client of clients) {
+  async function syncClient(client: { id: string; meta_account_id: string }) {
     try {
       const tz = await fetchAccountTimezone(client.meta_account_id);
       const since = daysAgoInTz(90, tz); // 90 days — avoids "response too large" for campaign-level data
@@ -186,6 +208,14 @@ export async function GET(req: NextRequest) {
     } catch (e: any) {
       results[client.id] = { ok: false, error: e.message };
     }
+  }
+
+  // Process in concurrent batches — caps Meta API pressure, but parallelism
+  // means the 800s budget is shared across multiple slow clients instead of
+  // single-file blocking.
+  for (let i = 0; i < clients.length; i += CONCURRENCY) {
+    const batch = clients.slice(i, i + CONCURRENCY);
+    await Promise.all(batch.map(syncClient));
   }
 
   return NextResponse.json({ ok: true, synced_at: new Date().toISOString(), results });

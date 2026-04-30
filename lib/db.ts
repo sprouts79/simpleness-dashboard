@@ -20,6 +20,8 @@ import {
   AdCohort,
   CreativeChurnPoint,
   Ad,
+  AdLabRow,
+  AdLabWeek,
   PeriodKey,
   CompareKey,
 } from "./types";
@@ -871,4 +873,105 @@ export async function getWeeklyReachData(
     frequency: r.frequency ?? 0,
     cpmNetNew: r.cpm_net_new ?? 0,
   }));
+}
+
+// ─── Lab: per-ad weekly trajectory ───────────────────────────────────────────
+// Joins meta_ad_weekly (per-ad weekly metrics) with meta_ads (name/thumbnail/
+// campaign+adset id) and meta_performance_daily (campaign/adset names).
+// Returns one AdLabRow per ad with its weekly trajectory + cohort assignment.
+export async function getAdLabData(clientId: string): Promise<AdLabRow[]> {
+  const since = daysAgo(90);
+
+  // 1. Per-ad weekly rows (the actual trajectory data)
+  const { data: weekly } = await supabase
+    .from("meta_ad_weekly")
+    .select("ad_id, week_start, spend, impressions, clicks, purchases, purchase_value, video_views_3s, video_views_thruplays")
+    .eq("client_id", clientId)
+    .gte("week_start", since)
+    .gt("spend", 0);
+
+  if (!weekly?.length) return [];
+
+  const adIds = Array.from(new Set(weekly.map((r) => r.ad_id)));
+
+  // 2. Ad metadata (name, thumbnail, format, campaign/adset ids, created_date)
+  const { data: meta } = await supabase
+    .from("meta_ads")
+    .select("ad_id, ad_name, format, thumbnail_url, campaign_id, adset_id, created_date, cohort_date")
+    .eq("client_id", clientId)
+    .in("ad_id", adIds);
+
+  const metaMap = new Map((meta ?? []).map((r) => [r.ad_id, r]));
+
+  // 3. Campaign + adset names — distinct from meta_performance_daily
+  const { data: campaignRows } = await supabase
+    .from("meta_performance_daily")
+    .select("campaign_id, campaign_name, adset_id, adset_name")
+    .eq("client_id", clientId)
+    .gte("date", since)
+    .not("campaign_id", "is", null);
+
+  const campaignNameMap = new Map<string, string>();
+  const adsetNameMap = new Map<string, string>();
+  for (const r of campaignRows ?? []) {
+    if (r.campaign_id && r.campaign_name && !campaignNameMap.has(r.campaign_id)) {
+      campaignNameMap.set(r.campaign_id, r.campaign_name);
+    }
+    if (r.adset_id && r.adset_name && !adsetNameMap.has(r.adset_id)) {
+      adsetNameMap.set(r.adset_id, r.adset_name);
+    }
+  }
+
+  // 4. Group weekly rows by ad and find first-spend week per ad (cohort assignment)
+  const byAd = new Map<string, typeof weekly>();
+  for (const row of weekly) {
+    if (!byAd.has(row.ad_id)) byAd.set(row.ad_id, []);
+    byAd.get(row.ad_id)!.push(row);
+  }
+
+  const rows: AdLabRow[] = [];
+  for (const [adId, weeks] of byAd.entries()) {
+    weeks.sort((a, b) => a.week_start.localeCompare(b.week_start));
+    const m = metaMap.get(adId);
+    // Cohort = Monday of created_date (real Meta creation time) when we have it.
+    // Falls back to first-spend-week — but this collapses pre-window ads onto
+    // the window-boundary week, so created_date is strongly preferred.
+    const cohortAnchor = m?.created_date ?? m?.cohort_date ?? weeks[0].week_start;
+    const cohortDate = getMondayOf(cohortAnchor);
+    const cohortLabel = formatWeekRangeLabel(cohortDate);
+
+    const trajectory: AdLabWeek[] = weeks.map((r) => ({
+      weekStart: getMondayOf(r.week_start),
+      spend: r.spend ?? 0,
+      impressions: r.impressions ?? 0,
+      clicks: r.clicks ?? 0,
+      purchases: r.purchases ?? 0,
+      purchaseValue: r.purchase_value ?? 0,
+      videoViews3s: r.video_views_3s ?? 0,
+      videoViewsThruplays: r.video_views_thruplays ?? 0,
+    }));
+
+    const totalSpend = trajectory.reduce((s, w) => s + w.spend, 0);
+    const totalPurchases = trajectory.reduce((s, w) => s + w.purchases, 0);
+    const totalPurchaseValue = trajectory.reduce((s, w) => s + w.purchaseValue, 0);
+
+    rows.push({
+      adId,
+      adName: m?.ad_name ?? adId,
+      format: (m?.format ?? "unknown") as AdLabRow["format"],
+      thumbnailUrl: m?.thumbnail_url ?? "",
+      campaignId: m?.campaign_id ?? "",
+      campaignName: campaignNameMap.get(m?.campaign_id ?? "") ?? "Ukjent kampanje",
+      adsetId: m?.adset_id ?? "",
+      adsetName: adsetNameMap.get(m?.adset_id ?? "") ?? "Ukjent ad set",
+      cohortDate,
+      cohortLabel,
+      weeks: trajectory,
+      totalSpend,
+      totalPurchases,
+      totalPurchaseValue,
+    });
+  }
+
+  return rows.sort((a, b) => b.totalSpend - a.totalSpend);
 }
