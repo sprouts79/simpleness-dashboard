@@ -185,7 +185,50 @@ export interface WeeklyReachRow {
   cpmNetNew: number;
 }
 
-// Lab — per-ad weekly trajectory for cohort drill-down (creative/lab page)
+// Lab — fatigue gauge (creative/lab "Slitenhet"-seksjon)
+export type FatigueStatus = "tof" | "holder" | "tired" | "new";
+
+export interface FatigueAdRow {
+  adId: string;
+  adName: string;
+  thumbnailUrl: string;
+  // Last 4 weeks (oldest first), with metrics. Empty week = ad inactive that week.
+  weeks: Array<{
+    weekStart: string;       // YYYY-MM-DD Monday
+    spend: number;
+    spendShare: number;      // ad's share of total account spend that week (0-1)
+    cpm: number;
+    impressions: number;
+  }>;
+  // Trend signals computed from `weeks`:
+  spendShareTrend: number;   // (last week share - first week share) / first; positive = growing
+  cpmTrend: number;          // same as above for CPM; positive = rising (bad)
+  avgCpm: number;            // average CPM over the 4 weeks
+  avgSpendShare: number;
+  totalSpend: number;
+  status: FatigueStatus;
+  // Last 12 weeks of weekly spend share for sparkline (oldest first, padded with 0)
+  spendShareSpark: number[];
+  cpmSpark: number[];
+}
+
+export interface FatigueAccountSignal {
+  // Last 4 weeks (recent) vs prior 4 weeks (4-8 weeks ago)
+  frequencyRecent: number;
+  frequencyPrior: number;
+  netNewPctRecent: number;
+  netNewPctPrior: number;
+  daysSinceLastLaunch: number | null;   // null if no qualifying launch in window
+  lastLaunchDate: string | null;        // YYYY-MM-DD
+  lastLaunchAdCount: number;
+  accountMedianCpm: number;             // median CPM of active ads — for TOF threshold
+}
+
+export interface FatigueData {
+  account: FatigueAccountSignal;
+  ads: FatigueAdRow[];                  // sorted: tired → holder → tof → new
+}
+
 export interface AdLabWeek {
   weekStart: string;   // "YYYY-MM-DD" (Monday)
   spend: number;

@@ -2,12 +2,13 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { AdLabRow } from "@/lib/types";
+import { AdLabRow, FatigueData } from "@/lib/types";
 import SectionHeader from "@/components/ui/SectionHeader";
 import KpiCard from "@/components/ui/KpiCard";
 import AdSpendStream from "./AdSpendStream";
 import AdHeatStrip from "./AdHeatStrip";
 import CohortLifecycleChart from "./CohortLifecycleChart";
+import FatigueGauge from "./FatigueGauge";
 import clsx from "clsx";
 
 type ViewMode = "calendar" | "since_launch";
@@ -17,6 +18,7 @@ type LifecycleMetric = "spend" | "spend_share" | "purchases" | "roas";
 interface Props {
   clientSlug: string;
   ads: AdLabRow[];
+  fatigue: FatigueData;
 }
 
 interface Option {
@@ -49,7 +51,7 @@ function uniqueOptions(ads: AdLabRow[], key: "cohortLabel" | "campaignName" | "a
     .sort((a, b) => b.spend - a.spend);
 }
 
-export default function CreativeLabClient({ clientSlug, ads }: Props) {
+export default function CreativeLabClient({ clientSlug, ads, fatigue }: Props) {
   const [viewMode, setViewMode] = useState<ViewMode>("calendar");
   const [heatMetric, setHeatMetric] = useState<HeatMetric>("spend");
   const [lifecycleMetric, setLifecycleMetric] = useState<LifecycleMetric>("spend_share");
@@ -115,9 +117,8 @@ export default function CreativeLabClient({ clientSlug, ads }: Props) {
               <h1 className="text-lg font-semibold">Kreativ-laboratorium</h1>
             </div>
             <p className="text-sm text-neutral-700 max-w-2xl leading-snug">
-              Per-ad spend-trajectories. Drill ned i hvordan algoritmen tester og fordeler — og hvilke
-              annonser som tar fart over tid. Dette er en eksperimentell visning. Tilbakemeldinger styrer
-              hva som blir permanent.
+              Skal vi lansere nye annonser nå, og hva skjedde sist vi gjorde det? Indikatorene er bygget
+              etter Simpleness-metodikken: spend-andel, CPM og frekvens.
             </p>
           </div>
           <Link
@@ -127,6 +128,18 @@ export default function CreativeLabClient({ clientSlug, ads }: Props) {
             ← Tilbake til kreativ rapport
           </Link>
         </div>
+      </div>
+
+      {/* Section 1: Fatigue gauge — primary view */}
+      <FatigueGauge data={fatigue} />
+
+      <div className="border-t border-neutral-200 pt-2">
+        <p className="text-[11px] uppercase tracking-wider font-semibold text-neutral-500 mb-1">
+          Eldre visualiseringer (utforsker)
+        </p>
+        <p className="text-xs text-neutral-500 max-w-2xl">
+          Under er den første lab-versjonen for sammenligning. Denne ryddes vekk når slitenhet-måleren over er bekreftet å treffe.
+        </p>
       </div>
 
       {/* Filter row */}

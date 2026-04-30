@@ -22,6 +22,9 @@ import {
   Ad,
   AdLabRow,
   AdLabWeek,
+  FatigueData,
+  FatigueAdRow,
+  FatigueStatus,
   PeriodKey,
   CompareKey,
 } from "./types";
@@ -873,6 +876,260 @@ export async function getWeeklyReachData(
     frequency: r.frequency ?? 0,
     cpmNetNew: r.cpm_net_new ?? 0,
   }));
+}
+
+// ─── Lab: fatigue gauge ─────────────────────────────────────────────────────
+// Single-screen answer to "is it time for new ads?".
+// Three account signals (frequency, % net new, days since launch) + per-ad
+// table classifying each active ad as tof/holder/tired/new based on
+// spend-share + CPM trends — the two robust indicators per Simpleness wiki.
+export async function getFatigueData(clientId: string): Promise<FatigueData> {
+  const since = daysAgo(56); // 8 weeks — covers "recent 4w + prior 4w" + launch lookback
+
+  // 1. Per-ad weekly metrics (last 8 weeks)
+  const { data: weekly } = await supabase
+    .from("meta_ad_weekly")
+    .select("ad_id, week_start, spend, impressions")
+    .eq("client_id", clientId)
+    .gte("week_start", since)
+    .gt("spend", 0);
+
+  // 2. Account-level reach metrics (frequency + net new %)
+  const { data: reachWeekly } = await supabase
+    .from("meta_reach_weekly")
+    .select("week_start, frequency, pct_net_new")
+    .eq("client_id", clientId)
+    .eq("lookback_days", 90)
+    .gte("week_start", since)
+    .lte("week_start", daysAgo(6))
+    .order("week_start", { ascending: true });
+
+  // 3. Ad metadata for active ads
+  const adIds = Array.from(new Set((weekly ?? []).map((r) => r.ad_id)));
+  const { data: adMeta } = await supabase
+    .from("meta_ads")
+    .select("ad_id, ad_name, thumbnail_url, created_date")
+    .eq("client_id", clientId)
+    .in("ad_id", adIds.length ? adIds : ["__none__"]);
+
+  const metaMap = new Map((adMeta ?? []).map((r) => [r.ad_id, r]));
+
+  // 4. All ad created_dates (not just active) — for launch detection
+  const { data: allAds } = await supabase
+    .from("meta_ads")
+    .select("ad_id, created_date")
+    .eq("client_id", clientId)
+    .gte("created_date", daysAgo(120))
+    .not("created_date", "is", null);
+
+  // ─── Compute account signal ──────────────────────────────────────────────
+  // Recent = last 4 complete weeks; Prior = 4 weeks before that
+  const recentRows = (reachWeekly ?? []).slice(-4);
+  const priorRows = (reachWeekly ?? []).slice(-8, -4);
+
+  function avg(arr: number[]): number {
+    if (!arr.length) return 0;
+    return arr.reduce((s, v) => s + v, 0) / arr.length;
+  }
+
+  const frequencyRecent = avg(recentRows.map((r) => r.frequency ?? 0));
+  const frequencyPrior = avg(priorRows.map((r) => r.frequency ?? 0));
+  const netNewPctRecent = avg(recentRows.map((r) => r.pct_net_new ?? 0));
+  const netNewPctPrior = avg(priorRows.map((r) => r.pct_net_new ?? 0));
+
+  // Last launch = most recent week (Monday) where ≥5 ads were created
+  const launchByWeek = new Map<string, number>();
+  for (const a of allAds ?? []) {
+    if (!a.created_date) continue;
+    const monday = getMondayOf(a.created_date);
+    launchByWeek.set(monday, (launchByWeek.get(monday) ?? 0) + 1);
+  }
+  let lastLaunchDate: string | null = null;
+  let lastLaunchAdCount = 0;
+  for (const [monday, count] of launchByWeek.entries()) {
+    if (count >= 5 && (!lastLaunchDate || monday > lastLaunchDate)) {
+      lastLaunchDate = monday;
+      lastLaunchAdCount = count;
+    }
+  }
+  const daysSinceLastLaunch = lastLaunchDate
+    ? Math.floor((Date.now() - new Date(lastLaunchDate + "T00:00:00Z").getTime()) / 86400000)
+    : null;
+
+  // ─── Compute per-ad weekly trends ────────────────────────────────────────
+  // Get the canonical 12-week timeline (most recent first 12 Mondays present in data)
+  const weekStarts = Array.from(
+    new Set((weekly ?? []).map((r) => getMondayOf(r.week_start)))
+  ).sort();
+  const recentWeekStarts = weekStarts.slice(-12); // last 12 weeks for sparkline
+  const trendWeekStarts = weekStarts.slice(-4);   // last 4 weeks for trend signal
+
+  // Total spend per week (account level) — used for spend share computation
+  const accountWeekSpend = new Map<string, number>();
+  for (const r of weekly ?? []) {
+    const monday = getMondayOf(r.week_start);
+    accountWeekSpend.set(monday, (accountWeekSpend.get(monday) ?? 0) + (r.spend ?? 0));
+  }
+
+  // Group weekly rows per ad
+  const adWeekly = new Map<string, Map<string, { spend: number; impressions: number }>>();
+  for (const r of weekly ?? []) {
+    const monday = getMondayOf(r.week_start);
+    if (!adWeekly.has(r.ad_id)) adWeekly.set(r.ad_id, new Map());
+    const inner = adWeekly.get(r.ad_id)!;
+    const prev = inner.get(monday) ?? { spend: 0, impressions: 0 };
+    inner.set(monday, {
+      spend: prev.spend + (r.spend ?? 0),
+      impressions: prev.impressions + (r.impressions ?? 0),
+    });
+  }
+
+  // Build CPM distribution across ads — used for relative TOF threshold.
+  // Bottom-third CPM = "below account average for reaching people" = TOF candidate.
+  const cpmsForDistribution: number[] = [];
+  for (const [, weekMap] of adWeekly.entries()) {
+    let totalSpend = 0;
+    let totalImpressions = 0;
+    for (const [monday, m] of weekMap.entries()) {
+      if (!trendWeekStarts.includes(monday)) continue;
+      totalSpend += m.spend;
+      totalImpressions += m.impressions;
+    }
+    if (totalSpend > 100 && totalImpressions > 1000) {
+      cpmsForDistribution.push((totalSpend / totalImpressions) * 1000);
+    }
+  }
+  cpmsForDistribution.sort((a, b) => a - b);
+  const accountMedianCpm =
+    cpmsForDistribution.length > 0
+      ? cpmsForDistribution[Math.floor(cpmsForDistribution.length / 2)]
+      : 0;
+  const cpmP33 =
+    cpmsForDistribution.length >= 3
+      ? cpmsForDistribution[Math.floor(cpmsForDistribution.length / 3)]
+      : 0;
+
+  // Build per-ad rows.
+  // Trend = relative delta between avg(first half) and avg(last half) of a series.
+  // For spend share we keep zero weeks (a zero IS signal — algorithm stopped spending).
+  // For CPM we drop zero weeks (no impressions = undefined, not zero).
+  function trend(values: number[], dropZeros: boolean): number {
+    const series = dropZeros ? values.filter((v) => v > 0) : values;
+    if (series.length < 2) return 0;
+    const half = Math.max(1, Math.floor(series.length / 2));
+    const first = series.slice(0, half);
+    const last = series.slice(-half);
+    const a = avg(first);
+    const b = avg(last);
+    if (a <= 0) return b > 0 ? 1 : 0;
+    return (b - a) / a;
+  }
+
+  const ads: FatigueAdRow[] = [];
+  for (const [adId, weekMap] of adWeekly.entries()) {
+    const m = metaMap.get(adId);
+
+    // Pad weeks: build full series for last 4 weeks (trend) and last 12 (sparkline)
+    const trendWeeks = trendWeekStarts.map((monday) => {
+      const data = weekMap.get(monday) ?? { spend: 0, impressions: 0 };
+      const totalAccount = accountWeekSpend.get(monday) ?? 0;
+      const cpm = data.impressions > 0 ? (data.spend / data.impressions) * 1000 : 0;
+      const spendShare = totalAccount > 0 ? data.spend / totalAccount : 0;
+      return {
+        weekStart: monday,
+        spend: data.spend,
+        spendShare,
+        cpm,
+        impressions: data.impressions,
+      };
+    });
+
+    const sparkSpendShare = recentWeekStarts.map((monday) => {
+      const data = weekMap.get(monday) ?? { spend: 0, impressions: 0 };
+      const totalAccount = accountWeekSpend.get(monday) ?? 0;
+      return totalAccount > 0 ? data.spend / totalAccount : 0;
+    });
+    const sparkCpm = recentWeekStarts.map((monday) => {
+      const data = weekMap.get(monday) ?? { spend: 0, impressions: 0 };
+      return data.impressions > 0 ? (data.spend / data.impressions) * 1000 : 0;
+    });
+
+    const spendShareSeries = trendWeeks.map((w) => w.spendShare);
+    const cpmSeries = trendWeeks.map((w) => w.cpm);
+
+    const spendShareTrend = trend(spendShareSeries, false);
+    const cpmTrend = trend(cpmSeries, true);
+    const avgCpm = avg(cpmSeries.filter((v) => v > 0));
+    const avgSpendShare = avg(spendShareSeries);
+    const totalSpend = trendWeeks.reduce((s, w) => s + w.spend, 0);
+
+    // Skip ads with effectively no activity in last 4 weeks
+    if (totalSpend < 50) continue;
+
+    // ─── Status logic ──────────────────────────────────────────────────────
+    const activeWeeks = trendWeeks.filter((w) => w.spend > 0).length;
+
+    // Young = created < 14 days ago — too early to judge trend
+    const createdDate = m?.created_date;
+    const isYoung =
+      createdDate &&
+      Date.now() - new Date(createdDate + "T00:00:00Z").getTime() < 14 * 86400000;
+
+    let status: FatigueStatus;
+    if (isYoung || activeWeeks < 2) {
+      status = "new";
+    } else if (spendShareTrend <= -0.4 || cpmTrend >= 0.4) {
+      // Strong decline: spend share fell ≥40% OR CPM rose ≥40% — sliten
+      status = "tired";
+    } else if (
+      cpmP33 > 0 &&
+      avgCpm > 0 &&
+      avgCpm <= cpmP33 &&
+      avgSpendShare >= 0.01 &&
+      spendShareTrend >= -0.2
+    ) {
+      // CPM in bottom third of account distribution + ≥1% spend share + not heavily declining = TOF gold
+      status = "tof";
+    } else {
+      status = "holder";
+    }
+
+    ads.push({
+      adId,
+      adName: m?.ad_name ?? adId,
+      thumbnailUrl: m?.thumbnail_url ?? "",
+      weeks: trendWeeks,
+      spendShareTrend,
+      cpmTrend,
+      avgCpm,
+      avgSpendShare,
+      totalSpend,
+      status,
+      spendShareSpark: sparkSpendShare,
+      cpmSpark: sparkCpm,
+    });
+  }
+
+  // Sort: tired first → holder → tof → new; within group, by total spend desc
+  const statusOrder: Record<FatigueStatus, number> = { tired: 0, holder: 1, tof: 2, new: 3 };
+  ads.sort((a, b) => {
+    if (a.status !== b.status) return statusOrder[a.status] - statusOrder[b.status];
+    return b.totalSpend - a.totalSpend;
+  });
+
+  return {
+    account: {
+      frequencyRecent,
+      frequencyPrior,
+      netNewPctRecent,
+      netNewPctPrior,
+      daysSinceLastLaunch,
+      lastLaunchDate,
+      lastLaunchAdCount,
+      accountMedianCpm,
+    },
+    ads,
+  };
 }
 
 // ─── Lab: per-ad weekly trajectory ───────────────────────────────────────────
