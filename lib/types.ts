@@ -185,48 +185,52 @@ export interface WeeklyReachRow {
   cpmNetNew: number;
 }
 
-// Lab — fatigue gauge (creative/lab "Slitenhet"-seksjon)
-export type FatigueStatus = "tof" | "holder" | "tired" | "new";
+// Lab — fatigue gauge (creative/lab "Helse"-seksjon)
+// Status = single-letter tier (A/B/C by spend-share) OR overrides (new/dead).
+// TOF is a separate flag — applies on top of A/B/C when CPMr criteria met.
+export type FatigueStatus = "a" | "b" | "c" | "new" | "dead";
 
 export interface FatigueAdRow {
   adId: string;
   adName: string;
   thumbnailUrl: string;
-  // Last 4 weeks (oldest first), with metrics. Empty week = ad inactive that week.
-  weeks: Array<{
-    weekStart: string;       // YYYY-MM-DD Monday
-    spend: number;
-    spendShare: number;      // ad's share of total account spend that week (0-1)
-    cpm: number;
-    impressions: number;
-  }>;
-  // Trend signals computed from `weeks`:
-  spendShareTrend: number;   // (last week share - first week share) / first; positive = growing
-  cpmTrend: number;          // same as above for CPM; positive = rising (bad)
-  avgCpm: number;            // average CPM over the 4 weeks
+  createdDate: string | null;          // YYYY-MM-DD when ad was created in Meta
+  daysSinceCreated: number | null;
+  // Trend signals (4-week + 1-week for early-warning):
+  spendShareTrend4w: number;           // 4-week relative trend (avg first half vs last half)
+  spendShareTrend1w: number;           // last week vs prior week
+  cpmTrend4w: number;
+  cpmTrend1w: number;
+  avgCpm: number;                      // weekly avg CPM over last 4 weeks
   avgSpendShare: number;
-  totalSpend: number;
+  totalSpend: number;                  // last 4 weeks
+  spendLast7d: number;                 // signal for "dead" detection
+  // Lifetime CPMr (Cost per Mille Reached) — spend90d / reach90d × 1000.
+  // Used for TOF flag because reach is unique-people, not impressions.
+  cpmr: number;
+  reach: number;                       // lifetime unique reach (90d)
+  lifetimeSpend: number;               // lifetime spend (90d)
   status: FatigueStatus;
-  // Last 12 weeks of weekly spend share for sparkline (oldest first, padded with 0)
-  spendShareSpark: number[];
-  cpmSpark: number[];
+  isTof: boolean;                      // flag: meets cheap-new-reach criteria
+  spendShareSpark: number[];           // last 12 weeks
+  cpmSpark: number[];                  // last 12 weeks
 }
 
 export interface FatigueAccountSignal {
-  // Last 4 weeks (recent) vs prior 4 weeks (4-8 weeks ago)
   frequencyRecent: number;
   frequencyPrior: number;
   netNewPctRecent: number;
   netNewPctPrior: number;
-  daysSinceLastLaunch: number | null;   // null if no qualifying launch in window
-  lastLaunchDate: string | null;        // YYYY-MM-DD
+  daysSinceLastLaunch: number | null;
+  lastLaunchDate: string | null;
   lastLaunchAdCount: number;
-  accountMedianCpm: number;             // median CPM of active ads — for TOF threshold
+  cpmrP33: number;                     // bottom-tertile lifetime CPMr threshold for TOF flag
+  spendThreshold: number;              // minimum 4-week spend to be included in table
 }
 
 export interface FatigueData {
   account: FatigueAccountSignal;
-  ads: FatigueAdRow[];                  // sorted: tired → holder → tof → new
+  ads: FatigueAdRow[];                 // sorted by total spend desc
 }
 
 export interface AdLabWeek {
