@@ -890,31 +890,34 @@ export async function getWeeklyReachData(
 export async function getFatigueData(clientId: string): Promise<FatigueData> {
   const since = daysAgo(56); // 8 weeks — covers "recent 4w + prior 4w"
 
-  // 1. Per-ad weekly metrics (last 8 weeks).
-  // KNOWN ISSUE: meta_ad_weekly has overlapping 7-day buckets because each
-  // daily cron run starts from a different `since` date — Meta returns weekly
-  // buckets starting from there, so bucket boundaries shift daily. The result
-  // is many overlapping rows accumulated from different runs.
-  // FIX: filter to rows from the most recent sync run only. All rows from one
-  // run have the same synced_at and consistent bucket boundaries.
-  const weeklyRaw = await supabase
+  // 1. Per-ad weekly metrics from the LATEST cron run only.
+  // Why two queries: meta_ad_weekly accumulates overlapping 7-day buckets
+  // (each daily cron uses a different `since`, so bucket boundaries shift).
+  // Filtering to one run gives consistent bucket boundaries. Default Supabase
+  // limit is 1000 rows, which can truncate if we fetch many runs at once —
+  // hence we look up the latest synced_at first, then filter in SQL.
+  const { data: latestRow } = await supabase
     .from("meta_ad_weekly")
-    .select("ad_id, week_start, spend, impressions, synced_at")
+    .select("synced_at")
+    .eq("client_id", clientId)
+    .order("synced_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const latestSyncedAt: string = latestRow?.synced_at ?? "";
+  // Truncate to minute precision so all rows from the same run match (clock skew tolerance)
+  const minutePrefix = latestSyncedAt.slice(0, 16);
+
+  const { data: weeklyData } = await supabase
+    .from("meta_ad_weekly")
+    .select("ad_id, week_start, spend, impressions")
     .eq("client_id", clientId)
     .gte("week_start", since)
     .gt("spend", 0)
-    .then((r) => r.data ?? []);
+    .gte("synced_at", minutePrefix)
+    .limit(5000);
 
-  // Find the most recent synced_at — that's the latest cron run for this client
-  const latestSyncedAt = weeklyRaw.reduce<string>(
-    (max, r) => ((r.synced_at ?? "") > max ? (r.synced_at ?? "") : max),
-    ""
-  );
-
-  // Keep only rows from that run (with a tiny tolerance for clock skew during a single run)
-  const weekly = latestSyncedAt
-    ? weeklyRaw.filter((r) => (r.synced_at ?? "") >= latestSyncedAt.slice(0, 16))
-    : [];
+  const weekly = weeklyData ?? [];
 
   // 2. Account-level reach metrics (frequency + net new %)
   const { data: reachWeekly } = await supabase
