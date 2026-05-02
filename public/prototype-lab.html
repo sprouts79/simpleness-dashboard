@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spend-fordeling — prototype v2.1</title>
+<title>Spend-fordeling — prototype v2.2</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -47,17 +47,9 @@
   .view-tab:hover { color: #1f2937; }
   .view-tab.active { color: #090a08; border-bottom-color: #090a08; font-weight: 600; }
 
-  /* Rich campaign card (on Kampanjer-tab list view) */
-  .camp-card {
-    background: white; border: 1px solid #e5e5e5; border-radius: 12px;
-    padding: 1.25rem 1.5rem; cursor: pointer; transition: border-color 80ms;
-  }
-  .camp-card:hover { border-color: #a3a3a3; }
-  .camp-card-name { font-size: 1rem; font-weight: 600; color: #090a08; margin-bottom: 4px; }
-  .camp-card-kpis {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
-    margin-top: 1rem;
-  }
+  /* Hero clickable variant (Kampanjer-tab list view) */
+  .hero-clickable { cursor: pointer; transition: border-color 80ms; }
+  .hero-clickable:hover { border-color: #a3a3a3; }
 
   /* Breadcrumb */
   .breadcrumb {
@@ -87,23 +79,6 @@
   .stack-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; }
   .stack-legend > div { display: flex; align-items: center; gap: 6px; }
   .stack-legend-dot { width: 9px; height: 9px; border-radius: 2px; }
-
-  /* Campaign list rows (only on konto level) */
-  .camp-row {
-    display: grid;
-    grid-template-columns: minmax(220px, 1.5fr) 80px minmax(220px, 2fr) 70px;
-    align-items: center;
-    gap: 16px;
-    padding: 12px 16px;
-    border-bottom: 1px solid #f0f0f0;
-    cursor: pointer;
-    transition: background 80ms;
-    font-size: 13.5px;
-  }
-  .camp-row:last-child { border-bottom: 0; }
-  .camp-row:hover { background: #fafafa; }
-  .camp-row .arrow { color: #a3a3a3; font-size: 11px; opacity: 0; }
-  .camp-row:hover .arrow { opacity: 1; }
 
   /* Group cards (when grouping ≠ Ingen) */
   .group-card {
@@ -186,7 +161,7 @@
   <!-- Banner -->
   <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-3 mb-6">
     <div class="flex items-center gap-2">
-      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v2.1</span>
+      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v2.2</span>
       <span class="text-sm text-neutral-700">Tre-seksjons-nav: Konto · Kampanjer · Annonser</span>
     </div>
   </div>
@@ -208,15 +183,12 @@
     <p class="eyebrow mb-3">Annonsestatus</p>
     <!-- Hero card -->
     <div class="hero mb-6">
-      <div id="hero-header" class="mb-5"></div>
+      <div id="hero-header"></div>
       <div class="hero-kpis" id="hero-kpis"></div>
       <div class="mt-6 mb-2"><div class="stack tall" id="hero-stack"></div></div>
       <div class="stack-legend mt-3" id="hero-legend"></div>
       <p class="hero-meta mt-4" id="hero-footer">37 aktive annonser</p>
     </div>
-
-    <!-- Top performers (account scope only) -->
-    <div id="top-performers-section"></div>
 
     <!-- Per-ad list (campaign scope only) -->
     <section id="per-ad-section" style="display:none">
@@ -234,39 +206,34 @@
   <!-- ============== DIVERSIFISERING-SEKSJON ============== -->
   <div id="diversity-content" style="display:none">
     <p class="eyebrow mb-3 mt-10">Kreativ diversifisering</p>
-    <div class="hero mb-6">
-      <div class="hero-kpis" style="grid-template-columns: repeat(3, 1fr);">
-        <div>
-          <p class="hero-kpi-label">Total dekning</p>
-          <p class="hero-kpi-value mono"><span id="div-covered">11</span><span class="text-neutral-400">/<span id="div-total">22</span></span></p>
-          <p class="hero-kpi-delta">verdier på 6 dimensjoner</p>
-        </div>
-        <div>
-          <p class="hero-kpi-label">Svakest dekket</p>
-          <p class="hero-kpi-value mono" id="div-weak-ratio">1/6</p>
-          <p class="hero-kpi-delta" id="div-weak-name">Avsender</p>
-        </div>
-        <div>
-          <p class="hero-kpi-label">Best dekket</p>
-          <p class="hero-kpi-value mono" id="div-strong-ratio">2/3</p>
-          <p class="hero-kpi-delta" id="div-strong-name">Tone</p>
+    <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+      <div style="padding: 1.5rem 1.75rem;">
+        <div class="hero-kpis" style="grid-template-columns: repeat(3, 1fr);">
+          <div>
+            <p class="hero-kpi-label">Total dekning</p>
+            <p class="hero-kpi-value mono"><span id="div-covered">11</span><span class="text-neutral-400">/<span id="div-total">22</span></span></p>
+          </div>
+          <div>
+            <p class="hero-kpi-label">Svakest dekket</p>
+            <p class="hero-kpi-value mono" id="div-weak-ratio">1/6</p>
+            <p class="hero-kpi-delta" id="div-weak-name">Avsender</p>
+          </div>
+          <div>
+            <p class="hero-kpi-label">Best dekket</p>
+            <p class="hero-kpi-value mono" id="div-strong-ratio">2/3</p>
+            <p class="hero-kpi-delta" id="div-strong-name">Tone</p>
+          </div>
         </div>
       </div>
+      <div class="dim-row" style="background:#fafafa;border-top:1px solid #e5e5e5;border-bottom:1px solid #e5e5e5">
+        <div class="eyebrow">Dimensjon</div>
+        <div class="eyebrow">Dekket</div>
+        <div class="eyebrow">Verdier</div>
+        <div class="eyebrow text-right">Aktive ads</div>
+      </div>
+      <div id="dim-list"></div>
     </div>
-
-    <section>
-      <p class="eyebrow mb-3">Per dimensjon</p>
-      <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-        <div class="dim-row" style="background:#fafafa;border-bottom:1px solid #e5e5e5">
-          <div class="eyebrow">Dimensjon</div>
-          <div class="eyebrow">Dekket</div>
-          <div class="eyebrow">Verdier</div>
-          <div class="eyebrow text-right">Aktive ads</div>
-        </div>
-        <div id="dim-list"></div>
-      </div>
-      <p class="text-xs text-neutral-500 mt-2">Bare ads i Test/Explore/Exploit teller — Burnt-out og Suppressed ikke.</p>
-    </section>
+    <p class="text-xs text-neutral-500 mt-2">Bare ads i Test/Explore/Exploit teller — Burnt-out og Suppressed ikke.</p>
   </div>
 
   <!-- ============== KAMPANJER-LIST (rich cards) ============== -->
@@ -286,15 +253,15 @@
       <span class="text-xs text-neutral-500 ml-3">Status</span>
       <select id="ads-filter" class="group-select">
         <option value="all">Alle aktive</option>
-        <option value="explore">Explore</option>
         <option value="exploit">Exploit</option>
+        <option value="explore">Explore</option>
       </select>
     </div>
     <div id="ads-leaderboard"></div>
   </div>
 
   <p class="text-xs text-neutral-400 text-center mt-12">
-    Mock-data · prototype-lab.html · v2.1
+    Mock-data · prototype-lab.html · v2.2
   </p>
 </div>
 
@@ -464,42 +431,44 @@ function renderHero() {
   const activeAds = getActiveAds();
   const dist = distribution(activeAds);
 
-  let metrics, headerHtml;
-  if (currentLevel() === 'account') {
+  const isAccount = currentLevel() === 'account';
+  let metrics;
+  if (isAccount) {
     metrics = accountMetrics;
-    headerHtml = `<p class="eyebrow">Konto</p>`;
+    header.innerHTML = '';
   } else {
     const c = campaigns.find(c => c.id === state.campaignId);
     metrics = c
       ? { spend: c.spend, cpmr: c.cpmr, frequency: c.frequency, netNewPct: c.netNewPct, adCount: c.adCount }
       : { spend: 0, cpmr: 0, frequency: 0, netNewPct: 0, adCount: 0 };
     const shortName = c ? c.name.replace(/^MYYK BAU 2026 \/ /, '') : '—';
-    headerHtml = `<p class="eyebrow">Kampanje</p><h1 class="hero-title">${shortName}</h1>`;
+    header.innerHTML = `<h1 class="hero-title mb-5">${shortName}</h1>`;
   }
-  header.innerHTML = headerHtml;
 
-  // 4 KPIs
-  const isAccount = currentLevel() === 'account';
+  // 4 KPIs — deltas only on Konto
+  const deltaBlock = (deltaKey, higherIsBad) => isAccount
+    ? `<p class="hero-kpi-delta">${deltaHtml(accountMetrics[deltaKey], higherIsBad)}</p>`
+    : '';
   kpisEl.innerHTML = `
     <div>
       <p class="hero-kpi-label">Spend (4u)</p>
       <p class="hero-kpi-value mono">${fmtSpend(metrics.spend)}</p>
-      <p class="hero-kpi-delta">${isAccount ? deltaHtml(accountMetrics.spendDelta, false) : '—'}</p>
+      ${deltaBlock('spendDelta', false)}
     </div>
     <div>
       <p class="hero-kpi-label">CPMr</p>
       <p class="hero-kpi-value mono">${Math.round(metrics.cpmr)}</p>
-      <p class="hero-kpi-delta">${isAccount ? deltaHtml(accountMetrics.cpmrDelta, true) : '—'}</p>
+      ${deltaBlock('cpmrDelta', true)}
     </div>
     <div>
       <p class="hero-kpi-label">Frekvens</p>
       <p class="hero-kpi-value mono">${metrics.frequency.toFixed(1)}</p>
-      <p class="hero-kpi-delta">${isAccount ? deltaHtml(accountMetrics.freqDelta, true) : '—'}</p>
+      ${deltaBlock('freqDelta', true)}
     </div>
     <div>
       <p class="hero-kpi-label">Net new %</p>
       <p class="hero-kpi-value mono">${Math.round(metrics.netNewPct)}%</p>
-      <p class="hero-kpi-delta">${isAccount ? deltaHtml(accountMetrics.netNewDelta, false) : '—'}</p>
+      ${deltaBlock('netNewDelta', false)}
     </div>
   `;
 
@@ -525,38 +494,6 @@ function renderBreadcrumb() {
       state.campaignId = null;
       renderAll();
     });
-  });
-}
-
-function renderCampaignList() {
-  const section = document.getElementById('campaign-list-section');
-  if (currentLevel() !== 'account') {
-    section.style.display = 'none';
-    return;
-  }
-  section.style.display = '';
-  const list = document.getElementById('campaign-list');
-  list.innerHTML = campaigns.map(c => {
-    const cAds = ads.filter(a => a.campaign === c.id);
-    const dist = distribution(cAds);
-    const segHtml = dist.segments
-      .filter(s => s.share > 0)
-      .map(s => `<div class="seg-${s.status}" style="width:${s.share * 100}%"></div>`)
-      .join('');
-    return `
-      <div class="camp-row" data-campaign="${c.id}">
-        <div class="font-medium text-neutral-800 truncate">${c.name}</div>
-        <div class="text-right mono text-neutral-700">${fmtSpend(dist.total)}</div>
-        <div><div class="stack">${segHtml}</div></div>
-        <div class="text-right text-xs mono text-neutral-500 flex items-center justify-end gap-1.5">
-          <span>${c.adCount} ads</span>
-          <span class="arrow">›</span>
-        </div>
-      </div>
-    `;
-  }).join('');
-  list.querySelectorAll('.camp-row').forEach(r => {
-    r.addEventListener('click', () => navigateTo('campaign', r.dataset.campaign));
   });
 }
 
@@ -613,47 +550,6 @@ function adRowHtml(ad, indent = false) {
       <td class="col-status"><span class="pill pill-${ad.status === 'burnt' ? 'burnt' : ad.status === 'suppr' ? 'suppr' : ad.status}">${STATUS_LABELS[ad.status]}</span></td>
     </tr>
   `;
-}
-
-function renderTopPerformers() {
-  const target = document.getElementById('top-performers-section');
-  if (currentLevel() !== 'account') {
-    target.innerHTML = '';
-    return;
-  }
-  const all = ads;
-  const renderTopCard = (status, label) => {
-    const top = all
-      .filter(a => a.status === status)
-      .sort((a, b) => b.spend - a.spend)
-      .slice(0, 10);
-    const rows = top.length === 0
-      ? `<tr><td colspan="6" class="text-center text-neutral-400 py-6">Ingen ${label}-annonser akkurat nå</td></tr>`
-      : top.map(a => adRowHtml(a)).join('');
-    return `
-      <div class="mb-8">
-        <p class="eyebrow mb-3">Top ${label}</p>
-        <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-          <table>
-            <thead>
-              <tr>
-                <th>Navn</th>
-                <th class="num-sm">Spend</th>
-                <th class="num-sm">CPMr</th>
-                <th class="num-sm">Frekvens</th>
-                <th class="num-sm">ROAS</th>
-                <th class="col-status">Status</th>
-              </tr>
-            </thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>
-      </div>
-    `;
-  };
-  target.innerHTML =
-    renderTopCard('exploit', 'Exploit') +
-    renderTopCard('explore', 'Explore');
 }
 
 function renderAds() {
@@ -867,7 +763,7 @@ function renderSectionSwitch() {
   document.getElementById('ads-content-section').style.display = adsOn ? '' : 'none';
 }
 
-// Rich campaign cards på Kampanjer-list
+// Kampanje-liste — samme hero-card som på kampanje-detalj
 function renderCampaignsRichList() {
   const target = document.getElementById('campaigns-rich-list');
   target.innerHTML = campaigns.map(c => {
@@ -877,11 +773,15 @@ function renderCampaignsRichList() {
       .filter(s => s.share > 0)
       .map(s => `<div class="seg-${s.status}" style="width:${s.share * 100}%"></div>`)
       .join('');
+    const legendHtml = STATUS_ORDER.map(st => {
+      const seg = dist.segments.find(s => s.status === st);
+      if (!seg || seg.share === 0) return null;
+      return `<div><span class="stack-legend-dot" style="background:${STATUS_COLORS[st]}"></span><span>${STATUS_LABELS[st]} <span class="mono text-neutral-500 ml-0.5">${pct(seg.share)}</span></span></div>`;
+    }).filter(Boolean).join('');
     return `
-      <div class="camp-card" data-campaign="${c.id}">
-        <p class="camp-card-name">${c.name}</p>
-        <div class="stack tall mt-3">${segs}</div>
-        <div class="camp-card-kpis">
+      <div class="hero hero-clickable" data-campaign="${c.id}">
+        <h1 class="hero-title mb-5">${c.name}</h1>
+        <div class="hero-kpis">
           <div>
             <p class="hero-kpi-label">Spend (4u)</p>
             <p class="hero-kpi-value mono">${fmtSpend(c.spend)}</p>
@@ -895,14 +795,17 @@ function renderCampaignsRichList() {
             <p class="hero-kpi-value mono">${c.frequency.toFixed(1)}</p>
           </div>
           <div>
-            <p class="hero-kpi-label">Aktive ads</p>
-            <p class="hero-kpi-value mono">${c.adCount}</p>
+            <p class="hero-kpi-label">Net new %</p>
+            <p class="hero-kpi-value mono">${Math.round(c.netNewPct)}%</p>
           </div>
         </div>
+        <div class="mt-6 mb-2"><div class="stack tall">${segs}</div></div>
+        <div class="stack-legend mt-3">${legendHtml}</div>
+        <p class="hero-meta mt-4">${c.adCount} aktive annonser</p>
       </div>
     `;
   }).join('');
-  target.querySelectorAll('.camp-card').forEach(card => {
+  target.querySelectorAll('.hero-clickable').forEach(card => {
     card.addEventListener('click', () => {
       state.section = 'campaigns';
       state.campaignId = card.dataset.campaign;
@@ -983,7 +886,6 @@ function renderAll() {
   const showsStatusAndDiversity = (state.section === 'account' || (state.section === 'campaigns' && state.campaignId));
   if (showsStatusAndDiversity) {
     renderHero();
-    renderTopPerformers();
     renderGroupingDropdown();
     renderAds();
     renderDiversity();
