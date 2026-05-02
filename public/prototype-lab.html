@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spend-fordeling — prototype v2.2</title>
+<title>Spend-fordeling — prototype v2.3</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -70,7 +70,7 @@
     background: white; border: 1px solid #e5e5e5; border-radius: 14px;
     padding: 1.5rem 1.75rem;
   }
-  .hero-title { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin-top: 4px; }
+  .hero-title { font-size: 1.0625rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; color: #404040; margin-top: 0; }
   .hero-meta { font-size: 12px; color: #737373; }
   .hero-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
   .hero-kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; color: #737373; }
@@ -161,7 +161,7 @@
   <!-- Banner -->
   <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-3 mb-6">
     <div class="flex items-center gap-2">
-      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v2.2</span>
+      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v2.3</span>
       <span class="text-sm text-neutral-700">Tre-seksjons-nav: Konto · Kampanjer · Annonser</span>
     </div>
   </div>
@@ -261,7 +261,7 @@
   </div>
 
   <p class="text-xs text-neutral-400 text-center mt-12">
-    Mock-data · prototype-lab.html · v2.2
+    Mock-data · prototype-lab.html · v2.3
   </p>
 </div>
 
@@ -366,6 +366,11 @@ function fmtNum(v, digits = 0) {
 }
 function pct(v) { return `${Math.round(v * 100)}%`; }
 
+// Stripper "MYYK BAU 2026 / " og lignende konto-prefiks foran kampanjenavnet
+function shortCampaignName(name) {
+  return name.replace(/^MYYK BAU 2026 \/ /, '');
+}
+
 // Mock-helper: avled kjøp fra spend×ROAS, anta avg purchase value 350 kr
 function purchasesOf(ad) {
   if (!ad.spend || !ad.roas) return 0;
@@ -441,7 +446,7 @@ function renderHero() {
     metrics = c
       ? { spend: c.spend, cpmr: c.cpmr, frequency: c.frequency, netNewPct: c.netNewPct, adCount: c.adCount }
       : { spend: 0, cpmr: 0, frequency: 0, netNewPct: 0, adCount: 0 };
-    const shortName = c ? c.name.replace(/^MYYK BAU 2026 \/ /, '') : '—';
+    const shortName = c ? shortCampaignName(c.name) : '—';
     header.innerHTML = `<h1 class="hero-title mb-5">${shortName}</h1>`;
   }
 
@@ -486,7 +491,7 @@ function renderBreadcrumb() {
     return;
   }
   const c = campaigns.find(c => c.id === state.campaignId);
-  const shortName = c ? c.name.replace(/^MYYK BAU 2026 \/ /, '') : '—';
+  const shortName = c ? shortCampaignName(c.name) : '—';
   bc.innerHTML = `<a data-nav="campaigns-list">Kampanjer</a><span class="sep">›</span><a class="active">${shortName}</a>`;
   bc.querySelectorAll('a[data-nav="campaigns-list"]').forEach(a => {
     a.addEventListener('click', e => {
@@ -527,7 +532,7 @@ function getGroupKey(ad, mode) {
 function getGroupLabel(key, mode) {
   if (mode === 'campaign') {
     const c = campaigns.find(c => c.id === key);
-    return c ? c.name : key;
+    return c ? shortCampaignName(c.name) : key;
   }
   return key;
 }
@@ -780,7 +785,7 @@ function renderCampaignsRichList() {
     }).filter(Boolean).join('');
     return `
       <div class="hero hero-clickable" data-campaign="${c.id}">
-        <h1 class="hero-title mb-5">${c.name}</h1>
+        <h1 class="hero-title mb-5">${shortCampaignName(c.name)}</h1>
         <div class="hero-kpis">
           <div>
             <p class="hero-kpi-label">Spend (4u)</p>
