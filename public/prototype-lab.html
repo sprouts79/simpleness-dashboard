@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spend-fordeling — prototype v1.4</title>
+<title>Spend-fordeling — prototype v2.1</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -46,17 +46,6 @@
   }
   .view-tab:hover { color: #1f2937; }
   .view-tab.active { color: #090a08; border-bottom-color: #090a08; font-weight: 600; }
-
-  /* Sub tabs (within Konto/Kampanje: Annonsestatus / Diversifisering) */
-  .sub-tabs { display: flex; gap: 4px; border-bottom: 1px solid #e5e5e5; }
-  .sub-tab {
-    background: transparent; border: 0; cursor: pointer;
-    padding: 6px 12px; margin-bottom: -1px;
-    font-size: 13px; font-weight: 500; color: #737373;
-    border-bottom: 2px solid transparent;
-  }
-  .sub-tab:hover { color: #1f2937; }
-  .sub-tab.active { color: #090a08; border-bottom-color: #090a08; font-weight: 600; }
 
   /* Rich campaign card (on Kampanjer-tab list view) */
   .camp-card {
@@ -197,7 +186,7 @@
   <!-- Banner -->
   <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-3 mb-6">
     <div class="flex items-center gap-2">
-      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v2.0</span>
+      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v2.1</span>
       <span class="text-sm text-neutral-700">Tre-seksjons-nav: Konto · Kampanjer · Annonser</span>
     </div>
   </div>
@@ -214,14 +203,9 @@
     <!-- injected by JS -->
   </div>
 
-  <!-- Sub-tabs (vises på Konto + Kampanje-detalj) -->
-  <div class="sub-tabs mb-5" id="sub-tabs" style="display:none">
-    <button class="sub-tab active" data-subview="status">Annonsestatus</button>
-    <button class="sub-tab" data-subview="diversity">Diversifisering</button>
-  </div>
-
-  <!-- ============== STATUS-CONTENT (Annonsestatus, brukt i Konto + Kampanje) ============== -->
+  <!-- ============== ANNONSESTATUS-SEKSJON ============== -->
   <div id="status-content">
+    <p class="eyebrow mb-3">Annonsestatus</p>
     <!-- Hero card -->
     <div class="hero mb-6">
       <div id="hero-header" class="mb-5"></div>
@@ -247,8 +231,9 @@
     </section>
   </div>
 
-  <!-- ============== DIVERSITY-CONTENT ============== -->
+  <!-- ============== DIVERSIFISERING-SEKSJON ============== -->
   <div id="diversity-content" style="display:none">
+    <p class="eyebrow mb-3 mt-10">Kreativ diversifisering</p>
     <div class="hero mb-6">
       <div class="hero-kpis" style="grid-template-columns: repeat(3, 1fr);">
         <div>
@@ -309,7 +294,7 @@
   </div>
 
   <p class="text-xs text-neutral-400 text-center mt-12">
-    Mock-data · prototype-lab.html · v2.0
+    Mock-data · prototype-lab.html · v2.1
   </p>
 </div>
 
@@ -390,7 +375,6 @@ const ads = [
 // ─── State ────────────────────────────────────────────────────────────────
 const state = {
   section: 'account',         // 'account' | 'campaigns' | 'ads'
-  subView: 'status',          // 'status' | 'diversity' (gjelder Konto + Kampanje-detalj)
   campaignId: null,           // satt når man har drilla inn på en kampanje
   groupingByLevel: { campaign: 'none' },
   adsSort: 'spend',           // 'spend' | 'purchases' | 'cpmr'
@@ -858,7 +842,7 @@ function renderDiversity() {
   }).join('');
 }
 
-// ─── Section + sub-tab visibility ─────────────────────────────────────────
+// ─── Section visibility ───────────────────────────────────────────────────
 function renderSectionSwitch() {
   // Top tabs
   document.querySelectorAll('#section-tabs .view-tab').forEach(b => {
@@ -866,30 +850,21 @@ function renderSectionSwitch() {
   });
 
   const drilledIn = state.section === 'campaigns' && state.campaignId;
-  const showSubTabs = state.section === 'account' || drilledIn;
-  document.getElementById('sub-tabs').style.display = showSubTabs ? '' : 'none';
+  const showStatusAndDiversity = state.section === 'account' || drilledIn;
 
   // Breadcrumb visible bare på kampanje-detalj
   document.getElementById('breadcrumb').style.display = drilledIn ? '' : 'none';
 
-  // Status-content vises på Konto + Kampanje-detalj med subView=status
-  // Diversity-content vises på Konto + Kampanje-detalj med subView=diversity
-  // Campaigns-list vises på Kampanjer-tab uten drill
-  // Ads-leaderboard vises på Annonser-tab
-  const statusOn = showSubTabs && state.subView === 'status';
-  const diversityOn = showSubTabs && state.subView === 'diversity';
+  // På Konto + Kampanje-detalj: vis BÅDE annonsestatus og diversifisering stablet.
+  // Campaigns-list vises på Kampanjer-tab uten drill.
+  // Ads-leaderboard vises på Annonser-tab.
   const campaignsListOn = state.section === 'campaigns' && !state.campaignId;
   const adsOn = state.section === 'ads';
 
-  document.getElementById('status-content').style.display = statusOn ? '' : 'none';
-  document.getElementById('diversity-content').style.display = diversityOn ? '' : 'none';
+  document.getElementById('status-content').style.display = showStatusAndDiversity ? '' : 'none';
+  document.getElementById('diversity-content').style.display = showStatusAndDiversity ? '' : 'none';
   document.getElementById('campaigns-list-content').style.display = campaignsListOn ? '' : 'none';
   document.getElementById('ads-content-section').style.display = adsOn ? '' : 'none';
-
-  // Sub-tab active state
-  document.querySelectorAll('#sub-tabs .sub-tab').forEach(b => {
-    b.classList.toggle('active', b.dataset.subview === state.subView);
-  });
 }
 
 // Rich campaign cards på Kampanjer-list
@@ -1005,14 +980,12 @@ function renderAll() {
   renderSectionSwitch();
   renderBreadcrumb();
 
-  const showsStatus = (state.section === 'account' || (state.section === 'campaigns' && state.campaignId));
-  if (showsStatus && state.subView === 'status') {
+  const showsStatusAndDiversity = (state.section === 'account' || (state.section === 'campaigns' && state.campaignId));
+  if (showsStatusAndDiversity) {
     renderHero();
     renderTopPerformers();
     renderGroupingDropdown();
     renderAds();
-  }
-  if (showsStatus && state.subView === 'diversity') {
     renderDiversity();
   }
   if (state.section === 'campaigns' && !state.campaignId) {
@@ -1033,14 +1006,6 @@ document.querySelectorAll('#section-tabs .view-tab').forEach(btn => {
   btn.addEventListener('click', () => {
     state.section = btn.dataset.section;
     if (state.section !== 'campaigns') state.campaignId = null;
-    renderAll();
-  });
-});
-
-// Sub tabs (Annonsestatus / Diversifisering)
-document.querySelectorAll('#sub-tabs .sub-tab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    state.subView = btn.dataset.subview;
     renderAll();
   });
 });
