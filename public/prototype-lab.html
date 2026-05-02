@@ -258,12 +258,8 @@
   <div id="view-diversity" style="display:none">
 
     <div class="hero mb-6" id="div-hero">
-      <p class="eyebrow">Kreativ diversifisering</p>
-      <p class="text-sm text-neutral-600 mt-1 max-w-2xl">
-        Hvor bredt creative-porteføljen din dekker taksonomi-aksene. Når noen akser er svakt dekket
-        gir det algoen smalere meny — det er der nye annonser bør produseres.
-      </p>
-      <div class="hero-kpis mt-5" style="grid-template-columns: repeat(3, 1fr); gap: 28px;">
+      <p class="eyebrow mb-5">Kreativ diversifisering</p>
+      <div class="hero-kpis" style="grid-template-columns: repeat(3, 1fr); gap: 28px;">
         <div>
           <p class="hero-kpi-label">Total dekning</p>
           <p class="hero-kpi-value mono">11<span class="text-neutral-400 text-base">/22</span></p>
@@ -613,7 +609,7 @@ function renderTopPerformers() {
     return;
   }
   const all = ads;
-  const renderTopCard = (status, label, helper) => {
+  const renderTopCard = (status, label) => {
     const top = all
       .filter(a => a.status === status)
       .sort((a, b) => b.spend - a.spend)
@@ -623,10 +619,7 @@ function renderTopPerformers() {
       : top.map(a => adRowHtml(a)).join('');
     return `
       <div class="mb-8">
-        <div class="flex items-baseline justify-between mb-3">
-          <p class="eyebrow">Top ${label}</p>
-          <span class="text-xs text-neutral-500">${helper}</span>
-        </div>
+        <p class="eyebrow mb-3">Top ${label}</p>
         <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
           <table>
             <thead>
@@ -646,8 +639,8 @@ function renderTopPerformers() {
     `;
   };
   target.innerHTML =
-    renderTopCard('exploit', 'Exploit', 'Bærebjelker — algoens hovedkonvertering') +
-    renderTopCard('explore', 'Explore', 'Holder reach-poolen åpen — finner nye folk');
+    renderTopCard('exploit', 'Exploit') +
+    renderTopCard('explore', 'Explore');
 }
 
 function renderAds() {
