@@ -150,25 +150,29 @@
   /* Diversifisering rows */
   .dim-row {
     display: grid;
-    grid-template-columns: 140px 56px minmax(120px, 1.4fr) minmax(220px, 2fr);
+    grid-template-columns: minmax(180px, 1.2fr) 70px minmax(110px, 0.9fr) minmax(220px, 2fr) 70px;
     gap: 18px;
     align-items: center;
     padding: 14px 18px;
     border-bottom: 1px solid #f0f0f0;
   }
   .dim-row:last-child { border-bottom: 0; }
-  .dim-bar {
-    height: 8px; border-radius: 999px; background: #f0f0f0; overflow: hidden;
-  }
-  .dim-bar > div {
-    height: 100%; border-radius: 999px; background: #525252;
-  }
+  .dim-sub { font-size: 11px; color: #a3a3a3; font-family: 'IBM Plex Mono', monospace; margin-top: 2px; }
+  .dim-bullets { display: inline-flex; gap: 4px; }
+  .bullet { width: 9px; height: 9px; border-radius: 50%; background: #e5e5e5; }
+  .bullet.fill-good { background: #047857; }
+  .bullet.fill-mid { background: #d97706; }
+  .bullet.fill-bad { background: #b91c1c; }
   .dim-missing {
     font-size: 12px; color: #737373;
-    overflow: hidden; text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .dim-missing strong { color: #525252; font-weight: 600; }
+  .dim-missing .tag {
+    display: inline-block; padding: 1px 6px; border-radius: 4px;
+    background: #f5f5f5; font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; color: #525252; margin-right: 2px;
+  }
+  .dim-missing.warn .tag { background: #fef2f2; color: #991b1b; }
 </style>
 </head>
 <body>
@@ -257,37 +261,49 @@
   <!-- ====================== DIVERSITY VIEW ====================== -->
   <div id="view-diversity" style="display:none">
 
-    <div class="hero mb-6" id="div-hero">
-      <p class="eyebrow mb-5">Kreativ diversifisering</p>
-      <div class="hero-kpis" style="grid-template-columns: repeat(3, 1fr); gap: 28px;">
-        <div>
-          <p class="hero-kpi-label">Total dekning</p>
-          <p class="hero-kpi-value mono">11<span class="text-neutral-400 text-base">/22</span></p>
-          <p class="hero-kpi-delta">verdier på 6 dimensjoner</p>
-        </div>
-        <div>
-          <p class="hero-kpi-label">Svakest dekket</p>
-          <p class="hero-kpi-value mono" style="font-size: 1.125rem; line-height: 1.4">Avsender</p>
-          <p class="hero-kpi-delta mono">1/6 — bare BRD</p>
-        </div>
-        <div>
-          <p class="hero-kpi-label">Best dekket</p>
-          <p class="hero-kpi-value mono" style="font-size: 1.125rem; line-height: 1.4">Tone</p>
-          <p class="hero-kpi-delta mono">2/3 — mangler HUM</p>
-        </div>
+    <!-- Hovedfunn card -->
+    <div class="bg-white rounded-xl border border-neutral-200 p-5 mb-6 flex items-baseline justify-between gap-6 flex-wrap">
+      <div class="min-w-0">
+        <p class="eyebrow mb-1">Hovedfunn</p>
+        <p class="text-base text-neutral-900" id="div-verdict">—</p>
+      </div>
+      <div class="flex items-baseline gap-2 flex-shrink-0">
+        <span class="kpi-num mono"><span id="div-covered">11</span><span class="text-neutral-400">/<span id="div-total">22</span></span></span>
+        <span class="text-xs text-neutral-500">verdier dekket</span>
       </div>
     </div>
 
-    <!-- Dim list -->
-    <section class="mt-6">
+    <!-- Dim table -->
+    <section>
       <p class="eyebrow mb-3">Per dimensjon</p>
-      <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden" id="dim-list">
-        <!-- dim rows injected by JS -->
+      <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+        <div class="dim-row" style="background:#fafafa;border-bottom:1px solid #e5e5e5">
+          <div class="eyebrow">Dimensjon</div>
+          <div class="eyebrow">Dekket</div>
+          <div class="eyebrow">Bredde</div>
+          <div class="eyebrow">Mangler</div>
+          <div class="eyebrow text-right">Aktive ads</div>
+        </div>
+        <div id="dim-list">
+          <!-- dim rows injected by JS -->
+        </div>
       </div>
-      <p class="text-xs text-neutral-500 mt-2">
-        Krever navnekonvensjon i adlaunch.
-        <code class="px-1 py-0.5 rounded bg-neutral-100 mono text-[11px]">[KONTO]_[ANNONSETYPE]_[KONSEPT|-]_[TONE]_[AVSENDER]_[FORMAT]_[KVALITET]_[PERSONA]_v[N]</code>
-      </p>
+
+      <details class="bg-white rounded-xl border border-neutral-200 px-4 py-3 mt-3">
+        <summary class="cursor-pointer text-sm font-medium text-neutral-800">▸ Hvordan dette regnes ut</summary>
+        <div class="mt-3 text-sm text-neutral-700 space-y-2 leading-relaxed">
+          <p>
+            Kun annonser i status <strong>Test, Explore eller Exploit</strong> teller som dekning. Burnt-out og Suppressed ads er ikke menu-material algoen aktivt distribuerer — derfor regnes ikke deres dimensjoner som dekket.
+          </p>
+          <p>
+            Hver aktiv annonse parses fra navn etter konvensjonen
+            <code class="px-1 py-0.5 rounded bg-neutral-100 mono text-[11px]">[KONTO]_[ANNONSETYPE]_[KONSEPT|-]_[TONE]_[AVSENDER]_[FORMAT]_[KVALITET]_[PERSONA]_v[N]</code>.
+          </p>
+          <p class="text-xs text-neutral-500">
+            Krever navnekonvensjon i adlaunch — for nå er dette mock-data.
+          </p>
+        </div>
+      </details>
     </section>
 
   </div>
@@ -744,31 +760,83 @@ function navigateTo(level, campaignId = null) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Diversifisering — hardcoded for now (avhenger av navnekonvensjon i adlaunch)
+// Diversifisering — hardcoded for prototype (avhenger av navnekonvensjon i adlaunch).
+// Tall reflekterer KUN ads i status Test/Explore/Exploit (Burnt-out og Suppressed teller ikke).
 const dimensions = [
-  { name: 'Annonsetype', covered: ['PROD','DEMO','CRT','SOCPROOF','LIST'], missing: ['VOX','FND','BEFAFT','COMP','PROBSOL','EDU','STMT','UNBOX'] },
-  { name: 'Avsender',    covered: ['BRD'],                                  missing: ['CRT','CST','FND','EXP','EMP'] },
-  { name: 'Format',      covered: ['EDIT','MOT','CAR','LIFE'],              missing: ['TALK','VOX','SCR','UGC','UNBOX'] },
-  { name: 'Tone',        covered: ['FUN','EMO'],                            missing: ['HUM'] },
-  { name: 'Persona',     covered: ['BRAND','BROAD'],                        missing: ['SLEEPER','GAVE'] },
-  { name: 'Kvalitet',    covered: ['HIFI'],                                 missing: ['LOFI'] },
+  { name: 'Annonsetype', sub: 'prod · demo · crt · socproof · vox · fnd · befaft · comp · probsol · edu · stmt · list · unbox',
+    covered: ['PROD','DEMO','CRT','LIST'],
+    missing: ['VOX','FND','BEFAFT','COMP','PROBSOL','EDU','STMT','UNBOX','SOCPROOF'],
+    activeAds: 12 },
+  { name: 'Avsender',    sub: 'brand · partner · kunde',
+    covered: ['BRD'],
+    missing: ['CRT','CST','FND','EXP','EMP'],
+    activeAds: 12, warn: true },
+  { name: 'Format',      sub: 'bilde · video · karusell · ugc · gif',
+    covered: ['Bilde','Video','Karusell'],
+    missing: ['UGC','GIF'],
+    activeAds: 12 },
+  { name: 'Tone',        sub: 'funksjon · emosjon · humor',
+    covered: ['EMO','FUN'],
+    missing: ['HUM'],
+    activeAds: 12 },
+  { name: 'Persona',     sub: 'alle · familie · ung · gave',
+    covered: ['BRAND','BROAD'],
+    missing: ['SLEEPER','GAVE'],
+    activeAds: 12 },
+  { name: 'Kvalitet',    sub: 'lo-fi · high-fi',
+    covered: ['HIFI'],
+    missing: ['LOFI'],
+    activeAds: 12 },
 ];
+
+function bulletViz(covered, total) {
+  const pct = covered / total;
+  const tone = pct >= 0.66 ? 'fill-good' : pct >= 0.4 ? 'fill-mid' : 'fill-bad';
+  let html = '';
+  for (let i = 0; i < total; i++) {
+    html += `<span class="bullet ${i < covered ? tone : ''}"></span>`;
+  }
+  return `<span class="dim-bullets">${html}</span>`;
+}
 
 function renderDiversity() {
   const list = document.getElementById('dim-list');
   if (!list) return;
+
+  // Hovedfunn — finn dimensjonen med svakest dekning og pek på det
+  let totalCovered = 0, totalAll = 0;
+  let weakest = null;
+  for (const d of dimensions) {
+    const all = d.covered.length + d.missing.length;
+    totalCovered += d.covered.length;
+    totalAll += all;
+    const pct = d.covered.length / all;
+    if (!weakest || pct < (weakest.covered.length / (weakest.covered.length + weakest.missing.length))) {
+      weakest = d;
+    }
+  }
+  const verdict = `Svakest dekket: <strong>${weakest.name}</strong> — bare ${weakest.covered.join(' · ')} (mangler ${weakest.missing.length} verdier)`;
+  document.getElementById('div-verdict').innerHTML = verdict;
+  document.getElementById('div-covered').textContent = totalCovered;
+  document.getElementById('div-total').textContent = totalAll;
+
+  // Per-dim rows
   list.innerHTML = dimensions.map(d => {
     const total = d.covered.length + d.missing.length;
-    const pctFilled = (d.covered.length / total) * 100;
-    const missingText = d.missing.length === 0
-      ? '<span class="text-neutral-400">— alt dekket</span>'
-      : `Mangler: <strong>${d.missing.join(' · ')}</strong>`;
+    const missingHtml = d.missing.length === 0
+      ? '<span class="text-neutral-400">alt dekket</span>'
+      : d.missing.map(m => `<span class="tag">${m}</span>`).join(' ');
+    const missingClass = d.warn ? 'dim-missing warn' : 'dim-missing';
     return `
       <div class="dim-row">
-        <div class="font-medium text-neutral-800">${d.name}</div>
+        <div>
+          <div class="font-medium text-neutral-800">${d.name}</div>
+          <div class="dim-sub">${d.sub}</div>
+        </div>
         <div class="mono text-neutral-700"><span class="font-semibold">${d.covered.length}</span><span class="text-neutral-400">/${total}</span></div>
-        <div><div class="dim-bar"><div style="width:${pctFilled}%"></div></div></div>
-        <div class="dim-missing">${missingText}</div>
+        <div>${bulletViz(d.covered.length, total)}</div>
+        <div class="${missingClass}">${missingHtml}</div>
+        <div class="text-right mono text-neutral-500 text-xs">${d.activeAds}</div>
       </div>
     `;
   }).join('');
