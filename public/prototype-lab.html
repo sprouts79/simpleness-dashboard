@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kreativ rapport v1.0 — prototype</title>
+<title>Lab v3 — Prototype med mock-data</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -18,11 +18,12 @@
     padding: 2px 10px; border-radius: 9999px; font-size: 11px; font-weight: 600;
     border: 1px solid; line-height: 1.3; height: 22px;
   }
-  .pill-test     { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
-  .pill-exploit  { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
-  .pill-explore  { background: #fef3c7; color: #92400e; border-color: #fde68a; }
-  .pill-bo       { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
-  .pill-cs       { background: #f5f5f5; color: #525252; border-color: #d4d4d4; }
+  .pill-acq { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+  .pill-trap { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+  .pill-tired { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+  .pill-stable { background: #f5f5f5; color: #525252; border-color: #d4d4d4; }
+  .pill-new { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
+  .pill-dead { background: #fafafa; color: #737373; border-color: #d4d4d4; text-decoration: line-through; }
   .arrow-good { color: #047857; }
   .arrow-bad { color: #b91c1c; }
   .arrow-neutral { color: #737373; }
@@ -42,34 +43,7 @@
   th { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; color: #737373; padding: 8px 12px; text-align: left; border-bottom: 1px solid #e5e5e5; }
   td { padding: 10px 12px; vertical-align: middle; border-bottom: 1px solid #f5f5f5; }
   tr:hover td { background: #fafafa; }
-  .breadcrumb {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-size: 13px; color: #525252;
-  }
-  .breadcrumb a {
-    color: #1f2937; text-decoration: none;
-    padding: 3px 8px; border-radius: 6px;
-    border: 1px solid transparent;
-  }
-  .breadcrumb a:hover { background: white; border-color: #e5e5e5; }
-  .breadcrumb .sep { color: #a3a3a3; }
-  .breadcrumb .active {
-    color: #090a08; font-weight: 600; background: white;
-    border: 1px solid #e5e5e5;
-  }
-  .action-row {
-    display: flex; align-items: flex-start; gap: 12px;
-    padding: 12px 0; border-bottom: 1px solid #f5f5f5;
-  }
-  .action-row:last-child { border-bottom: 0; }
-  .action-num {
-    width: 22px; height: 22px; flex-shrink: 0;
-    border-radius: 50%; background: #f5f5f5; color: #525252;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700; margin-top: 1px;
-  }
-  details summary { list-style: none; }
-  details summary::-webkit-details-marker { display: none; }
+  .legend-row { display: flex; align-items: baseline; gap: 8px; }
 </style>
 </head>
 <body>
@@ -77,224 +51,220 @@
 <div class="max-w-[1400px] mx-auto px-8 py-10">
 
   <!-- Banner -->
-  <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-4 mb-6">
+  <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-4 mb-8">
     <div class="flex items-center gap-2 mb-1">
-      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v1.0</span>
-      <h1 class="text-lg font-semibold">Kreativ rapport</h1>
+      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data</span>
+      <h1 class="text-lg font-semibold">Kreativ-laboratorium v3</h1>
     </div>
-    <p class="text-sm text-neutral-700 max-w-3xl leading-snug">
-      Bygget rundt to spørsmål: <em>hvilke endringer må jeg gjøre i kontoen?</em> og <em>hvilket resultat hadde endringene mine?</em>
-      Status-aksen reflekterer hva algoen har bestemt — Test, Exploit, Explore, Burnt-out, Cold-suppressed.
+    <p class="text-sm text-neutral-700 max-w-2xl leading-snug">
+      Diagnostikk-skisse basert på CPMr-playbooken. Tre seksjoner: diversitets-audit · helse i kontoen · per annonse.
+      Mock-data håndkraftet for å vise mønstrene.
     </p>
   </div>
 
-  <!-- Drill-down breadcrumb -->
-  <div class="mb-8 flex items-center justify-between">
-    <div class="breadcrumb">
-      <a href="#" class="active">Konto: MYYK</a>
-      <span class="sep">›</span>
-      <a href="#">Alle kampanjer</a>
-      <span class="sep">›</span>
-      <a href="#">Alle adsets</a>
-      <span class="sep">›</span>
-      <span class="text-neutral-400">Annonser</span>
-    </div>
-    <div class="text-xs text-neutral-500 mono">37 aktive ads · siste sync 06:01 i dag</div>
-  </div>
-
-  <!-- ============== SECTION 1: Hvilke endringer må jeg gjøre? ============== -->
+  <!-- ============== SECTION 0: Diversity audit ============== -->
   <section class="mb-12">
-    <h2 class="section-title">Hvilke endringer må jeg gjøre?</h2>
+    <h2 class="section-title">Diversitets-audit</h2>
     <p class="text-sm text-neutral-600 mb-4 max-w-2xl">
-      Handlingsrettede observasjoner basert på status-fordelingen i porteføljen og helsesignaler på konto-nivå.
+      Hvor bredt creative-porteføljen din dekker de fem dimensjonene fra <span class="italic">creative-diversity</span> wiki-konseptet.
+      Når lab-en flagger metning, sier denne hva slags nytt creative som vil hjelpe.
     </p>
 
-    <div class="bg-white rounded-xl border border-neutral-200 px-5 py-3">
-
-      <div class="action-row">
-        <div class="action-num">1</div>
-        <div class="flex-1 min-w-0">
-          <p class="text-sm text-neutral-900">
-            <span class="font-semibold">3 Burnt-out trenger Variasjon nå.</span>
-            CPM stiger, frekvens bygger. De bar konvertering før — produser ferskt creative i samme rolle/konsept.
-          </p>
-          <p class="text-xs text-neutral-500 mt-0.5">
-            <span class="mono">Bilde-Nyhet-Striper-Hvit-Brun</span> · <span class="mono">Bilde-2-for-1-Sengetøy-rustrød</span> · <span class="mono">Video-2-for-1-Flanell</span>
-          </p>
-        </div>
-      </div>
-
-      <div class="action-row">
-        <div class="action-num">2</div>
-        <div class="flex-1 min-w-0">
-          <p class="text-sm text-neutral-900">
-            <span class="font-semibold">7 Cold-suppressed — diagnostiser før du konkluderer.</span>
-            Disse fikk aldri en rolle. Sjekk i rekkefølge: 1) struktur (over-segmentering, budsjett, ad-set-overlap)
-            2) coverage-overlap (for like noe annet) 3) creative.
-          </p>
-          <p class="text-xs text-neutral-500 mt-0.5">
-            Den vanligste produksjonsfeilen er å hoppe rett til creative-diagnose når problemet er struktur.
-          </p>
-        </div>
-      </div>
-
-      <div class="action-row">
-        <div class="action-num">3</div>
-        <div class="flex-1 min-w-0">
-          <p class="text-sm text-neutral-900">
-            <span class="font-semibold">Portefølje-form: 1 Exploit (mål 1–3 ✓), 2 Explore (mål 3–5 ✗).</span>
-            For få Reach-kandidater. Når Exploit-en brenner ut har du for lite menyforsørgelse.
-          </p>
-        </div>
-      </div>
-
-      <div class="action-row">
-        <div class="action-num">4</div>
-        <div class="flex-1 min-w-0">
-          <p class="text-sm text-neutral-900">
-            <span class="font-semibold">Produksjons-balanse skliver mot Variasjon (sist 30 dager: 75% Variasjon / 25% Ny).</span>
-            Moden konto greier 60–70% Variasjon, men over 70% snevner menyen. Vurder Ny-batch på underdekkede akser.
-          </p>
-        </div>
-      </div>
-
-      <div class="action-row">
-        <div class="action-num">5</div>
-        <div class="flex-1 min-w-0">
-          <p class="text-sm text-neutral-900">
-            <span class="font-semibold">Konto-CPMr stiger (372 → 384, +3% siste 4 uker)</span> — et tidlig signal selv om ROAS holder.
-            Kombinert med få Explore-annonser er det sannsynligvis menyen som er for smal, ikke struktur.
-          </p>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ============== SECTION 2: Hvilket resultat hadde endringene? ============== -->
-  <section class="mb-12">
-    <h2 class="section-title">Hvilket resultat hadde endringene mine?</h2>
-    <p class="text-sm text-neutral-600 mb-4 max-w-2xl">
-      Siste detekterte lansering (≥5 ads opprettet samme uke) sammenlignet med de 14 dagene før vs. etter.
-    </p>
-
-    <!-- Launch event card -->
-    <div class="verdict-card mb-4">
-      <div class="flex items-baseline justify-between gap-4 mb-3 flex-wrap">
-        <div>
-          <p class="text-xs uppercase tracking-wider font-semibold text-neutral-500 mb-1">Siste lansering</p>
-          <p class="text-base text-neutral-900 font-semibold">13. apr · 12 ads · 3 kampanjer</p>
-        </div>
-        <div class="text-xs text-neutral-500 mono">19 dager siden</div>
-      </div>
-
-      <!-- Status outcome of the launch -->
-      <div class="mb-4">
-        <p class="text-xs uppercase tracking-wider font-semibold text-neutral-500 mb-2">Hvor havnet de 12 nye annonsene</p>
-        <div class="flex flex-wrap gap-3 text-sm">
-          <div class="flex items-baseline gap-2">
-            <span class="pill pill-exploit">Exploit</span>
-            <span class="font-semibold mono">1</span>
-            <span class="text-neutral-500 text-xs">tok over som hovedbidrag</span>
-          </div>
-          <div class="flex items-baseline gap-2">
-            <span class="pill pill-explore">Explore</span>
-            <span class="font-semibold mono">2</span>
-            <span class="text-neutral-500 text-xs">holder reach-poolen åpen</span>
-          </div>
-          <div class="flex items-baseline gap-2">
-            <span class="pill pill-cs">Cold-suppr.</span>
-            <span class="font-semibold mono">5</span>
-            <span class="text-neutral-500 text-xs">fikk aldri en rolle — undersøk</span>
-          </div>
-          <div class="flex items-baseline gap-2">
-            <span class="pill pill-test">Test</span>
-            <span class="font-semibold mono">4</span>
-            <span class="text-neutral-500 text-xs">for tidlig å bedømme</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Account-level deltas -->
-      <div class="border-t border-neutral-200 pt-4">
-        <p class="text-xs uppercase tracking-wider font-semibold text-neutral-500 mb-3">Konto-signaler — 14d før vs 14d etter</p>
-        <div class="grid grid-cols-3 gap-4">
-          <div>
-            <p class="text-xs text-neutral-500 mb-1">CPMr</p>
-            <p class="mono text-lg font-semibold text-neutral-900">380 → 372</p>
-            <p class="text-xs arrow-good mt-1">↘ -2% · liten forbedring</p>
-          </div>
-          <div>
-            <p class="text-xs text-neutral-500 mb-1">Frekvens</p>
-            <p class="mono text-lg font-semibold text-neutral-900">4.0 → 4.1</p>
-            <p class="text-xs arrow-bad mt-1">↗ +3% · marginal forverring</p>
-          </div>
-          <div>
-            <p class="text-xs text-neutral-500 mb-1">% net new reach</p>
-            <p class="mono text-lg font-semibold text-neutral-900">12% → 14%</p>
-            <p class="text-xs arrow-good mt-1">↗ +17% · forbedring</p>
-          </div>
-        </div>
-        <p class="text-xs text-neutral-600 mt-4 leading-snug max-w-2xl">
-          <span class="font-semibold">Tolkning:</span>
-          Lanseringen virket delvis — CPMr ned, ny reach opp, men 5 av 12 ble Cold-suppressed.
-          Det er strukturelt mistenkelig. Kjør diagnose: var alle ad sets store nok? Var de nye for like eksisterende?
+    <!-- Verdict + score -->
+    <div class="verdict-card mb-4 flex items-baseline justify-between gap-6 flex-wrap">
+      <div class="flex-1 min-w-0">
+        <p class="text-xs uppercase tracking-wider font-semibold text-neutral-500 mb-1">Hovedfunn</p>
+        <p class="text-base text-neutral-900">
+          <span class="font-semibold">Mangler partnership ads og UGC-format.</span>
+          <span class="text-neutral-600">— Creator-handle-distribuert content er det største enkeltløftet for å åpne nye segmenter (CPMr-playbook).</span>
         </p>
       </div>
+      <div class="flex items-baseline gap-2 flex-shrink-0">
+        <span class="kpi-num mono">11<span class="text-neutral-400">/22</span></span>
+        <span class="text-xs text-neutral-500">verdier dekket</span>
+      </div>
     </div>
 
-    <details class="bg-white rounded-xl border border-neutral-200 px-4 py-3 text-sm">
-      <summary class="cursor-pointer text-neutral-700 hover:text-neutral-900 font-medium">
-        Tidligere lanseringer (3 detektert siste 90 dager)
-      </summary>
-      <div class="mt-3 space-y-2 text-neutral-600">
-        <div class="flex items-baseline justify-between gap-4 py-1">
-          <span>6. apr · 8 ads · 2 ad sets</span>
-          <span class="text-xs">Konto-CPMr +1% · 2 Exploit/Explore av 8</span>
-        </div>
-        <div class="flex items-baseline justify-between gap-4 py-1">
-          <span>22. mar · 15 ads · 4 kampanjer</span>
-          <span class="text-xs">Konto-CPMr -8% · 6 Exploit/Explore av 15</span>
-        </div>
-        <div class="flex items-baseline justify-between gap-4 py-1">
-          <span>5. feb · 9 ads · 3 ad sets</span>
-          <span class="text-xs">Konto-CPMr -3% · 4 Exploit/Explore av 9</span>
-        </div>
+    <!-- Per-dimension breakdown -->
+    <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+      <table class="w-full">
+        <thead>
+          <tr>
+            <th>Dimensjon</th>
+            <th class="text-center">Dekket</th>
+            <th>Hva som mangler</th>
+            <th class="text-right">Aktive ads</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="font-medium text-neutral-800">Format</div>
+              <div class="text-[11px] text-neutral-500 mt-0.5">bilde · video · karusell · ugc · gif</div>
+            </td>
+            <td class="text-center">
+              <span class="mono font-semibold text-neutral-800">4</span>
+              <span class="text-neutral-400 mono">/5</span>
+              <div class="text-[10px] arrow-good mt-0.5">●●●●○</div>
+            </td>
+            <td>
+              <span class="text-sm text-neutral-700"><span class="px-1.5 py-0.5 rounded bg-neutral-100 mono text-[11px]">ugc</span> mangler</span>
+            </td>
+            <td class="text-right mono text-neutral-600">37</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="font-medium text-neutral-800">Vinkel</div>
+              <div class="text-[11px] text-neutral-500 mt-0.5">prod · prob · sosial · tilbud · aspir · bear</div>
+            </td>
+            <td class="text-center">
+              <span class="mono font-semibold text-neutral-800">3</span>
+              <span class="text-neutral-400 mono">/6</span>
+              <div class="text-[10px] arrow-bad mt-0.5">●●●○○○</div>
+            </td>
+            <td>
+              <span class="text-sm text-neutral-700"><span class="px-1.5 py-0.5 rounded bg-neutral-100 mono text-[11px]">prob</span> <span class="px-1.5 py-0.5 rounded bg-neutral-100 mono text-[11px]">aspir</span> <span class="px-1.5 py-0.5 rounded bg-neutral-100 mono text-[11px]">bear</span> mangler</span>
+            </td>
+            <td class="text-right mono text-neutral-600">34</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="font-medium text-neutral-800">Persona</div>
+              <div class="text-[11px] text-neutral-500 mt-0.5">alle · familie · ung · gave</div>
+            </td>
+            <td class="text-center">
+              <span class="mono font-semibold text-neutral-800">1</span>
+              <span class="text-neutral-400 mono">/4</span>
+              <div class="text-[10px] arrow-bad mt-0.5">●○○○</div>
+            </td>
+            <td>
+              <span class="text-sm text-neutral-700"><span class="px-1.5 py-0.5 rounded bg-neutral-100 mono text-[11px]">familie</span> <span class="px-1.5 py-0.5 rounded bg-neutral-100 mono text-[11px]">ung</span> <span class="px-1.5 py-0.5 rounded bg-neutral-100 mono text-[11px]">gave</span> mangler</span>
+            </td>
+            <td class="text-right mono text-neutral-600">37</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="font-medium text-neutral-800">Avsender</div>
+              <div class="text-[11px] text-neutral-500 mt-0.5">brand · partner · kunde</div>
+            </td>
+            <td class="text-center">
+              <span class="mono font-semibold text-rose-700">1</span>
+              <span class="text-neutral-400 mono">/3</span>
+              <div class="text-[10px] arrow-bad mt-0.5">●○○</div>
+            </td>
+            <td>
+              <span class="text-sm text-rose-700">⚠ <span class="px-1.5 py-0.5 rounded bg-rose-50 mono text-[11px]">partner</span> <span class="px-1.5 py-0.5 rounded bg-rose-50 mono text-[11px]">kunde</span> mangler — størst CPMr-løft</span>
+            </td>
+            <td class="text-right mono text-neutral-600">37</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="font-medium text-neutral-800">Destinasjon</div>
+              <div class="text-[11px] text-neutral-500 mt-0.5">pdp · kat · quiz · advert</div>
+            </td>
+            <td class="text-center">
+              <span class="mono font-semibold text-neutral-800">2</span>
+              <span class="text-neutral-400 mono">/4</span>
+              <div class="text-[10px] arrow-neutral mt-0.5">●●○○</div>
+            </td>
+            <td>
+              <span class="text-sm text-neutral-700"><span class="px-1.5 py-0.5 rounded bg-neutral-100 mono text-[11px]">quiz</span> <span class="px-1.5 py-0.5 rounded bg-neutral-100 mono text-[11px]">advert</span> mangler</span>
+            </td>
+            <td class="text-right mono text-neutral-600">37</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Reading guide -->
+    <details class="mt-4 bg-white rounded-xl border border-neutral-200 px-4 py-3 text-sm">
+      <summary class="cursor-pointer font-medium text-neutral-800">Hvordan dette regnes ut</summary>
+      <div class="mt-3 text-neutral-700 space-y-2 leading-relaxed">
+        <p>
+          Hver aktive annonse parses fra navnet sitt etter konvensjonen
+          <code class="px-1.5 py-0.5 rounded bg-neutral-100 mono text-[12px]">[Format]_[Vinkel]_[Persona]_[Avsender]_[Destinasjon]_v[N]</code>.
+          Eksempel: <code class="px-1.5 py-0.5 rounded bg-neutral-100 mono text-[12px]">video_sosial_familie_partner_pdp_v1</code>.
+        </p>
+        <p>
+          Per dimensjon teller vi antall distinkte verdier som finnes i den aktive porteføljen (ekskluderer Død-status).
+          Total dekning = sum av dekkede verdier / sum av mulige verdier.
+        </p>
+        <p>
+          Adlaunch validerer navnet før publisering — filer som ikke følger konvensjonen avvises (eller markeres "ukjent" på alle dimensjoner for backwards-kompatibilitet).
+        </p>
+        <p class="text-xs text-neutral-500">
+          Ordlistene per dimensjon er seedet og bør justeres per kunde. Endring krever oppdatering av adlaunch-konfig + ny brief til kreatørene.
+        </p>
       </div>
     </details>
   </section>
 
-  <!-- ============== SECTION 3: Status per annonse ============== -->
+  <!-- ============== SECTION 1: Account health ============== -->
   <section class="mb-12">
-    <h2 class="section-title">Status per annonse</h2>
-    <p class="text-sm text-neutral-600 mb-4 max-w-2xl">
-      Algoen har plassert hver aktive annonse i en rolle. Sortert etter spend siste 4 uker.
-      Filtrer på status, kampanje eller adset for å drille ned.
-    </p>
+    <h2 class="section-title">Helse i kontoen</h2>
+
+    <!-- Verdict line -->
+    <div class="verdict-card mb-4">
+      <p class="text-xs uppercase tracking-wider font-semibold text-neutral-500 mb-1">Hovedmønster</p>
+      <p class="text-base text-neutral-900">
+        <span class="font-semibold">Saturation under skalering</span>
+        <span class="text-neutral-600">— CPMr stiger, reach er flat, spend opp 18%. Klassisk: du betaler mer for å nå samme folk.</span>
+      </p>
+    </div>
+
+    <!-- KPI cards: leading → lagging -->
+    <div class="grid grid-cols-3 gap-4">
+
+      <div class="kpi-card">
+        <p class="text-xs uppercase tracking-wider font-semibold text-neutral-500">CPMr (siste 4 uker)</p>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span class="kpi-num mono">372</span>
+          <span class="text-sm arrow-bad font-semibold">↗ +14%</span>
+        </div>
+        <p class="text-xs text-neutral-500 mt-1.5">var 326 kr (4 uker før)</p>
+        <p class="text-xs text-neutral-400 mt-2">Beveger seg først — uker tidlig</p>
+      </div>
+
+      <div class="kpi-card">
+        <p class="text-xs uppercase tracking-wider font-semibold text-neutral-500">Frekvens</p>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span class="kpi-num mono">4.4</span>
+          <span class="text-sm arrow-bad font-semibold">↗ +9%</span>
+        </div>
+        <p class="text-xs text-neutral-500 mt-1.5">var 4.0 (4 uker før)</p>
+        <p class="text-xs text-neutral-400 mt-2">Beveger seg sammen med CPMr</p>
+      </div>
+
+      <div class="kpi-card">
+        <p class="text-xs uppercase tracking-wider font-semibold text-neutral-500">% Net new reach</p>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span class="kpi-num mono">8%</span>
+          <span class="text-sm arrow-bad font-semibold">↘ -45%</span>
+        </div>
+        <p class="text-xs text-neutral-500 mt-1.5">var 14% (4 uker før)</p>
+        <p class="text-xs text-neutral-400 mt-2">Av ukens reach var bare 8% nye</p>
+      </div>
+
+    </div>
 
     <!-- Status legend -->
-    <div class="mb-4 flex flex-wrap gap-x-5 gap-y-2 text-sm">
-      <div class="flex items-center gap-2">
-        <span class="pill pill-exploit">Exploit</span>
-        <span class="text-neutral-600"><span class="font-semibold mono">1</span> <span class="text-neutral-500">— hovedkonvertering</span></span>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="pill pill-explore">Explore</span>
-        <span class="text-neutral-600"><span class="font-semibold mono">2</span> <span class="text-neutral-500">— holder reach-pool åpen</span></span>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="pill pill-bo">Burnt-out</span>
-        <span class="text-neutral-600"><span class="font-semibold mono">3</span> <span class="text-neutral-500">— erstatt med Variasjon</span></span>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="pill pill-cs">Cold-suppressed</span>
-        <span class="text-neutral-600"><span class="font-semibold mono">7</span> <span class="text-neutral-500">— fikk aldri en rolle</span></span>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="pill pill-test">Test</span>
-        <span class="text-neutral-600"><span class="font-semibold mono">4</span> <span class="text-neutral-500">— under 14 dager · vent</span></span>
-      </div>
+    <div class="mt-6 flex flex-wrap gap-x-6 gap-y-3 text-sm">
+      <div class="legend-row"><span class="pill pill-acq">Acquisition</span><span class="text-neutral-700"><span class="font-semibold mono">3</span> <span class="text-neutral-500">— lav CPMr, finner nye folk</span></span></div>
+      <div class="legend-row"><span class="pill pill-trap">Trap</span><span class="text-neutral-700"><span class="font-semibold mono">2</span> <span class="text-neutral-500">— høy ROAS, høy CPMr, lav reach</span></span></div>
+      <div class="legend-row"><span class="pill pill-tired">Sliten</span><span class="text-neutral-700"><span class="font-semibold mono">2</span> <span class="text-neutral-500">— stigende CPM, fallende andel</span></span></div>
+      <div class="legend-row"><span class="pill pill-stable">Stabil</span><span class="text-neutral-700"><span class="font-semibold mono">1</span> <span class="text-neutral-500">— balansert, ingen klar signatur</span></span></div>
+      <div class="legend-row"><span class="pill pill-new">Ny</span><span class="text-neutral-700"><span class="font-semibold mono">2</span> <span class="text-neutral-500">— lansert siste 14 dager</span></span></div>
+      <div class="legend-row"><span class="pill pill-dead">Død</span><span class="text-neutral-700"><span class="font-semibold mono">2</span> <span class="text-neutral-500">— 0 spend siste 14 dager</span></span></div>
     </div>
+  </section>
+
+  <!-- ============== SECTION 2: Per-ad table ============== -->
+  <section>
+    <h2 class="section-title">Per annonse</h2>
+    <p class="text-sm text-neutral-600 mb-4 max-w-2xl">
+      Sortert etter spend siste 4 uker. CPMr og frekvens er livstidsverdier (90 dager). Trender er over 4 uker.
+      Annonser under 1k spend siste 4 uker er ekskludert.
+    </p>
 
     <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
       <table class="w-full">
@@ -302,7 +272,6 @@
           <tr>
             <th>Annonse</th>
             <th class="text-right">Spend (4u)</th>
-            <th class="text-right">Andel</th>
             <th class="text-right">CPMr</th>
             <th class="text-right">Frekvens</th>
             <th class="text-right">Reach</th>
@@ -312,209 +281,232 @@
         </thead>
         <tbody>
 
-          <!-- Exploit -->
+          <!-- Trap: high ROAS, high CPMr, low reach, high freq -->
           <tr>
             <td>
               <div class="flex items-center gap-3">
                 <div class="row-thumb"></div>
                 <div>
-                  <div class="font-medium text-neutral-800">Video-Vårsalg-Perlemor</div>
-                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 19 dager siden · MYYK BAU 2026 / Vårsalg-Bestselgere</div>
+                  <div class="font-medium text-neutral-800">Bilde-Vintersalg-Bestseller-rerun</div>
+                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 87 dager siden · konvertering</div>
                 </div>
               </div>
             </td>
-            <td class="text-right mono font-semibold">28k</td>
-            <td class="text-right mono">22%</td>
-            <td class="text-right mono">312<div class="text-[10px] text-neutral-500">snitt-konto</div></td>
-            <td class="text-right mono">4.2<div class="text-[10px] arrow-bad">↗ stiger</div></td>
-            <td class="text-right mono">62 000</td>
-            <td class="text-right mono font-semibold">3.8×</td>
-            <td><span class="pill pill-exploit">Exploit</span></td>
+            <td class="text-right mono font-semibold">25k</td>
+            <td class="text-right mono">478<div class="text-[10px] text-neutral-500">+38% vs konto</div></td>
+            <td class="text-right mono">5.2<div class="text-[10px] arrow-bad">↗ stiger</div></td>
+            <td class="text-right mono">8 500</td>
+            <td class="text-right mono font-semibold">4.1×</td>
+            <td><span class="pill pill-trap">Trap</span></td>
           </tr>
 
-          <!-- Explore #1 -->
-          <tr>
-            <td>
-              <div class="flex items-center gap-3">
-                <div class="row-thumb"></div>
-                <div>
-                  <div class="font-medium text-neutral-800">Bilde-Vårsalg-Produkt-Due</div>
-                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 19 dager siden · MYYK BAU 2026 / Prospecting-Bredt</div>
-                </div>
-              </div>
-            </td>
-            <td class="text-right mono font-semibold">9.8k</td>
-            <td class="text-right mono">8%</td>
-            <td class="text-right mono">218<div class="text-[10px] arrow-good">-30% v konto</div></td>
-            <td class="text-right mono">2.4<div class="text-[10px] arrow-good">stabil</div></td>
-            <td class="text-right mono">38 500</td>
-            <td class="text-right mono">1.6×</td>
-            <td><span class="pill pill-explore">Explore</span></td>
-          </tr>
-
-          <!-- Explore #2 -->
-          <tr>
-            <td>
-              <div class="flex items-center gap-3">
-                <div class="row-thumb"></div>
-                <div>
-                  <div class="font-medium text-neutral-800">Bilde-Vårsalg-Miljø-gingham-kystgrønn</div>
-                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 19 dager siden · MYYK BAU 2026 / Prospecting-Bredt</div>
-                </div>
-              </div>
-            </td>
-            <td class="text-right mono font-semibold">8.4k</td>
-            <td class="text-right mono">7%</td>
-            <td class="text-right mono">240<div class="text-[10px] arrow-good">-23% v konto</div></td>
-            <td class="text-right mono">2.6<div class="text-[10px] arrow-good">stabil</div></td>
-            <td class="text-right mono">31 200</td>
-            <td class="text-right mono">1.4×</td>
-            <td><span class="pill pill-explore">Explore</span></td>
-          </tr>
-
-          <!-- Burnt-out #1 -->
+          <!-- Trap (subtler): old workhorse with high ROAS -->
           <tr>
             <td>
               <div class="flex items-center gap-3">
                 <div class="row-thumb"></div>
                 <div>
                   <div class="font-medium text-neutral-800">Bilde-Nyhet-Striper-Hvit-Brun</div>
-                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 142 dager siden · MYYK BAU 2026 / Konvertering-Warm</div>
+                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 142 dager siden · konvertering</div>
+                </div>
+              </div>
+            </td>
+            <td class="text-right mono font-semibold">18k</td>
+            <td class="text-right mono">420<div class="text-[10px] text-neutral-500">+22% vs konto</div></td>
+            <td class="text-right mono">4.8<div class="text-[10px] arrow-bad">↗ stiger</div></td>
+            <td class="text-right mono">14 000</td>
+            <td class="text-right mono font-semibold">3.2×</td>
+            <td><span class="pill pill-trap">Trap</span></td>
+          </tr>
+
+          <!-- Acquisition: low CPMr, high reach, decent ROAS -->
+          <tr>
+            <td>
+              <div class="flex items-center gap-3">
+                <div class="row-thumb"></div>
+                <div>
+                  <div class="font-medium text-neutral-800">Video-Vårsalg-Unboxing-1</div>
+                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 24 dager siden · konvertering</div>
                 </div>
               </div>
             </td>
             <td class="text-right mono font-semibold">14k</td>
-            <td class="text-right mono">11%</td>
-            <td class="text-right mono">478<div class="text-[10px] arrow-bad">+53% v konto</div></td>
-            <td class="text-right mono">5.4<div class="text-[10px] arrow-bad">↗ +28%</div></td>
-            <td class="text-right mono">15 200</td>
-            <td class="text-right mono">2.8×</td>
-            <td><span class="pill pill-bo">Burnt-out</span></td>
+            <td class="text-right mono">218<div class="text-[10px] arrow-good">-37% vs konto</div></td>
+            <td class="text-right mono">2.3<div class="text-[10px] arrow-good">stabil</div></td>
+            <td class="text-right mono">42 000</td>
+            <td class="text-right mono font-semibold">1.6×</td>
+            <td><span class="pill pill-acq">Acquisition</span></td>
           </tr>
 
-          <!-- Burnt-out #2 -->
+          <!-- Stable: balanced -->
+          <tr>
+            <td>
+              <div class="flex items-center gap-3">
+                <div class="row-thumb"></div>
+                <div>
+                  <div class="font-medium text-neutral-800">myyk-native-håndklepakker</div>
+                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 64 dager siden · konvertering</div>
+                </div>
+              </div>
+            </td>
+            <td class="text-right mono font-semibold">8.5k</td>
+            <td class="text-right mono">340<div class="text-[10px] text-neutral-500">-2% vs konto</div></td>
+            <td class="text-right mono">3.5<div class="text-[10px] arrow-neutral">stabil</div></td>
+            <td class="text-right mono">11 000</td>
+            <td class="text-right mono font-semibold">2.0×</td>
+            <td><span class="pill pill-stable">Stabil</span></td>
+          </tr>
+
+          <!-- Acquisition #2: low CPMr workhorse -->
+          <tr>
+            <td>
+              <div class="flex items-center gap-3">
+                <div class="row-thumb"></div>
+                <div>
+                  <div class="font-medium text-neutral-800">Bilde-Vårsalg-Produkt-Due</div>
+                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 19 dager siden · konvertering</div>
+                </div>
+              </div>
+            </td>
+            <td class="text-right mono font-semibold">7.8k</td>
+            <td class="text-right mono">240<div class="text-[10px] arrow-good">-31% vs konto</div></td>
+            <td class="text-right mono">2.8<div class="text-[10px] arrow-good">stabil</div></td>
+            <td class="text-right mono">28 500</td>
+            <td class="text-right mono font-semibold">1.4×</td>
+            <td><span class="pill pill-acq">Acquisition</span></td>
+          </tr>
+
+          <!-- Tired #1 -->
           <tr>
             <td>
               <div class="flex items-center gap-3">
                 <div class="row-thumb"></div>
                 <div>
                   <div class="font-medium text-neutral-800">Bilde-2-for-1-Sengetøy-rustrød</div>
-                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 96 dager siden · MYYK BAU 2026 / Konvertering-Warm</div>
+                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 96 dager siden · konvertering</div>
                 </div>
               </div>
             </td>
-            <td class="text-right mono font-semibold">7.6k</td>
-            <td class="text-right mono">6%</td>
-            <td class="text-right mono">510<div class="text-[10px] arrow-bad">+63% v konto</div></td>
-            <td class="text-right mono">6.1<div class="text-[10px] arrow-bad">↗ +35%</div></td>
-            <td class="text-right mono">11 800</td>
+            <td class="text-right mono font-semibold">6.2k</td>
+            <td class="text-right mono">510<div class="text-[10px] arrow-bad">+47% vs konto</div></td>
+            <td class="text-right mono">6.1<div class="text-[10px] arrow-bad">↗ +28%</div></td>
+            <td class="text-right mono">4 200</td>
             <td class="text-right mono">1.4×</td>
-            <td><span class="pill pill-bo">Burnt-out</span></td>
+            <td><span class="pill pill-tired">Sliten</span></td>
           </tr>
 
-          <!-- Burnt-out #3 -->
+          <!-- Acquisition #3 -->
+          <tr>
+            <td>
+              <div class="flex items-center gap-3">
+                <div class="row-thumb"></div>
+                <div>
+                  <div class="font-medium text-neutral-800">Bilde-Gingham-Pakkesett</div>
+                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 31 dager siden · konvertering</div>
+                </div>
+              </div>
+            </td>
+            <td class="text-right mono font-semibold">5.4k</td>
+            <td class="text-right mono">290<div class="text-[10px] arrow-good">-17% vs konto</div></td>
+            <td class="text-right mono">2.1<div class="text-[10px] arrow-good">↗ ekspanderer</div></td>
+            <td class="text-right mono">19 000</td>
+            <td class="text-right mono">1.8×</td>
+            <td><span class="pill pill-acq">Acquisition</span></td>
+          </tr>
+
+          <!-- Tired #2 -->
           <tr>
             <td>
               <div class="flex items-center gap-3">
                 <div class="row-thumb"></div>
                 <div>
                   <div class="font-medium text-neutral-800">Video-2-for-1-Flanell</div>
-                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 78 dager siden · MYYK BAU 2026 / Prospecting-Lookalike</div>
+                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 78 dager siden · konvertering</div>
                 </div>
               </div>
             </td>
-            <td class="text-right mono font-semibold">5.2k</td>
-            <td class="text-right mono">4%</td>
-            <td class="text-right mono">462<div class="text-[10px] arrow-bad">+48% v konto</div></td>
+            <td class="text-right mono font-semibold">4.1k</td>
+            <td class="text-right mono">462<div class="text-[10px] arrow-bad">+33% vs konto</div></td>
             <td class="text-right mono">4.7<div class="text-[10px] arrow-bad">↗ +18%</div></td>
-            <td class="text-right mono">10 800</td>
+            <td class="text-right mono">5 800</td>
             <td class="text-right mono">1.7×</td>
-            <td><span class="pill pill-bo">Burnt-out</span></td>
+            <td><span class="pill pill-tired">Sliten</span></td>
           </tr>
 
-          <!-- Cold-suppressed #1 (showing sample) -->
+          <!-- Ny #1 -->
           <tr>
             <td>
               <div class="flex items-center gap-3">
                 <div class="row-thumb"></div>
                 <div>
-                  <div class="font-medium text-neutral-800">Karusell-Vårsalg-Alle-farger-2</div>
-                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 19 dager siden · MYYK BAU 2026 / Prospecting-Bredt</div>
+                  <div class="font-medium text-neutral-800">Karusell-Vårsalg-Alle-farger</div>
+                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 6 dager siden · konvertering</div>
                 </div>
               </div>
             </td>
-            <td class="text-right mono font-semibold">2.1k</td>
-            <td class="text-right mono">2%</td>
-            <td class="text-right mono">425<div class="text-[10px] text-neutral-500">+36% v konto</div></td>
-            <td class="text-right mono">3.2</td>
-            <td class="text-right mono">4 800</td>
-            <td class="text-right mono">0.9×</td>
-            <td><span class="pill pill-cs">Cold-suppressed</span></td>
+            <td class="text-right mono font-semibold">2.8k</td>
+            <td class="text-right mono text-neutral-400">—</td>
+            <td class="text-right mono text-neutral-400">—</td>
+            <td class="text-right mono text-neutral-400">—</td>
+            <td class="text-right mono">2.1×</td>
+            <td><span class="pill pill-new">Ny</span></td>
           </tr>
 
-          <tr>
-            <td>
-              <div class="flex items-center gap-3">
-                <div class="row-thumb"></div>
-                <div>
-                  <div class="font-medium text-neutral-800">Bilde-Vårsalg-Produkt-Midnattsblå</div>
-                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 19 dager siden · MYYK BAU 2026 / Konvertering-Warm</div>
-                </div>
-              </div>
-            </td>
-            <td class="text-right mono font-semibold">1.8k</td>
-            <td class="text-right mono">1%</td>
-            <td class="text-right mono">410<div class="text-[10px] text-neutral-500">+31% v konto</div></td>
-            <td class="text-right mono">3.0</td>
-            <td class="text-right mono">4 200</td>
-            <td class="text-right mono">1.1×</td>
-            <td><span class="pill pill-cs">Cold-suppressed</span></td>
-          </tr>
-
-          <tr>
-            <td>
-              <div class="flex items-center gap-3 opacity-70">
-                <div class="row-thumb"></div>
-                <div>
-                  <div class="font-medium text-neutral-800">+5 flere Cold-suppressed (1.2k–1.6k spend)</div>
-                  <div class="text-[11px] text-neutral-500 mt-0.5">Klikk for å ekspandere</div>
-                </div>
-              </div>
-            </td>
-            <td colspan="7" class="text-right text-xs text-neutral-400">…</td>
-          </tr>
-
-          <!-- Test #1 -->
+          <!-- Ny #2 -->
           <tr>
             <td>
               <div class="flex items-center gap-3">
                 <div class="row-thumb"></div>
                 <div>
                   <div class="font-medium text-neutral-800">Video-Vårsalg-Gingham-Kirsebær</div>
-                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 6 dager siden · MYYK BAU 2026 / Prospecting-Bredt</div>
+                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 4 dager siden · konvertering</div>
                 </div>
               </div>
             </td>
-            <td class="text-right mono font-semibold">3.2k</td>
-            <td class="text-right mono">3%</td>
+            <td class="text-right mono font-semibold">1.6k</td>
             <td class="text-right mono text-neutral-400">—</td>
             <td class="text-right mono text-neutral-400">—</td>
             <td class="text-right mono text-neutral-400">—</td>
-            <td class="text-right mono">2.1×</td>
-            <td><span class="pill pill-test">Test</span></td>
+            <td class="text-right mono">0.8×</td>
+            <td><span class="pill pill-new">Ny</span></td>
           </tr>
 
+          <!-- Død #1 -->
           <tr>
             <td>
-              <div class="flex items-center gap-3 opacity-70">
+              <div class="flex items-center gap-3">
                 <div class="row-thumb"></div>
                 <div>
-                  <div class="font-medium text-neutral-800">+3 flere Test (lansert siste 14 dager)</div>
-                  <div class="text-[11px] text-neutral-500 mt-0.5">For tidlig å bedømme</div>
+                  <div class="font-medium text-neutral-800 line-through opacity-60">Bilde-Black-Friday-Kampanje</div>
+                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 156 dager siden · ingen spend siste 23 dager</div>
                 </div>
               </div>
             </td>
-            <td colspan="7" class="text-right text-xs text-neutral-400">…</td>
+            <td class="text-right mono text-neutral-400">0</td>
+            <td class="text-right mono text-neutral-400">380</td>
+            <td class="text-right mono text-neutral-400">4.5</td>
+            <td class="text-right mono text-neutral-400">8 200</td>
+            <td class="text-right mono text-neutral-400">2.8×</td>
+            <td><span class="pill pill-dead">Død</span></td>
+          </tr>
+
+          <!-- Død #2 -->
+          <tr>
+            <td>
+              <div class="flex items-center gap-3">
+                <div class="row-thumb"></div>
+                <div>
+                  <div class="font-medium text-neutral-800 line-through opacity-60">Bilde-Vintersalg-Tilbud-Striper</div>
+                  <div class="text-[11px] text-neutral-500 mt-0.5">Lansert 119 dager siden · ingen spend siste 18 dager</div>
+                </div>
+              </div>
+            </td>
+            <td class="text-right mono text-neutral-400">0</td>
+            <td class="text-right mono text-neutral-400">425</td>
+            <td class="text-right mono text-neutral-400">5.1</td>
+            <td class="text-right mono text-neutral-400">6 500</td>
+            <td class="text-right mono text-neutral-400">3.1×</td>
+            <td><span class="pill pill-dead">Død</span></td>
           </tr>
 
         </tbody>
@@ -522,49 +514,31 @@
     </div>
 
     <!-- Reading guide -->
-    <details class="mt-4 bg-white rounded-xl border border-neutral-200 px-4 py-3 text-sm">
-      <summary class="cursor-pointer font-medium text-neutral-800">Hvordan dette regnes ut</summary>
-      <div class="mt-3 text-neutral-700 space-y-2 leading-relaxed">
-        <p>Statusene reflekterer algoens valg, ikke vår klassifisering:</p>
-        <ul class="list-disc pl-5 space-y-1">
-          <li><strong>Test</strong> — opprettet siste 14 dager. Vi venter til testfasen er passert før vi diagnostiserer.</li>
-          <li><strong>Exploit</strong> — topp 20% spend-andel, frekvens stigende, ROAS over snitt. Algoen bruker den til å konvertere.</li>
-          <li><strong>Explore</strong> — moderat spend, lav frekvens, lav CPMr (≥15% under konto-snitt). Holder reach-poolen åpen.</li>
-          <li><strong>Burnt-out</strong> — spend-andel falt ≥30% siste 4 uker ELLER CPM-trend stiger ≥30%. Hadde en rolle, mistet den.</li>
-          <li><strong>Cold-suppressed</strong> — opprettet &gt;14 dager siden, vedvarende lav spend-andel. Fikk aldri en rolle. Symptom — krever struktur/overlap/creative-diagnose i den rekkefølgen.</li>
-        </ul>
-        <p class="text-xs text-neutral-500 pt-1">
-          Filter: ads med ≥1k spend siste 4 uker. Mindre spend = ikke nok signal til å tolke.
+    <div class="mt-6 grid grid-cols-2 gap-6">
+      <div class="bg-white rounded-xl border border-neutral-200 p-4">
+        <p class="text-xs uppercase tracking-wider font-semibold text-neutral-500 mb-2">Hvordan lese</p>
+        <p class="text-sm text-neutral-700 leading-relaxed">
+          <strong>Trap-radene</strong> ser ut som vinnere på ROAS men har høy CPMr og lav reach — algoritmen serverer en varm boble og høster æren. Ofte de eldste annonsene som ligger og spenner.
+        </p>
+        <p class="text-sm text-neutral-700 leading-relaxed mt-2">
+          <strong>Acquisition-radene</strong> har lav CPMr og høy reach. Lavere ROAS er forventet — de gjør det tunge top-of-funnel-arbeidet og får sjelden last-click-credit.
         </p>
       </div>
-    </details>
-  </section>
-
-  <!-- ============== SECTION 4: Coverage-audit (placeholder) ============== -->
-  <section class="mb-12">
-    <h2 class="section-title">Coverage-audit</h2>
-    <div class="rounded-xl border border-neutral-200 bg-neutral-50/40 p-5">
-      <div class="flex items-start gap-3">
-        <div class="w-8 h-8 rounded-full bg-neutral-200 text-neutral-500 flex items-center justify-center flex-shrink-0 text-sm font-bold">⏳</div>
-        <div class="flex-1 min-w-0">
-          <p class="text-sm font-semibold text-neutral-800 mb-1">Krever navnekonvensjon i adlaunch</p>
-          <p class="text-sm text-neutral-700 leading-snug max-w-2xl">
-            Denne seksjonen vil vise dekning per taksonomi-akse (målgruppe-nivå, vinkling, tone, avsender, format, kvalitet)
-            slik at du ser <em>hvilken type</em> nye annonser kontoen mangler. Krever at adlaunch ruller ut og håndhever
-            navnekonvensjonen
-            <code class="px-1.5 py-0.5 rounded bg-neutral-100 mono text-[12px]">[KONTO]_[KONSEPT]_[VINKLING]_[TONE]_[AVSENDER]_[FORMAT]_[KVALITET]_[PERSONA]_v[N]</code>
-            før vi kan parse dimensjonene.
-          </p>
-          <p class="text-xs text-neutral-500 mt-2">
-            Inntil da: Cold-suppressed-listen + portefølje-form på toppen er det nærmeste signalet vi har.
-          </p>
-        </div>
+      <div class="bg-white rounded-xl border border-neutral-200 p-4">
+        <p class="text-xs uppercase tracking-wider font-semibold text-neutral-500 mb-2">Hva å gjøre</p>
+        <p class="text-sm text-neutral-700 leading-relaxed">
+          <strong>Acquisition</strong> bør beholdes selv om ROAS er moderat. <strong>Sliten</strong> og <strong>Død</strong> er ryddetilfeller. <strong>Trap</strong> er vurderingstilfeller — de er ikke nødvendigvis dårlige, men de bærer ikke veksten du tror de gjør.
+        </p>
+        <p class="text-sm text-neutral-700 leading-relaxed mt-2">
+          Ingen automatiserte handlinger fra denne siden — alt utføres i Ads Manager.
+        </p>
       </div>
     </div>
+
   </section>
 
   <p class="text-xs text-neutral-400 text-center mt-12">
-    Mock-data · prototype-lab.html · v1.0 — kreativ rapport rammeverk
+    Mock-data · prototype-lab.html · skaper grunnlag for Lab v3
   </p>
 
 </div>
