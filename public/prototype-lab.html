@@ -176,9 +176,8 @@
   <!-- Campaign list (only on account level) -->
   <div id="campaign-list-section" class="mb-8">
     <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-      <div class="px-4 py-2.5 border-b border-neutral-200 flex items-center justify-between">
+      <div class="px-4 py-2.5 border-b border-neutral-200">
         <span class="eyebrow">Kampanjer</span>
-        <span class="text-xs text-neutral-500">3 aktive · klikk for å åpne</span>
       </div>
       <div id="campaign-list">
         <!-- campaign rows injected by JS -->
@@ -189,10 +188,7 @@
   <!-- Annonse-seksjon -->
   <section>
     <div class="flex items-center justify-between mb-3">
-      <div>
-        <p class="eyebrow">Annonser</p>
-        <p class="text-xs text-neutral-500 mt-0.5" id="ads-subtitle">37 annonser på tvers av 3 kampanjer</p>
-      </div>
+      <p class="eyebrow">Annonser</p>
       <div class="flex items-center gap-2">
         <span class="text-xs text-neutral-500">Gruppering:</span>
         <select id="grouping" class="group-select">
@@ -482,15 +478,6 @@ function renderGroupingDropdown() {
   sel.value = state.groupingByLevel[state.level];
 }
 
-function renderAdsSubtitle() {
-  const el = document.getElementById('ads-subtitle');
-  const list = getActiveAds();
-  if (state.level === 'account') {
-    el.textContent = `${list.length} annonser på tvers av ${campaigns.length} kampanjer`;
-  } else {
-    el.textContent = `${list.length} annonser i denne kampanjen`;
-  }
-}
 
 // Get the grouping key for an ad given the grouping mode
 function getGroupKey(ad, mode) {
@@ -619,7 +606,6 @@ function renderAll() {
   renderHero();
   renderCampaignList();
   renderGroupingDropdown();
-  renderAdsSubtitle();
   renderAds();
 }
 
