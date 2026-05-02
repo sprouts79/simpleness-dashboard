@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kreativ rapport — prototype v1.1</title>
+<title>Kreativ rapport — prototype v1.2</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -11,16 +11,17 @@
   .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
   .section-title {
     font-weight: 600; font-size: 1.125rem; letter-spacing: -0.01em;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
   }
   .pill {
     display: inline-flex; align-items: center; justify-content: center;
     padding: 1px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600;
     border: 1px solid; line-height: 1.3; height: 20px;
   }
+  /* Swapped: Explore = green (the hero finding new folks), Exploit = amber (useful but not hero) */
   .pill-test     { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
-  .pill-exploit  { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
-  .pill-explore  { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+  .pill-explore  { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+  .pill-exploit  { background: #fef3c7; color: #92400e; border-color: #fde68a; }
   .pill-bo       { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
   .pill-cs       { background: #f5f5f5; color: #525252; border-color: #d4d4d4; }
   .arrow-good { color: #047857; }
@@ -60,15 +61,51 @@
     border-radius: 6px; cursor: pointer; border: none; background: transparent;
   }
   .toggle-btn.active { background: white; color: #090a08; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+
   /* Stacked spend distribution bar */
-  .stack-bar { display: flex; height: 8px; border-radius: 999px; overflow: hidden; background: #f5f5f5; }
+  .stack-bar {
+    display: flex; height: 10px; border-radius: 999px; overflow: hidden;
+    background: #f5f5f5; min-width: 120px;
+  }
+  .stack-bar.tall { height: 16px; }
   .stack-bar > div { display: block; }
-  .stack-exploit  { background: #34d399; }
-  .stack-explore  { background: #fbbf24; }
+  .stack-explore  { background: #34d399; }
+  .stack-exploit  { background: #fbbf24; }
   .stack-bo       { background: #f87171; }
-  .stack-cs       { background: #a3a3a3; }
+  .stack-cs       { background: #d4d4d4; }
   .stack-test     { background: #93c5fd; }
-  .dim-dot { display: inline-block; width: 8px; height: 8px; border-radius: 999px; margin-right: 4px; }
+
+  .level-row {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) 70px minmax(220px, 2fr) 70px;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #f5f5f5;
+    cursor: pointer;
+  }
+  .level-row:last-child { border-bottom: 0; }
+  .level-row:hover { background: #fafafa; }
+
+  .group-row {
+    display: grid;
+    grid-template-columns: 16px minmax(220px, 1fr) 70px minmax(180px, 1.5fr) 60px;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    background: #fafafa;
+    border-bottom: 1px solid #e5e5e5;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .group-row:hover { background: #f5f5f5; }
+  .group-row .chev { color: #737373; font-size: 11px; }
+  .group-row.expanded { background: #f5f5f5; }
+
+  .nested-row td {
+    background: white;
+    padding-left: 36px;
+  }
   details summary { list-style: none; }
   details summary::-webkit-details-marker { display: none; }
 </style>
@@ -80,8 +117,8 @@
   <!-- Banner -->
   <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-3 mb-6">
     <div class="flex items-center gap-2">
-      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v1.1</span>
-      <span class="text-sm text-neutral-700">Kreativ rapport — strukturen først, ingen verdict-tekst</span>
+      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v1.2</span>
+      <span class="text-sm text-neutral-700">Spend-fordeling som primær linse — på konto, kampanje og ad set</span>
     </div>
   </div>
 
@@ -98,8 +135,8 @@
   </div>
 
   <!-- ============== SECTION 1: KPI Strip ============== -->
-  <section class="mb-10">
-    <div class="grid grid-cols-5 gap-3">
+  <section class="mb-8">
+    <div class="grid grid-cols-4 gap-3">
 
       <div class="kpi-card">
         <p class="kpi-label">Reach (28d)</p>
@@ -120,23 +157,6 @@
       </div>
 
       <div class="kpi-card">
-        <p class="kpi-label">Spendfordeling</p>
-        <div class="mt-2.5 mb-2">
-          <div class="stack-bar">
-            <div class="stack-exploit" style="width: 36%"></div>
-            <div class="stack-explore" style="width: 18%"></div>
-            <div class="stack-bo" style="width: 24%"></div>
-            <div class="stack-cs" style="width: 11%"></div>
-            <div class="stack-test" style="width: 11%"></div>
-          </div>
-        </div>
-        <p class="kpi-sub mono">
-          <span class="text-emerald-700">Exploit 36%</span> ·
-          <span class="text-amber-700">Explore 18%</span>
-        </p>
-      </div>
-
-      <div class="kpi-card">
         <p class="kpi-label">Diversifisering</p>
         <p class="kpi-num mono mt-2">11<span class="text-neutral-400 text-base">/22</span></p>
         <p class="kpi-sub">verdier dekket på 5 dimensjoner</p>
@@ -145,259 +165,172 @@
     </div>
   </section>
 
-  <!-- ============== SECTION 2: Kreativ diversifisering ============== -->
+  <!-- ============== SECTION 2: Spend-fordeling per nivå ============== -->
   <section class="mb-10">
-    <h2 class="section-title">Kreativ diversifisering</h2>
+    <h2 class="section-title">Spend-fordeling</h2>
 
-    <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-      <table class="w-full">
-        <thead>
-          <tr>
-            <th>Dimensjon</th>
-            <th class="text-center">Dekket</th>
-            <th>Verdier</th>
-            <th class="text-right">Aktive</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><span class="font-medium">Annonsetype</span></td>
-            <td class="text-center mono"><span class="font-semibold">5</span><span class="text-neutral-400">/13</span></td>
-            <td>
-              <span class="mono text-[11px] text-neutral-700">PROD · DEMO · CRT · SOCPROOF · LIST</span>
-              <span class="mono text-[11px] text-neutral-400 ml-2">— mangler VOX, FND, BEFAFT, COMP, PROBSOL, EDU, STMT, UNBOX</span>
-            </td>
-            <td class="text-right mono text-neutral-600">37</td>
-          </tr>
-          <tr>
-            <td><span class="font-medium">Tone</span></td>
-            <td class="text-center mono"><span class="font-semibold">2</span><span class="text-neutral-400">/3</span></td>
-            <td>
-              <span class="mono text-[11px] text-neutral-700">FUN · EMO</span>
-              <span class="mono text-[11px] text-neutral-400 ml-2">— mangler HUM</span>
-            </td>
-            <td class="text-right mono text-neutral-600">37</td>
-          </tr>
-          <tr>
-            <td><span class="font-medium">Avsender</span></td>
-            <td class="text-center mono"><span class="font-semibold">1</span><span class="text-neutral-400">/6</span></td>
-            <td>
-              <span class="mono text-[11px] text-neutral-700">BRD</span>
-              <span class="mono text-[11px] text-neutral-400 ml-2">— mangler CRT, CST, FND, EXP, EMP</span>
-            </td>
-            <td class="text-right mono text-neutral-600">37</td>
-          </tr>
-          <tr>
-            <td><span class="font-medium">Format</span></td>
-            <td class="text-center mono"><span class="font-semibold">4</span><span class="text-neutral-400">/9</span></td>
-            <td>
-              <span class="mono text-[11px] text-neutral-700">EDIT · MOT · CAR · LIFE</span>
-              <span class="mono text-[11px] text-neutral-400 ml-2">— mangler TALK, VOX, SCR, UGC, UNBOX</span>
-            </td>
-            <td class="text-right mono text-neutral-600">37</td>
-          </tr>
-          <tr>
-            <td><span class="font-medium">Kvalitet</span></td>
-            <td class="text-center mono"><span class="font-semibold">1</span><span class="text-neutral-400">/2</span></td>
-            <td>
-              <span class="mono text-[11px] text-neutral-700">HIFI</span>
-              <span class="mono text-[11px] text-neutral-400 ml-2">— mangler LOFI</span>
-            </td>
-            <td class="text-right mono text-neutral-600">37</td>
-          </tr>
-          <tr>
-            <td><span class="font-medium">Persona</span></td>
-            <td class="text-center mono"><span class="font-semibold">2</span><span class="text-neutral-400">/4</span></td>
-            <td>
-              <span class="mono text-[11px] text-neutral-700">BRAND · BROAD</span>
-              <span class="mono text-[11px] text-neutral-400 ml-2">— mangler SLEEPER, GAVE</span>
-            </td>
-            <td class="text-right mono text-neutral-600">37</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <p class="text-xs text-neutral-500 mt-2">
-      Krever navnekonvensjon i adlaunch for å parse automatisk.
-      <code class="px-1 py-0.5 rounded bg-neutral-100 mono text-[11px]">[KONTO]_[ANNONSETYPE]_[KONSEPT|-]_[TONE]_[AVSENDER]_[FORMAT]_[KVALITET]_[PERSONA]_v[N]</code>
-    </p>
-  </section>
-
-  <!-- ============== SECTION 3: Annonsetype / Konsept toggle ============== -->
-  <section class="mb-10">
-    <div class="flex items-center justify-between mb-3">
-      <h2 class="section-title mb-0">Fordeling</h2>
-      <div class="toggle-group">
-        <button class="toggle-btn active">Annonsetype</button>
-        <button class="toggle-btn">Konsept</button>
+    <!-- Legend at top of section -->
+    <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mb-4 text-xs">
+      <div class="flex items-center gap-1.5">
+        <div class="w-3 h-3 rounded-sm" style="background:#34d399"></div>
+        <span class="text-neutral-700">Explore</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <div class="w-3 h-3 rounded-sm" style="background:#fbbf24"></div>
+        <span class="text-neutral-700">Exploit</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <div class="w-3 h-3 rounded-sm" style="background:#f87171"></div>
+        <span class="text-neutral-700">Burnt-out</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <div class="w-3 h-3 rounded-sm" style="background:#d4d4d4"></div>
+        <span class="text-neutral-700">Cold-suppressed</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <div class="w-3 h-3 rounded-sm" style="background:#93c5fd"></div>
+        <span class="text-neutral-700">Test</span>
       </div>
     </div>
 
-    <!-- Annonsetype-tabell (default visning) -->
-    <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-      <table class="w-full">
-        <thead>
-          <tr>
-            <th>Annonsetype</th>
-            <th class="text-right">Antall</th>
-            <th class="text-right">Spend (4u)</th>
-            <th class="text-right">Andel</th>
-            <th class="text-right">CPMr</th>
-            <th>Status-fordeling</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <span class="font-medium">PROD</span>
-              <span class="text-[11px] text-neutral-500 ml-1">produktannonse</span>
-            </td>
-            <td class="text-right mono">18</td>
-            <td class="text-right mono font-semibold">68k</td>
-            <td class="text-right mono">52%</td>
-            <td class="text-right mono">386</td>
-            <td>
-              <div class="flex items-center gap-1.5 text-[11px] mono">
-                <span class="text-emerald-700">E:1</span>
-                <span class="text-amber-700">Ex:1</span>
-                <span class="text-rose-700">Bo:3</span>
-                <span class="text-neutral-500">Cs:6</span>
-                <span class="text-blue-700">T:7</span>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <span class="font-medium">DEMO</span>
-              <span class="text-[11px] text-neutral-500 ml-1">demonstrasjon</span>
-            </td>
-            <td class="text-right mono">6</td>
-            <td class="text-right mono font-semibold">22k</td>
-            <td class="text-right mono">17%</td>
-            <td class="text-right mono">340</td>
-            <td>
-              <div class="flex items-center gap-1.5 text-[11px] mono">
-                <span class="text-amber-700">Ex:2</span>
-                <span class="text-neutral-500">Cs:1</span>
-                <span class="text-blue-700">T:3</span>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <span class="font-medium">CRT</span>
-              <span class="text-[11px] text-neutral-500 ml-1">kreatørannonse</span>
-            </td>
-            <td class="text-right mono">5</td>
-            <td class="text-right mono font-semibold">19k</td>
-            <td class="text-right mono">15%</td>
-            <td class="text-right mono">298</td>
-            <td>
-              <div class="flex items-center gap-1.5 text-[11px] mono">
-                <span class="text-amber-700">Ex:1</span>
-                <span class="text-rose-700">Bo:2</span>
-                <span class="text-neutral-500">Cs:2</span>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <span class="font-medium">SOCPROOF</span>
-              <span class="text-[11px] text-neutral-500 ml-1">social proof</span>
-            </td>
-            <td class="text-right mono">3</td>
-            <td class="text-right mono font-semibold">11k</td>
-            <td class="text-right mono">9%</td>
-            <td class="text-right mono">412</td>
-            <td>
-              <div class="flex items-center gap-1.5 text-[11px] mono">
-                <span class="text-rose-700">Bo:2</span>
-                <span class="text-neutral-500">Cs:1</span>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <span class="font-medium">LIST</span>
-              <span class="text-[11px] text-neutral-500 ml-1">listicle / karusell</span>
-            </td>
-            <td class="text-right mono">3</td>
-            <td class="text-right mono font-semibold">6k</td>
-            <td class="text-right mono">5%</td>
-            <td class="text-right mono">358</td>
-            <td>
-              <div class="flex items-center gap-1.5 text-[11px] mono">
-                <span class="text-neutral-500">Cs:1</span>
-                <span class="text-blue-700">T:2</span>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <span class="font-medium">EDU</span>
-              <span class="text-[11px] text-neutral-500 ml-1">edukasjon</span>
-            </td>
-            <td class="text-right mono">1</td>
-            <td class="text-right mono font-semibold">2k</td>
-            <td class="text-right mono">2%</td>
-            <td class="text-right mono">280</td>
-            <td>
-              <div class="flex items-center gap-1.5 text-[11px] mono">
-                <span class="text-blue-700">T:1</span>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <span class="font-medium">STMT</span>
-              <span class="text-[11px] text-neutral-500 ml-1">statement</span>
-            </td>
-            <td class="text-right mono">1</td>
-            <td class="text-right mono font-semibold">0.4k</td>
-            <td class="text-right mono">0%</td>
-            <td class="text-right mono">450</td>
-            <td>
-              <div class="flex items-center gap-1.5 text-[11px] mono">
-                <span class="text-neutral-500">Cs:1</span>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Konto-nivå (one big bar) -->
+    <div class="bg-white rounded-xl border border-neutral-200 p-5 mb-4">
+      <div class="flex items-center justify-between mb-2.5">
+        <span class="text-sm font-semibold text-neutral-800">Konto totalt</span>
+        <span class="text-xs text-neutral-500 mono">128k spend (4u) · 37 ads</span>
+      </div>
+      <div class="stack-bar tall">
+        <div class="stack-exploit" style="width: 36%" title="Exploit 36%"></div>
+        <div class="stack-explore" style="width: 18%" title="Explore 18%"></div>
+        <div class="stack-bo" style="width: 24%" title="Burnt-out 24%"></div>
+        <div class="stack-cs" style="width: 11%" title="Cold-suppressed 11%"></div>
+        <div class="stack-test" style="width: 11%" title="Test 11%"></div>
+      </div>
+      <div class="flex items-center gap-4 mt-2 text-xs mono">
+        <span class="text-amber-700">Exploit 36%</span>
+        <span class="text-emerald-700">Explore 18%</span>
+        <span class="text-rose-700">Burnt-out 24%</span>
+        <span class="text-neutral-500">Cold-suppr 11%</span>
+        <span class="text-blue-700">Test 11%</span>
+      </div>
     </div>
 
-    <p class="text-xs text-neutral-500 mt-2">
-      <span class="mono">E</span>=Exploit ·
-      <span class="mono">Ex</span>=Explore ·
-      <span class="mono">Bo</span>=Burnt-out ·
-      <span class="mono">Cs</span>=Cold-suppressed ·
-      <span class="mono">T</span>=Test
-    </p>
+    <!-- Per kampanje -->
+    <div class="bg-white rounded-xl border border-neutral-200 mb-4">
+      <div class="px-5 py-3 border-b border-neutral-200 flex items-center justify-between">
+        <span class="kpi-label">Per kampanje</span>
+        <span class="text-xs text-neutral-500">3 aktive · klikk for å drille til ad set</span>
+      </div>
+      <div class="level-row">
+        <span class="text-neutral-800 truncate">MYYK BAU 2026 / Vårsalg-Bestselgere</span>
+        <span class="text-right mono text-neutral-700">52k</span>
+        <div>
+          <div class="stack-bar">
+            <div class="stack-exploit" style="width: 54%"></div>
+            <div class="stack-explore" style="width: 32%"></div>
+            <div class="stack-test" style="width: 14%"></div>
+          </div>
+        </div>
+        <span class="text-right text-xs mono text-neutral-500">8 ads</span>
+      </div>
+      <div class="level-row">
+        <span class="text-neutral-800 truncate">MYYK BAU 2026 / Konvertering-Warm</span>
+        <span class="text-right mono text-neutral-700">42k</span>
+        <div>
+          <div class="stack-bar">
+            <div class="stack-exploit" style="width: 22%"></div>
+            <div class="stack-bo" style="width: 51%"></div>
+            <div class="stack-cs" style="width: 19%"></div>
+            <div class="stack-test" style="width: 8%"></div>
+          </div>
+        </div>
+        <span class="text-right text-xs mono text-neutral-500">14 ads</span>
+      </div>
+      <div class="level-row">
+        <span class="text-neutral-800 truncate">MYYK BAU 2026 / Prospecting-Bredt</span>
+        <span class="text-right mono text-neutral-700">34k</span>
+        <div>
+          <div class="stack-bar">
+            <div class="stack-exploit" style="width: 18%"></div>
+            <div class="stack-explore" style="width: 22%"></div>
+            <div class="stack-bo" style="width: 18%"></div>
+            <div class="stack-cs" style="width: 28%"></div>
+            <div class="stack-test" style="width: 14%"></div>
+          </div>
+        </div>
+        <span class="text-right text-xs mono text-neutral-500">15 ads</span>
+      </div>
+    </div>
+
+    <!-- Per ad set (one campaign expanded as example) -->
+    <div class="bg-white rounded-xl border border-neutral-200">
+      <div class="px-5 py-3 border-b border-neutral-200 flex items-center justify-between">
+        <div>
+          <span class="kpi-label">Per ad set</span>
+          <span class="text-xs text-neutral-500 ml-2">— viser ad sets i <span class="font-medium text-neutral-700">MYYK BAU 2026 / Vårsalg-Bestselgere</span></span>
+        </div>
+        <span class="text-xs text-neutral-500">3 ad sets</span>
+      </div>
+      <div class="level-row">
+        <span class="text-neutral-800 truncate pl-4">↳ AS_Vaarsalg_Lookalike-1pct</span>
+        <span class="text-right mono text-neutral-700">28k</span>
+        <div>
+          <div class="stack-bar">
+            <div class="stack-exploit" style="width: 78%"></div>
+            <div class="stack-test" style="width: 22%"></div>
+          </div>
+        </div>
+        <span class="text-right text-xs mono text-neutral-500">3 ads</span>
+      </div>
+      <div class="level-row">
+        <span class="text-neutral-800 truncate pl-4">↳ AS_Vaarsalg_Bredt-25-55</span>
+        <span class="text-right mono text-neutral-700">15k</span>
+        <div>
+          <div class="stack-bar">
+            <div class="stack-explore" style="width: 56%"></div>
+            <div class="stack-test" style="width: 44%"></div>
+          </div>
+        </div>
+        <span class="text-right text-xs mono text-neutral-500">3 ads</span>
+      </div>
+      <div class="level-row">
+        <span class="text-neutral-800 truncate pl-4">↳ AS_Vaarsalg_Retargeting-7d</span>
+        <span class="text-right mono text-neutral-700">9k</span>
+        <div>
+          <div class="stack-bar">
+            <div class="stack-exploit" style="width: 38%"></div>
+            <div class="stack-explore" style="width: 28%"></div>
+            <div class="stack-test" style="width: 34%"></div>
+          </div>
+        </div>
+        <span class="text-right text-xs mono text-neutral-500">2 ads</span>
+      </div>
+    </div>
+
   </section>
 
-  <!-- ============== SECTION 4: Per annonse ============== -->
+  <!-- ============== SECTION 3: Per annonse ============== -->
   <section class="mb-10">
     <div class="flex items-center justify-between mb-3">
       <h2 class="section-title mb-0">Per annonse</h2>
       <div class="flex items-center gap-2">
         <span class="text-xs text-neutral-500">Grupper:</span>
-        <div class="toggle-group">
-          <button class="toggle-btn active">Ingen</button>
-          <button class="toggle-btn">Kampanje</button>
-          <button class="toggle-btn">Ad set</button>
+        <div class="toggle-group" id="group-toggle">
+          <button class="toggle-btn" data-mode="flat">Ingen</button>
+          <button class="toggle-btn active" data-mode="campaign">Kampanje</button>
+          <button class="toggle-btn" data-mode="adset">Ad set</button>
         </div>
       </div>
     </div>
 
-    <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+    <!-- View 1: Flat (no grouping) -->
+    <div id="view-flat" class="bg-white rounded-xl border border-neutral-200 overflow-hidden" style="display:none">
       <table class="w-full">
         <thead>
           <tr>
             <th>Annonse</th>
             <th>Type</th>
             <th class="text-right">Spend (4u)</th>
-            <th class="text-right">Andel</th>
             <th class="text-right">CPMr</th>
             <th class="text-right">Frekvens</th>
             <th class="text-right">Reach</th>
@@ -406,197 +339,196 @@
           </tr>
         </thead>
         <tbody>
-
-          <tr>
-            <td>
-              <div class="flex items-center gap-2.5">
-                <div class="row-thumb"></div>
-                <span class="text-neutral-800 truncate" style="max-width: 220px">Video-Vårsalg-Perlemor</span>
-              </div>
-            </td>
-            <td class="mono text-[11px] text-neutral-600">PROD</td>
-            <td class="text-right mono font-semibold">28k</td>
-            <td class="text-right mono">22%</td>
-            <td class="text-right mono">312</td>
-            <td class="text-right mono">4.2</td>
-            <td class="text-right mono">62 000</td>
-            <td class="text-right mono">3.8×</td>
-            <td><span class="pill pill-exploit">Exploit</span></td>
-          </tr>
-
-          <tr>
-            <td>
-              <div class="flex items-center gap-2.5">
-                <div class="row-thumb"></div>
-                <span class="text-neutral-800 truncate" style="max-width: 220px">Bilde-Vårsalg-Produkt-Due</span>
-              </div>
-            </td>
-            <td class="mono text-[11px] text-neutral-600">PROD</td>
-            <td class="text-right mono font-semibold">9.8k</td>
-            <td class="text-right mono">8%</td>
-            <td class="text-right mono">218</td>
-            <td class="text-right mono">2.4</td>
-            <td class="text-right mono">38 500</td>
-            <td class="text-right mono">1.6×</td>
-            <td><span class="pill pill-explore">Explore</span></td>
-          </tr>
-
-          <tr>
-            <td>
-              <div class="flex items-center gap-2.5">
-                <div class="row-thumb"></div>
-                <span class="text-neutral-800 truncate" style="max-width: 220px">Bilde-Vårsalg-Miljø-gingham-kystgrønn</span>
-              </div>
-            </td>
-            <td class="mono text-[11px] text-neutral-600">PROD</td>
-            <td class="text-right mono font-semibold">8.4k</td>
-            <td class="text-right mono">7%</td>
-            <td class="text-right mono">240</td>
-            <td class="text-right mono">2.6</td>
-            <td class="text-right mono">31 200</td>
-            <td class="text-right mono">1.4×</td>
-            <td><span class="pill pill-explore">Explore</span></td>
-          </tr>
-
-          <tr>
-            <td>
-              <div class="flex items-center gap-2.5">
-                <div class="row-thumb"></div>
-                <span class="text-neutral-800 truncate" style="max-width: 220px">Bilde-Nyhet-Striper-Hvit-Brun</span>
-              </div>
-            </td>
-            <td class="mono text-[11px] text-neutral-600">PROD</td>
-            <td class="text-right mono font-semibold">14k</td>
-            <td class="text-right mono">11%</td>
-            <td class="text-right mono">478</td>
-            <td class="text-right mono">5.4</td>
-            <td class="text-right mono">15 200</td>
-            <td class="text-right mono">2.8×</td>
-            <td><span class="pill pill-bo">Burnt-out</span></td>
-          </tr>
-
-          <tr>
-            <td>
-              <div class="flex items-center gap-2.5">
-                <div class="row-thumb"></div>
-                <span class="text-neutral-800 truncate" style="max-width: 220px">Bilde-2-for-1-Sengetøy-rustrød</span>
-              </div>
-            </td>
-            <td class="mono text-[11px] text-neutral-600">PROD</td>
-            <td class="text-right mono font-semibold">7.6k</td>
-            <td class="text-right mono">6%</td>
-            <td class="text-right mono">510</td>
-            <td class="text-right mono">6.1</td>
-            <td class="text-right mono">11 800</td>
-            <td class="text-right mono">1.4×</td>
-            <td><span class="pill pill-bo">Burnt-out</span></td>
-          </tr>
-
-          <tr>
-            <td>
-              <div class="flex items-center gap-2.5">
-                <div class="row-thumb"></div>
-                <span class="text-neutral-800 truncate" style="max-width: 220px">myyk-native-handklepakker</span>
-              </div>
-            </td>
-            <td class="mono text-[11px] text-neutral-600">CRT</td>
-            <td class="text-right mono font-semibold">6.8k</td>
-            <td class="text-right mono">5%</td>
-            <td class="text-right mono">298</td>
-            <td class="text-right mono">3.0</td>
-            <td class="text-right mono">22 800</td>
-            <td class="text-right mono">2.0×</td>
-            <td><span class="pill pill-explore">Explore</span></td>
-          </tr>
-
-          <tr>
-            <td>
-              <div class="flex items-center gap-2.5">
-                <div class="row-thumb"></div>
-                <span class="text-neutral-800 truncate" style="max-width: 220px">Video-2-for-1-Flanell</span>
-              </div>
-            </td>
-            <td class="mono text-[11px] text-neutral-600">DEMO</td>
-            <td class="text-right mono font-semibold">5.2k</td>
-            <td class="text-right mono">4%</td>
-            <td class="text-right mono">462</td>
-            <td class="text-right mono">4.7</td>
-            <td class="text-right mono">10 800</td>
-            <td class="text-right mono">1.7×</td>
-            <td><span class="pill pill-bo">Burnt-out</span></td>
-          </tr>
-
-          <tr>
-            <td>
-              <div class="flex items-center gap-2.5">
-                <div class="row-thumb"></div>
-                <span class="text-neutral-800 truncate" style="max-width: 220px">Karusell-Vårsalg-Alle-farger</span>
-              </div>
-            </td>
-            <td class="mono text-[11px] text-neutral-600">LIST</td>
-            <td class="text-right mono font-semibold">3.2k</td>
-            <td class="text-right mono">3%</td>
-            <td class="text-right mono">—</td>
-            <td class="text-right mono">—</td>
-            <td class="text-right mono">—</td>
-            <td class="text-right mono">2.1×</td>
-            <td><span class="pill pill-test">Test</span></td>
-          </tr>
-
-          <tr>
-            <td>
-              <div class="flex items-center gap-2.5">
-                <div class="row-thumb"></div>
-                <span class="text-neutral-800 truncate" style="max-width: 220px">Video-Unboxing-Sengetøy-Native</span>
-              </div>
-            </td>
-            <td class="mono text-[11px] text-neutral-600">DEMO</td>
-            <td class="text-right mono font-semibold">2.8k</td>
-            <td class="text-right mono">2%</td>
-            <td class="text-right mono">—</td>
-            <td class="text-right mono">—</td>
-            <td class="text-right mono">—</td>
-            <td class="text-right mono">1.2×</td>
-            <td><span class="pill pill-test">Test</span></td>
-          </tr>
-
-          <tr>
-            <td>
-              <div class="flex items-center gap-2.5">
-                <div class="row-thumb"></div>
-                <span class="text-neutral-800 truncate" style="max-width: 220px">Bilde-2-for-1-Produkt-Skumring</span>
-              </div>
-            </td>
-            <td class="mono text-[11px] text-neutral-600">PROD</td>
-            <td class="text-right mono font-semibold">2.1k</td>
-            <td class="text-right mono">2%</td>
-            <td class="text-right mono">425</td>
-            <td class="text-right mono">3.2</td>
-            <td class="text-right mono">4 800</td>
-            <td class="text-right mono">0.9×</td>
-            <td><span class="pill pill-cs">Cold-suppressed</span></td>
-          </tr>
-
-          <tr>
-            <td>
-              <div class="flex items-center gap-2.5 opacity-60">
-                <div class="row-thumb"></div>
-                <span class="text-neutral-800">+ 27 flere annonser</span>
-              </div>
-            </td>
-            <td colspan="8" class="text-right text-xs text-neutral-400">…</td>
-          </tr>
-
+          <tr><td><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Video-Vårsalg-Perlemor</span></div></td><td class="mono text-[11px] text-neutral-600">PROD</td><td class="text-right mono font-semibold">28k</td><td class="text-right mono">312</td><td class="text-right mono">4.2</td><td class="text-right mono">62 000</td><td class="text-right mono">3.8×</td><td><span class="pill pill-exploit">Exploit</span></td></tr>
+          <tr><td><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Bilde-Nyhet-Striper-Hvit-Brun</span></div></td><td class="mono text-[11px] text-neutral-600">PROD</td><td class="text-right mono font-semibold">14k</td><td class="text-right mono">478</td><td class="text-right mono">5.4</td><td class="text-right mono">15 200</td><td class="text-right mono">2.8×</td><td><span class="pill pill-bo">Burnt-out</span></td></tr>
+          <tr><td><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Bilde-Vårsalg-Produkt-Due</span></div></td><td class="mono text-[11px] text-neutral-600">PROD</td><td class="text-right mono font-semibold">9.8k</td><td class="text-right mono">218</td><td class="text-right mono">2.4</td><td class="text-right mono">38 500</td><td class="text-right mono">1.6×</td><td><span class="pill pill-explore">Explore</span></td></tr>
+          <tr><td><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Bilde-Vårsalg-Miljø-gingham</span></div></td><td class="mono text-[11px] text-neutral-600">PROD</td><td class="text-right mono font-semibold">8.4k</td><td class="text-right mono">240</td><td class="text-right mono">2.6</td><td class="text-right mono">31 200</td><td class="text-right mono">1.4×</td><td><span class="pill pill-explore">Explore</span></td></tr>
+          <tr><td><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Bilde-2-for-1-Sengetøy-rustrød</span></div></td><td class="mono text-[11px] text-neutral-600">PROD</td><td class="text-right mono font-semibold">7.6k</td><td class="text-right mono">510</td><td class="text-right mono">6.1</td><td class="text-right mono">11 800</td><td class="text-right mono">1.4×</td><td><span class="pill pill-bo">Burnt-out</span></td></tr>
+          <tr><td><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">myyk-native-handklepakker</span></div></td><td class="mono text-[11px] text-neutral-600">CRT</td><td class="text-right mono font-semibold">6.8k</td><td class="text-right mono">298</td><td class="text-right mono">3.0</td><td class="text-right mono">22 800</td><td class="text-right mono">2.0×</td><td><span class="pill pill-explore">Explore</span></td></tr>
+          <tr><td><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Video-2-for-1-Flanell</span></div></td><td class="mono text-[11px] text-neutral-600">DEMO</td><td class="text-right mono font-semibold">5.2k</td><td class="text-right mono">462</td><td class="text-right mono">4.7</td><td class="text-right mono">10 800</td><td class="text-right mono">1.7×</td><td><span class="pill pill-bo">Burnt-out</span></td></tr>
+          <tr><td><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Karusell-Vårsalg-Alle-farger</span></div></td><td class="mono text-[11px] text-neutral-600">LIST</td><td class="text-right mono font-semibold">3.2k</td><td class="text-right mono">—</td><td class="text-right mono">—</td><td class="text-right mono">—</td><td class="text-right mono">2.1×</td><td><span class="pill pill-test">Test</span></td></tr>
+          <tr><td colspan="8" class="text-right text-xs text-neutral-400">+ 29 flere annonser …</td></tr>
         </tbody>
       </table>
     </div>
+
+    <!-- View 2: Grouped by Campaign (default) -->
+    <div id="view-campaign" class="space-y-3">
+
+      <!-- Campaign 1: Vårsalg-Bestselgere -->
+      <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+        <div class="group-row expanded">
+          <span class="chev">▼</span>
+          <span class="text-neutral-900">MYYK BAU 2026 / Vårsalg-Bestselgere</span>
+          <span class="text-right mono text-neutral-700">52k</span>
+          <div>
+            <div class="stack-bar">
+              <div class="stack-exploit" style="width: 54%"></div>
+              <div class="stack-explore" style="width: 32%"></div>
+              <div class="stack-test" style="width: 14%"></div>
+            </div>
+          </div>
+          <span class="text-right text-xs mono text-neutral-500">8 ads</span>
+        </div>
+        <table class="w-full">
+          <thead>
+            <tr>
+              <th style="padding-left: 36px">Annonse</th>
+              <th>Type</th>
+              <th class="text-right">Spend</th>
+              <th class="text-right">CPMr</th>
+              <th class="text-right">Frekvens</th>
+              <th class="text-right">ROAS</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style="padding-left: 36px"><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Video-Vårsalg-Perlemor</span></div></td><td class="mono text-[11px] text-neutral-600">PROD</td><td class="text-right mono font-semibold">28k</td><td class="text-right mono">312</td><td class="text-right mono">4.2</td><td class="text-right mono">3.8×</td><td><span class="pill pill-exploit">Exploit</span></td></tr>
+            <tr><td style="padding-left: 36px"><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Bilde-Vårsalg-Produkt-Due</span></div></td><td class="mono text-[11px] text-neutral-600">PROD</td><td class="text-right mono font-semibold">9.8k</td><td class="text-right mono">218</td><td class="text-right mono">2.4</td><td class="text-right mono">1.6×</td><td><span class="pill pill-explore">Explore</span></td></tr>
+            <tr><td style="padding-left: 36px"><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Bilde-Vårsalg-Miljø-gingham</span></div></td><td class="mono text-[11px] text-neutral-600">PROD</td><td class="text-right mono font-semibold">8.4k</td><td class="text-right mono">240</td><td class="text-right mono">2.6</td><td class="text-right mono">1.4×</td><td><span class="pill pill-explore">Explore</span></td></tr>
+            <tr><td style="padding-left: 36px"><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Karusell-Vårsalg-Alle-farger</span></div></td><td class="mono text-[11px] text-neutral-600">LIST</td><td class="text-right mono font-semibold">3.2k</td><td class="text-right mono">—</td><td class="text-right mono">—</td><td class="text-right mono">2.1×</td><td><span class="pill pill-test">Test</span></td></tr>
+            <tr><td colspan="7" style="padding-left: 36px" class="text-xs text-neutral-400">+ 4 flere ads i denne kampanjen …</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Campaign 2: Konvertering-Warm (collapsed) -->
+      <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+        <div class="group-row">
+          <span class="chev">▶</span>
+          <span class="text-neutral-900">MYYK BAU 2026 / Konvertering-Warm</span>
+          <span class="text-right mono text-neutral-700">42k</span>
+          <div>
+            <div class="stack-bar">
+              <div class="stack-exploit" style="width: 22%"></div>
+              <div class="stack-bo" style="width: 51%"></div>
+              <div class="stack-cs" style="width: 19%"></div>
+              <div class="stack-test" style="width: 8%"></div>
+            </div>
+          </div>
+          <span class="text-right text-xs mono text-neutral-500">14 ads</span>
+        </div>
+      </div>
+
+      <!-- Campaign 3: Prospecting-Bredt (collapsed) -->
+      <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+        <div class="group-row">
+          <span class="chev">▶</span>
+          <span class="text-neutral-900">MYYK BAU 2026 / Prospecting-Bredt</span>
+          <span class="text-right mono text-neutral-700">34k</span>
+          <div>
+            <div class="stack-bar">
+              <div class="stack-exploit" style="width: 18%"></div>
+              <div class="stack-explore" style="width: 22%"></div>
+              <div class="stack-bo" style="width: 18%"></div>
+              <div class="stack-cs" style="width: 28%"></div>
+              <div class="stack-test" style="width: 14%"></div>
+            </div>
+          </div>
+          <span class="text-right text-xs mono text-neutral-500">15 ads</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- View 3: Grouped by Ad set -->
+    <div id="view-adset" class="space-y-3" style="display:none">
+
+      <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+        <div class="group-row expanded">
+          <span class="chev">▼</span>
+          <span class="text-neutral-900">AS_Vaarsalg_Lookalike-1pct</span>
+          <span class="text-right mono text-neutral-700">28k</span>
+          <div>
+            <div class="stack-bar">
+              <div class="stack-exploit" style="width: 78%"></div>
+              <div class="stack-test" style="width: 22%"></div>
+            </div>
+          </div>
+          <span class="text-right text-xs mono text-neutral-500">3 ads</span>
+        </div>
+        <table class="w-full">
+          <thead>
+            <tr>
+              <th style="padding-left: 36px">Annonse</th>
+              <th>Type</th>
+              <th class="text-right">Spend</th>
+              <th class="text-right">CPMr</th>
+              <th class="text-right">Frekvens</th>
+              <th class="text-right">ROAS</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style="padding-left: 36px"><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Video-Vårsalg-Perlemor</span></div></td><td class="mono text-[11px] text-neutral-600">PROD</td><td class="text-right mono font-semibold">22k</td><td class="text-right mono">312</td><td class="text-right mono">4.2</td><td class="text-right mono">3.8×</td><td><span class="pill pill-exploit">Exploit</span></td></tr>
+            <tr><td style="padding-left: 36px"><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Karusell-Vårsalg-Alle-farger</span></div></td><td class="mono text-[11px] text-neutral-600">LIST</td><td class="text-right mono font-semibold">3.2k</td><td class="text-right mono">—</td><td class="text-right mono">—</td><td class="text-right mono">2.1×</td><td><span class="pill pill-test">Test</span></td></tr>
+            <tr><td style="padding-left: 36px"><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Video-Unboxing-Sengetøy-Native</span></div></td><td class="mono text-[11px] text-neutral-600">DEMO</td><td class="text-right mono font-semibold">2.8k</td><td class="text-right mono">—</td><td class="text-right mono">—</td><td class="text-right mono">1.2×</td><td><span class="pill pill-test">Test</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+        <div class="group-row">
+          <span class="chev">▶</span>
+          <span class="text-neutral-900">AS_Vaarsalg_Bredt-25-55</span>
+          <span class="text-right mono text-neutral-700">15k</span>
+          <div>
+            <div class="stack-bar">
+              <div class="stack-explore" style="width: 56%"></div>
+              <div class="stack-test" style="width: 44%"></div>
+            </div>
+          </div>
+          <span class="text-right text-xs mono text-neutral-500">3 ads</span>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+        <div class="group-row">
+          <span class="chev">▶</span>
+          <span class="text-neutral-900">AS_KonvWarm_Retarget-30d</span>
+          <span class="text-right mono text-neutral-700">28k</span>
+          <div>
+            <div class="stack-bar">
+              <div class="stack-bo" style="width: 67%"></div>
+              <div class="stack-cs" style="width: 22%"></div>
+              <div class="stack-test" style="width: 11%"></div>
+            </div>
+          </div>
+          <span class="text-right text-xs mono text-neutral-500">9 ads</span>
+        </div>
+      </div>
+
+      <div class="text-xs text-neutral-400 text-center pt-2">+ 5 flere ad sets …</div>
+
+    </div>
+
   </section>
 
   <p class="text-xs text-neutral-400 text-center mt-12">
-    Mock-data · prototype-lab.html · v1.1
+    Mock-data · prototype-lab.html · v1.2
   </p>
 
 </div>
+
+<script>
+  // Group-by toggle
+  const buttons = document.querySelectorAll('#group-toggle .toggle-btn');
+  const views = {
+    flat: document.getElementById('view-flat'),
+    campaign: document.getElementById('view-campaign'),
+    adset: document.getElementById('view-adset'),
+  };
+  buttons.forEach(btn => btn.addEventListener('click', () => {
+    buttons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    Object.keys(views).forEach(k => views[k].style.display = 'none');
+    const mode = btn.dataset.mode;
+    views[mode].style.display = mode === 'flat' ? 'block' : 'block';
+    if (mode === 'flat' || mode === 'campaign' || mode === 'adset') {
+      // already set above
+    }
+  }));
+</script>
 
 </body>
 </html>
