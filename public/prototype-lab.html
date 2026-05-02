@@ -36,6 +36,17 @@
   .seg-burnt    { background: #f87171; }
   .seg-suppr    { background: #d4d4d4; }
 
+  /* View tabs (top-level: Status / Diversifisering) */
+  .view-tabs { display: flex; gap: 4px; border-bottom: 1px solid #e5e5e5; }
+  .view-tab {
+    background: transparent; border: 0; cursor: pointer;
+    padding: 8px 14px; margin-bottom: -1px;
+    font-size: 14px; font-weight: 500; color: #737373;
+    border-bottom: 2px solid transparent;
+  }
+  .view-tab:hover { color: #1f2937; }
+  .view-tab.active { color: #090a08; border-bottom-color: #090a08; font-weight: 600; }
+
   /* Breadcrumb */
   .breadcrumb {
     display: inline-flex; align-items: center; gap: 6px;
@@ -167,9 +178,15 @@
   <!-- Banner -->
   <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-3 mb-6">
     <div class="flex items-center gap-2">
-      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v1.4</span>
-      <span class="text-sm text-neutral-700">Spend-fordeling — drill-down med ett aktivt nivå</span>
+      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v1.5</span>
+      <span class="text-sm text-neutral-700">To rapporter: Status og Diversifisering</span>
     </div>
+  </div>
+
+  <!-- View tabs -->
+  <div class="view-tabs mb-5" id="view-tabs">
+    <button class="view-tab active" data-view="status">Status</button>
+    <button class="view-tab" data-view="diversity">Diversifisering</button>
   </div>
 
   <!-- Breadcrumb -->
@@ -177,70 +194,111 @@
     <a data-nav="account" class="active">MYYK</a>
   </div>
 
-  <!-- Hero card -->
-  <div class="hero mb-6" id="hero">
-    <div id="hero-header" class="mb-5">
-      <!-- eyebrow + (optional) title injected by JS -->
+  <!-- ====================== STATUS VIEW ====================== -->
+  <div id="view-status">
+
+    <!-- Hero card -->
+    <div class="hero mb-6" id="hero">
+      <div id="hero-header" class="mb-5">
+        <!-- eyebrow + (optional) title injected by JS -->
+      </div>
+
+      <div class="hero-kpis" id="hero-kpis">
+        <!-- 4 KPIs injected by JS -->
+      </div>
+
+      <div class="mt-6 mb-2">
+        <div class="stack tall" id="hero-stack">
+          <!-- segments injected by JS -->
+        </div>
+      </div>
+
+      <div class="stack-legend mt-3" id="hero-legend">
+        <!-- legend injected by JS -->
+      </div>
+
+      <p class="hero-meta mt-4" id="hero-footer">37 aktive annonser</p>
     </div>
 
-    <div class="hero-kpis" id="hero-kpis">
-      <!-- 4 KPIs injected by JS -->
-    </div>
-
-    <div class="mt-6 mb-2">
-      <div class="stack tall" id="hero-stack">
-        <!-- segments injected by JS -->
+    <!-- Campaign list (only on account level) -->
+    <div id="campaign-list-section" class="mb-8">
+      <p class="eyebrow mb-3">Aktive kampanjer</p>
+      <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+        <div id="campaign-list">
+          <!-- campaign rows injected by JS -->
+        </div>
       </div>
     </div>
 
-    <div class="stack-legend mt-3" id="hero-legend">
-      <!-- legend injected by JS -->
+    <!-- Top performers (account level only) -->
+    <div id="top-performers-section">
+      <!-- Top Exploit + Top Explore cards injected by JS -->
     </div>
 
-    <p class="hero-meta mt-4" id="hero-footer">37 aktive annonser</p>
+    <!-- Per-ad section (campaign level only) -->
+    <section id="per-ad-section">
+      <div class="flex items-center justify-between mb-3">
+        <p class="eyebrow">Annonser</p>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-neutral-500">Gruppering:</span>
+          <select id="grouping" class="group-select">
+            <!-- options injected by JS based on level -->
+          </select>
+        </div>
+      </div>
+
+      <div id="ads-content">
+        <!-- list injected by JS -->
+      </div>
+    </section>
+
   </div>
 
-  <!-- Campaign list (only on account level) -->
-  <div id="campaign-list-section" class="mb-8">
-    <p class="eyebrow mb-3">Aktive kampanjer</p>
-    <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-      <div id="campaign-list">
-        <!-- campaign rows injected by JS -->
+  <!-- ====================== DIVERSITY VIEW ====================== -->
+  <div id="view-diversity" style="display:none">
+
+    <div class="hero mb-6" id="div-hero">
+      <p class="eyebrow">Kreativ diversifisering</p>
+      <p class="text-sm text-neutral-600 mt-1 max-w-2xl">
+        Hvor bredt creative-porteføljen din dekker taksonomi-aksene. Når noen akser er svakt dekket
+        gir det algoen smalere meny — det er der nye annonser bør produseres.
+      </p>
+      <div class="hero-kpis mt-5" style="grid-template-columns: repeat(3, 1fr); gap: 28px;">
+        <div>
+          <p class="hero-kpi-label">Total dekning</p>
+          <p class="hero-kpi-value mono">11<span class="text-neutral-400 text-base">/22</span></p>
+          <p class="hero-kpi-delta">verdier på 6 dimensjoner</p>
+        </div>
+        <div>
+          <p class="hero-kpi-label">Svakest dekket</p>
+          <p class="hero-kpi-value mono" style="font-size: 1.125rem; line-height: 1.4">Avsender</p>
+          <p class="hero-kpi-delta mono">1/6 — bare BRD</p>
+        </div>
+        <div>
+          <p class="hero-kpi-label">Best dekket</p>
+          <p class="hero-kpi-value mono" style="font-size: 1.125rem; line-height: 1.4">Tone</p>
+          <p class="hero-kpi-delta mono">2/3 — mangler HUM</p>
+        </div>
       </div>
     </div>
+
+    <!-- Dim list -->
+    <section class="mt-6">
+      <p class="eyebrow mb-3">Per dimensjon</p>
+      <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden" id="dim-list">
+        <!-- dim rows injected by JS -->
+      </div>
+      <p class="text-xs text-neutral-500 mt-2">
+        Krever navnekonvensjon i adlaunch.
+        <code class="px-1 py-0.5 rounded bg-neutral-100 mono text-[11px]">[KONTO]_[ANNONSETYPE]_[KONSEPT|-]_[TONE]_[AVSENDER]_[FORMAT]_[KVALITET]_[PERSONA]_v[N]</code>
+      </p>
+    </section>
+
   </div>
-
-  <!-- Annonse-seksjon -->
-  <section>
-    <div class="flex items-center justify-between mb-3">
-      <p class="eyebrow">Annonser</p>
-      <div class="flex items-center gap-2">
-        <span class="text-xs text-neutral-500">Gruppering:</span>
-        <select id="grouping" class="group-select">
-          <!-- options injected by JS based on level -->
-        </select>
-      </div>
-    </div>
-
-    <div id="ads-content">
-      <!-- list injected by JS -->
-    </div>
-  </section>
-
-  <!-- Kreativ diversifisering -->
-  <section id="diversity-section" class="mt-10">
-    <p class="eyebrow mb-3">Kreativ diversifisering</p>
-    <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden" id="dim-list">
-      <!-- dim rows injected by JS -->
-    </div>
-    <p class="text-xs text-neutral-500 mt-2">
-      Krever navnekonvensjon i adlaunch.
-      <code class="px-1 py-0.5 rounded bg-neutral-100 mono text-[11px]">[KONTO]_[ANNONSETYPE]_[KONSEPT|-]_[TONE]_[AVSENDER]_[FORMAT]_[KVALITET]_[PERSONA]_v[N]</code>
-    </p>
-  </section>
+  <!-- ====================== END VIEWS ====================== -->
 
   <p class="text-xs text-neutral-400 text-center mt-12">
-    Mock-data · prototype-lab.html · v1.4
+    Mock-data · prototype-lab.html · v1.5
   </p>
 </div>
 
@@ -320,10 +378,10 @@ const ads = [
 
 // ─── State ────────────────────────────────────────────────────────────────
 const state = {
+  view: 'status',             // 'status' | 'diversity'
   level: 'account',           // 'account' | 'campaign'
   campaignId: null,           // when level=campaign
-  groupingByLevel: {          // remember per level
-    account: 'none',
+  groupingByLevel: {          // remember per level (kampanje view only)
     campaign: 'none',
   },
 };
@@ -494,25 +552,19 @@ function renderCampaignList() {
 }
 
 function renderGroupingDropdown() {
+  // Grouping bare på kampanje-nivå (per ny modell)
+  if (state.level !== 'campaign') return;
   const sel = document.getElementById('grouping');
-  const isAccount = state.level === 'account';
-  const opts = isAccount
-    ? `<option value="none">Ingen</option>
-       <option value="campaign">Kampanje</option>
-       <optgroup label="Kreativ dimensjon">
-         <option value="format">Format</option>
-         <option value="tone">Tone</option>
-         <option value="concept">Konsept</option>
-       </optgroup>`
-    : `<option value="none">Ingen</option>
-       <option value="adset">Ad set</option>
-       <optgroup label="Kreativ dimensjon">
-         <option value="format">Format</option>
-         <option value="tone">Tone</option>
-         <option value="concept">Konsept</option>
-       </optgroup>`;
-  sel.innerHTML = opts;
-  sel.value = state.groupingByLevel[state.level];
+  sel.innerHTML = `
+    <option value="none">Ingen</option>
+    <option value="adset">Ad set</option>
+    <optgroup label="Kreativ dimensjon">
+      <option value="format">Format</option>
+      <option value="tone">Tone</option>
+      <option value="concept">Konsept</option>
+    </optgroup>
+  `;
+  sel.value = state.groupingByLevel.campaign;
 }
 
 
@@ -554,8 +606,59 @@ function adRowHtml(ad, indent = false) {
   `;
 }
 
+function renderTopPerformers() {
+  const target = document.getElementById('top-performers-section');
+  if (state.level !== 'account') {
+    target.innerHTML = '';
+    return;
+  }
+  const all = ads;
+  const renderTopCard = (status, label, helper) => {
+    const top = all
+      .filter(a => a.status === status)
+      .sort((a, b) => b.spend - a.spend)
+      .slice(0, 10);
+    const rows = top.length === 0
+      ? `<tr><td colspan="6" class="text-center text-neutral-400 py-6">Ingen ${label}-annonser akkurat nå</td></tr>`
+      : top.map(a => adRowHtml(a)).join('');
+    return `
+      <div class="mb-8">
+        <div class="flex items-baseline justify-between mb-3">
+          <p class="eyebrow">Top ${label}</p>
+          <span class="text-xs text-neutral-500">${helper}</span>
+        </div>
+        <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+          <table>
+            <thead>
+              <tr>
+                <th>Navn</th>
+                <th class="num-sm">Spend</th>
+                <th class="num-sm">CPMr</th>
+                <th class="num-sm">Frekvens</th>
+                <th class="num-sm">ROAS</th>
+                <th class="col-status">Status</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  };
+  target.innerHTML =
+    renderTopCard('exploit', 'Exploit', 'Bærebjelker — algoens hovedkonvertering') +
+    renderTopCard('explore', 'Explore', 'Holder reach-poolen åpen — finner nye folk');
+}
+
 function renderAds() {
-  const mode = state.groupingByLevel[state.level];
+  // Per-annonse-tabell vises bare på kampanje-nivå
+  const section = document.getElementById('per-ad-section');
+  if (state.level !== 'campaign') {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = '';
+  const mode = state.groupingByLevel.campaign;
   const activeAds = getActiveAds();
   const target = document.getElementById('ads-content');
 
@@ -659,14 +762,8 @@ const dimensions = [
 ];
 
 function renderDiversity() {
-  const section = document.getElementById('diversity-section');
-  // Kun på konto-nivå for v1
-  if (state.level !== 'account') {
-    section.style.display = 'none';
-    return;
-  }
-  section.style.display = '';
   const list = document.getElementById('dim-list');
+  if (!list) return;
   list.innerHTML = dimensions.map(d => {
     const total = d.covered.length + d.missing.length;
     const pctFilled = (d.covered.length / total) * 100;
@@ -684,18 +781,38 @@ function renderDiversity() {
   }).join('');
 }
 
+function renderViewSwitch() {
+  document.getElementById('view-status').style.display = state.view === 'status' ? '' : 'none';
+  document.getElementById('view-diversity').style.display = state.view === 'diversity' ? '' : 'none';
+  document.querySelectorAll('#view-tabs .view-tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === state.view);
+  });
+}
+
 function renderAll() {
+  renderViewSwitch();
   renderBreadcrumb();
-  renderHero();
-  renderCampaignList();
-  renderGroupingDropdown();
-  renderAds();
-  renderDiversity();
+  if (state.view === 'status') {
+    renderHero();
+    renderCampaignList();
+    renderTopPerformers();
+    renderGroupingDropdown();
+    renderAds();
+  } else {
+    renderDiversity();
+  }
 }
 
 document.getElementById('grouping').addEventListener('change', e => {
-  state.groupingByLevel[state.level] = e.target.value;
+  state.groupingByLevel.campaign = e.target.value;
   renderAds();
+});
+
+document.querySelectorAll('#view-tabs .view-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.view = btn.dataset.view;
+    renderAll();
+  });
 });
 
 renderAll();
