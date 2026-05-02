@@ -36,7 +36,7 @@
   .seg-burnt    { background: #f87171; }
   .seg-suppr    { background: #d4d4d4; }
 
-  /* View tabs (top-level: Status / Diversifisering) */
+  /* View tabs (top-level: Konto / Kampanjer / Annonser) */
   .view-tabs { display: flex; gap: 4px; border-bottom: 1px solid #e5e5e5; }
   .view-tab {
     background: transparent; border: 0; cursor: pointer;
@@ -46,6 +46,29 @@
   }
   .view-tab:hover { color: #1f2937; }
   .view-tab.active { color: #090a08; border-bottom-color: #090a08; font-weight: 600; }
+
+  /* Sub tabs (within Konto/Kampanje: Annonsestatus / Diversifisering) */
+  .sub-tabs { display: flex; gap: 4px; border-bottom: 1px solid #e5e5e5; }
+  .sub-tab {
+    background: transparent; border: 0; cursor: pointer;
+    padding: 6px 12px; margin-bottom: -1px;
+    font-size: 13px; font-weight: 500; color: #737373;
+    border-bottom: 2px solid transparent;
+  }
+  .sub-tab:hover { color: #1f2937; }
+  .sub-tab.active { color: #090a08; border-bottom-color: #090a08; font-weight: 600; }
+
+  /* Rich campaign card (on Kampanjer-tab list view) */
+  .camp-card {
+    background: white; border: 1px solid #e5e5e5; border-radius: 12px;
+    padding: 1.25rem 1.5rem; cursor: pointer; transition: border-color 80ms;
+  }
+  .camp-card:hover { border-color: #a3a3a3; }
+  .camp-card-name { font-size: 1rem; font-weight: 600; color: #090a08; margin-bottom: 4px; }
+  .camp-card-kpis {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+    margin-top: 1rem;
+  }
 
   /* Breadcrumb */
   .breadcrumb {
@@ -174,86 +197,58 @@
   <!-- Banner -->
   <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-3 mb-6">
     <div class="flex items-center gap-2">
-      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v1.5</span>
-      <span class="text-sm text-neutral-700">To rapporter: Status og Diversifisering</span>
+      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v2.0</span>
+      <span class="text-sm text-neutral-700">Tre-seksjons-nav: Konto · Kampanjer · Annonser</span>
     </div>
   </div>
 
-  <!-- View tabs -->
-  <div class="view-tabs mb-5" id="view-tabs">
-    <button class="view-tab active" data-view="status">Status</button>
-    <button class="view-tab" data-view="diversity">Diversifisering</button>
+  <!-- Top section nav -->
+  <div class="view-tabs mb-5" id="section-tabs">
+    <button class="view-tab active" data-section="account">Konto</button>
+    <button class="view-tab" data-section="campaigns">Kampanjer</button>
+    <button class="view-tab" data-section="ads">Annonser</button>
   </div>
 
-  <!-- Breadcrumb -->
-  <div class="breadcrumb mb-4" id="breadcrumb">
-    <a data-nav="account" class="active">MYYK</a>
+  <!-- Breadcrumb (only shown on kampanje drill-down) -->
+  <div class="breadcrumb mb-4" id="breadcrumb" style="display:none">
+    <!-- injected by JS -->
   </div>
 
-  <!-- ====================== STATUS VIEW ====================== -->
-  <div id="view-status">
+  <!-- Sub-tabs (vises på Konto + Kampanje-detalj) -->
+  <div class="sub-tabs mb-5" id="sub-tabs" style="display:none">
+    <button class="sub-tab active" data-subview="status">Annonsestatus</button>
+    <button class="sub-tab" data-subview="diversity">Diversifisering</button>
+  </div>
 
+  <!-- ============== STATUS-CONTENT (Annonsestatus, brukt i Konto + Kampanje) ============== -->
+  <div id="status-content">
     <!-- Hero card -->
-    <div class="hero mb-6" id="hero">
-      <div id="hero-header" class="mb-5">
-        <!-- eyebrow + (optional) title injected by JS -->
-      </div>
-
-      <div class="hero-kpis" id="hero-kpis">
-        <!-- 4 KPIs injected by JS -->
-      </div>
-
-      <div class="mt-6 mb-2">
-        <div class="stack tall" id="hero-stack">
-          <!-- segments injected by JS -->
-        </div>
-      </div>
-
-      <div class="stack-legend mt-3" id="hero-legend">
-        <!-- legend injected by JS -->
-      </div>
-
+    <div class="hero mb-6">
+      <div id="hero-header" class="mb-5"></div>
+      <div class="hero-kpis" id="hero-kpis"></div>
+      <div class="mt-6 mb-2"><div class="stack tall" id="hero-stack"></div></div>
+      <div class="stack-legend mt-3" id="hero-legend"></div>
       <p class="hero-meta mt-4" id="hero-footer">37 aktive annonser</p>
     </div>
 
-    <!-- Campaign list (only on account level) -->
-    <div id="campaign-list-section" class="mb-8">
-      <p class="eyebrow mb-3">Aktive kampanjer</p>
-      <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-        <div id="campaign-list">
-          <!-- campaign rows injected by JS -->
-        </div>
-      </div>
-    </div>
+    <!-- Top performers (account scope only) -->
+    <div id="top-performers-section"></div>
 
-    <!-- Top performers (account level only) -->
-    <div id="top-performers-section">
-      <!-- Top Exploit + Top Explore cards injected by JS -->
-    </div>
-
-    <!-- Per-ad section (campaign level only) -->
-    <section id="per-ad-section">
+    <!-- Per-ad list (campaign scope only) -->
+    <section id="per-ad-section" style="display:none">
       <div class="flex items-center justify-between mb-3">
         <p class="eyebrow">Annonser</p>
         <div class="flex items-center gap-2">
           <span class="text-xs text-neutral-500">Gruppering:</span>
-          <select id="grouping" class="group-select">
-            <!-- options injected by JS based on level -->
-          </select>
+          <select id="grouping" class="group-select"></select>
         </div>
       </div>
-
-      <div id="ads-content">
-        <!-- list injected by JS -->
-      </div>
+      <div id="ads-content"></div>
     </section>
-
   </div>
 
-  <!-- ====================== DIVERSITY VIEW ====================== -->
-  <div id="view-diversity" style="display:none">
-
-    <!-- Hero med KPIer -->
+  <!-- ============== DIVERSITY-CONTENT ============== -->
+  <div id="diversity-content" style="display:none">
     <div class="hero mb-6">
       <div class="hero-kpis" style="grid-template-columns: repeat(3, 1fr);">
         <div>
@@ -274,7 +269,6 @@
       </div>
     </div>
 
-    <!-- Dim table -->
     <section>
       <p class="eyebrow mb-3">Per dimensjon</p>
       <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
@@ -284,18 +278,38 @@
           <div class="eyebrow">Verdier</div>
           <div class="eyebrow text-right">Aktive ads</div>
         </div>
-        <div id="dim-list">
-          <!-- dim rows injected by JS -->
-        </div>
+        <div id="dim-list"></div>
       </div>
       <p class="text-xs text-neutral-500 mt-2">Bare ads i Test/Explore/Exploit teller — Burnt-out og Suppressed ikke.</p>
     </section>
-
   </div>
-  <!-- ====================== END VIEWS ====================== -->
+
+  <!-- ============== KAMPANJER-LIST (rich cards) ============== -->
+  <div id="campaigns-list-content" style="display:none">
+    <div class="space-y-3" id="campaigns-rich-list"></div>
+  </div>
+
+  <!-- ============== ANNONSER-LEADERBOARD ============== -->
+  <div id="ads-content-section" style="display:none">
+    <div class="flex items-center gap-3 mb-4 flex-wrap">
+      <span class="text-xs text-neutral-500">Sortér på</span>
+      <select id="ads-sort" class="group-select">
+        <option value="spend">Spend</option>
+        <option value="purchases">Kjøp</option>
+        <option value="cpmr">CPMr (lavest først)</option>
+      </select>
+      <span class="text-xs text-neutral-500 ml-3">Status</span>
+      <select id="ads-filter" class="group-select">
+        <option value="all">Alle aktive</option>
+        <option value="explore">Explore</option>
+        <option value="exploit">Exploit</option>
+      </select>
+    </div>
+    <div id="ads-leaderboard"></div>
+  </div>
 
   <p class="text-xs text-neutral-400 text-center mt-12">
-    Mock-data · prototype-lab.html · v1.5
+    Mock-data · prototype-lab.html · v2.0
   </p>
 </div>
 
@@ -375,13 +389,19 @@ const ads = [
 
 // ─── State ────────────────────────────────────────────────────────────────
 const state = {
-  view: 'status',             // 'status' | 'diversity'
-  level: 'account',           // 'account' | 'campaign'
-  campaignId: null,           // when level=campaign
-  groupingByLevel: {          // remember per level (kampanje view only)
-    campaign: 'none',
-  },
+  section: 'account',         // 'account' | 'campaigns' | 'ads'
+  subView: 'status',          // 'status' | 'diversity' (gjelder Konto + Kampanje-detalj)
+  campaignId: null,           // satt når man har drilla inn på en kampanje
+  groupingByLevel: { campaign: 'none' },
+  adsSort: 'spend',           // 'spend' | 'purchases' | 'cpmr'
+  adsFilter: 'all',           // 'all' | 'explore' | 'exploit'
 };
+
+// Hjelp: nåværende "level" — bestemmer om man jobber på konto eller kampanje
+function currentLevel() {
+  if (state.section === 'campaigns' && state.campaignId) return 'campaign';
+  return 'account';
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 function fmtSpend(v) {
@@ -394,6 +414,12 @@ function fmtNum(v, digits = 0) {
   return v.toFixed(digits);
 }
 function pct(v) { return `${Math.round(v * 100)}%`; }
+
+// Mock-helper: avled kjøp fra spend×ROAS, anta avg purchase value 350 kr
+function purchasesOf(ad) {
+  if (!ad.spend || !ad.roas) return 0;
+  return Math.round((ad.spend * ad.roas) / 350);
+}
 
 // Compute spend distribution by status for a list of ads
 function distribution(adList) {
@@ -427,7 +453,7 @@ function renderLegend(targetEl, dist, opts = {}) {
 
 // ─── Renderers ────────────────────────────────────────────────────────────
 function getActiveAds() {
-  if (state.level === 'campaign') {
+  if (currentLevel() === 'campaign') {
     return ads.filter(a => a.campaign === state.campaignId);
   }
   return ads;
@@ -455,7 +481,7 @@ function renderHero() {
   const dist = distribution(activeAds);
 
   let metrics, headerHtml;
-  if (state.level === 'account') {
+  if (currentLevel() === 'account') {
     metrics = accountMetrics;
     headerHtml = `<p class="eyebrow">Konto</p>`;
   } else {
@@ -469,7 +495,7 @@ function renderHero() {
   header.innerHTML = headerHtml;
 
   // 4 KPIs
-  const isAccount = state.level === 'account';
+  const isAccount = currentLevel() === 'account';
   kpisEl.innerHTML = `
     <div>
       <p class="hero-kpi-label">Spend (4u)</p>
@@ -501,24 +527,26 @@ function renderHero() {
 
 function renderBreadcrumb() {
   const bc = document.getElementById('breadcrumb');
-  if (state.level === 'account') {
-    bc.innerHTML = '<a data-nav="account" class="active">MYYK</a>';
-  } else {
-    const c = campaigns.find(c => c.id === state.campaignId);
-    const shortName = c ? c.name.replace(/^MYYK BAU 2026 \/ /, '') : '—';
-    bc.innerHTML = `<a data-nav="account">MYYK</a><span class="sep">›</span><a class="active">${shortName}</a>`;
+  // Bare relevant når man har drilla inn på en kampanje
+  if (!(state.section === 'campaigns' && state.campaignId)) {
+    bc.innerHTML = '';
+    return;
   }
-  bc.querySelectorAll('a[data-nav]').forEach(a => {
+  const c = campaigns.find(c => c.id === state.campaignId);
+  const shortName = c ? c.name.replace(/^MYYK BAU 2026 \/ /, '') : '—';
+  bc.innerHTML = `<a data-nav="campaigns-list">Kampanjer</a><span class="sep">›</span><a class="active">${shortName}</a>`;
+  bc.querySelectorAll('a[data-nav="campaigns-list"]').forEach(a => {
     a.addEventListener('click', e => {
       e.preventDefault();
-      navigateTo(a.dataset.nav);
+      state.campaignId = null;
+      renderAll();
     });
   });
 }
 
 function renderCampaignList() {
   const section = document.getElementById('campaign-list-section');
-  if (state.level !== 'account') {
+  if (currentLevel() !== 'account') {
     section.style.display = 'none';
     return;
   }
@@ -550,7 +578,7 @@ function renderCampaignList() {
 
 function renderGroupingDropdown() {
   // Grouping bare på kampanje-nivå (per ny modell)
-  if (state.level !== 'campaign') return;
+  if (currentLevel() !== 'campaign') return;
   const sel = document.getElementById('grouping');
   sel.innerHTML = `
     <option value="none">Ingen</option>
@@ -605,7 +633,7 @@ function adRowHtml(ad, indent = false) {
 
 function renderTopPerformers() {
   const target = document.getElementById('top-performers-section');
-  if (state.level !== 'account') {
+  if (currentLevel() !== 'account') {
     target.innerHTML = '';
     return;
   }
@@ -647,7 +675,7 @@ function renderTopPerformers() {
 function renderAds() {
   // Per-annonse-tabell vises bare på kampanje-nivå
   const section = document.getElementById('per-ad-section');
-  if (state.level !== 'campaign') {
+  if (currentLevel() !== 'campaign') {
     section.style.display = 'none';
     return;
   }
@@ -739,8 +767,13 @@ function renderAds() {
 
 // ─── Navigation + bindings ────────────────────────────────────────────────
 function navigateTo(level, campaignId = null) {
-  state.level = level;
-  state.campaignId = campaignId;
+  if (level === 'account') {
+    state.section = 'account';
+    state.campaignId = null;
+  } else {
+    state.section = 'campaigns';
+    state.campaignId = campaignId;
+  }
   renderAll();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -825,25 +858,168 @@ function renderDiversity() {
   }).join('');
 }
 
-function renderViewSwitch() {
-  document.getElementById('view-status').style.display = state.view === 'status' ? '' : 'none';
-  document.getElementById('view-diversity').style.display = state.view === 'diversity' ? '' : 'none';
-  document.querySelectorAll('#view-tabs .view-tab').forEach(b => {
-    b.classList.toggle('active', b.dataset.view === state.view);
+// ─── Section + sub-tab visibility ─────────────────────────────────────────
+function renderSectionSwitch() {
+  // Top tabs
+  document.querySelectorAll('#section-tabs .view-tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.section === state.section);
+  });
+
+  const drilledIn = state.section === 'campaigns' && state.campaignId;
+  const showSubTabs = state.section === 'account' || drilledIn;
+  document.getElementById('sub-tabs').style.display = showSubTabs ? '' : 'none';
+
+  // Breadcrumb visible bare på kampanje-detalj
+  document.getElementById('breadcrumb').style.display = drilledIn ? '' : 'none';
+
+  // Status-content vises på Konto + Kampanje-detalj med subView=status
+  // Diversity-content vises på Konto + Kampanje-detalj med subView=diversity
+  // Campaigns-list vises på Kampanjer-tab uten drill
+  // Ads-leaderboard vises på Annonser-tab
+  const statusOn = showSubTabs && state.subView === 'status';
+  const diversityOn = showSubTabs && state.subView === 'diversity';
+  const campaignsListOn = state.section === 'campaigns' && !state.campaignId;
+  const adsOn = state.section === 'ads';
+
+  document.getElementById('status-content').style.display = statusOn ? '' : 'none';
+  document.getElementById('diversity-content').style.display = diversityOn ? '' : 'none';
+  document.getElementById('campaigns-list-content').style.display = campaignsListOn ? '' : 'none';
+  document.getElementById('ads-content-section').style.display = adsOn ? '' : 'none';
+
+  // Sub-tab active state
+  document.querySelectorAll('#sub-tabs .sub-tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.subview === state.subView);
   });
 }
 
+// Rich campaign cards på Kampanjer-list
+function renderCampaignsRichList() {
+  const target = document.getElementById('campaigns-rich-list');
+  target.innerHTML = campaigns.map(c => {
+    const cAds = ads.filter(a => a.campaign === c.id);
+    const dist = distribution(cAds);
+    const segs = dist.segments
+      .filter(s => s.share > 0)
+      .map(s => `<div class="seg-${s.status}" style="width:${s.share * 100}%"></div>`)
+      .join('');
+    return `
+      <div class="camp-card" data-campaign="${c.id}">
+        <p class="camp-card-name">${c.name}</p>
+        <div class="stack tall mt-3">${segs}</div>
+        <div class="camp-card-kpis">
+          <div>
+            <p class="hero-kpi-label">Spend (4u)</p>
+            <p class="hero-kpi-value mono">${fmtSpend(c.spend)}</p>
+          </div>
+          <div>
+            <p class="hero-kpi-label">CPMr</p>
+            <p class="hero-kpi-value mono">${Math.round(c.cpmr)}</p>
+          </div>
+          <div>
+            <p class="hero-kpi-label">Frekvens</p>
+            <p class="hero-kpi-value mono">${c.frequency.toFixed(1)}</p>
+          </div>
+          <div>
+            <p class="hero-kpi-label">Aktive ads</p>
+            <p class="hero-kpi-value mono">${c.adCount}</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  target.querySelectorAll('.camp-card').forEach(card => {
+    card.addEventListener('click', () => {
+      state.section = 'campaigns';
+      state.campaignId = card.dataset.campaign;
+      renderAll();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+}
+
+// Top 20-leaderboard på Annonser-tab
+function renderAdsLeaderboard() {
+  const target = document.getElementById('ads-leaderboard');
+  let list = ads.slice();
+  if (state.adsFilter !== 'all') {
+    list = list.filter(a => a.status === state.adsFilter);
+  } else {
+    // 'Alle aktive' = test/explore/exploit (Burnt-out og Suppressed er ikke aktive)
+    list = list.filter(a => ['test','explore','exploit'].includes(a.status));
+  }
+
+  const sortKey = state.adsSort;
+  list.sort((a, b) => {
+    if (sortKey === 'spend')     return b.spend - a.spend;
+    if (sortKey === 'purchases') return purchasesOf(b) - purchasesOf(a);
+    if (sortKey === 'cpmr')      return (a.cpm ?? Infinity) - (b.cpm ?? Infinity);
+    return 0;
+  });
+  list = list.slice(0, 20);
+
+  if (list.length === 0) {
+    target.innerHTML = `
+      <div class="bg-white rounded-xl border border-neutral-200 px-5 py-12 text-center text-sm text-neutral-500">
+        Ingen annonser matcher filteret.
+      </div>
+    `;
+    return;
+  }
+
+  const rows = list.map(a => `
+    <tr>
+      <td>
+        <div class="ad-name">
+          <div class="ad-thumb"></div>
+          <span class="text-neutral-800 truncate">${a.name}</span>
+        </div>
+      </td>
+      <td class="num-sm mono font-semibold">${fmtSpend(a.spend)}</td>
+      <td class="num-sm mono">${purchasesOf(a) || '—'}</td>
+      <td class="num-sm mono">${a.cpm == null ? '—' : Math.round(a.cpm)}</td>
+      <td class="num-sm mono">${a.roas == null ? '—' : a.roas.toFixed(1) + '×'}</td>
+      <td class="col-status"><span class="pill pill-${a.status}">${STATUS_LABELS[a.status]}</span></td>
+    </tr>
+  `).join('');
+
+  target.innerHTML = `
+    <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+      <table>
+        <thead>
+          <tr>
+            <th>Navn</th>
+            <th class="num-sm">Spend</th>
+            <th class="num-sm">Kjøp</th>
+            <th class="num-sm">CPMr</th>
+            <th class="num-sm">ROAS</th>
+            <th class="col-status">Status</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
 function renderAll() {
-  renderViewSwitch();
+  renderSectionSwitch();
   renderBreadcrumb();
-  if (state.view === 'status') {
+
+  const showsStatus = (state.section === 'account' || (state.section === 'campaigns' && state.campaignId));
+  if (showsStatus && state.subView === 'status') {
     renderHero();
-    renderCampaignList();
     renderTopPerformers();
     renderGroupingDropdown();
     renderAds();
-  } else {
+  }
+  if (showsStatus && state.subView === 'diversity') {
     renderDiversity();
+  }
+  if (state.section === 'campaigns' && !state.campaignId) {
+    renderCampaignsRichList();
+  }
+  if (state.section === 'ads') {
+    renderAdsLeaderboard();
   }
 }
 
@@ -852,11 +1028,31 @@ document.getElementById('grouping').addEventListener('change', e => {
   renderAds();
 });
 
-document.querySelectorAll('#view-tabs .view-tab').forEach(btn => {
+// Top section tabs
+document.querySelectorAll('#section-tabs .view-tab').forEach(btn => {
   btn.addEventListener('click', () => {
-    state.view = btn.dataset.view;
+    state.section = btn.dataset.section;
+    if (state.section !== 'campaigns') state.campaignId = null;
     renderAll();
   });
+});
+
+// Sub tabs (Annonsestatus / Diversifisering)
+document.querySelectorAll('#sub-tabs .sub-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.subView = btn.dataset.subview;
+    renderAll();
+  });
+});
+
+// Annonser-leaderboard controls
+document.getElementById('ads-sort').addEventListener('change', e => {
+  state.adsSort = e.target.value;
+  renderAdsLeaderboard();
+});
+document.getElementById('ads-filter').addEventListener('change', e => {
+  state.adsFilter = e.target.value;
+  renderAdsLeaderboard();
 });
 
 renderAll();
