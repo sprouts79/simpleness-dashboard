@@ -106,16 +106,17 @@
     border-bottom: 1px solid #e5e5e5;
   }
   td {
-    padding: 10px 12px; vertical-align: middle;
+    padding: 8px 12px; vertical-align: middle;
     border-bottom: 1px solid #f5f5f5;
   }
   tr:last-child td { border-bottom: 0; }
   tr:hover td { background: #fafafa; }
-  td.num-sm, th.num-sm { text-align: right; }
-  td.col-status, th.col-status { text-align: right; }
-  .ad-name { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  /* Faste bredder på numeriske kolonner — tomme '—'-celler føles ikke hule, og verdier aligner */
+  td.num-sm, th.num-sm { width: 80px; text-align: right; }
+  td.col-status, th.col-status { width: 110px; text-align: right; }
+  .ad-name { display: flex; align-items: center; gap: 12px; min-width: 0; }
   .ad-thumb {
-    width: 30px; height: 30px; border-radius: 5px; flex-shrink: 0;
+    width: 44px; height: 44px; border-radius: 6px; flex-shrink: 0;
     background: linear-gradient(135deg, #d4d4d4, #a3a3a3);
   }
 
