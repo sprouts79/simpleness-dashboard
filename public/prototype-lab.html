@@ -3,45 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kreativ rapport — prototype v1.2</title>
+<title>Spend-fordeling — prototype v1.3</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #fafafa; color: #090a08; }
-  .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
-  .section-title {
-    font-weight: 600; font-size: 1.125rem; letter-spacing: -0.01em;
-    margin-bottom: 0.5rem;
-  }
+  .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; color: #737373; }
+
+  /* Status pills */
   .pill {
     display: inline-flex; align-items: center; justify-content: center;
     padding: 1px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600;
     border: 1px solid; line-height: 1.3; height: 20px;
   }
-  /* Swapped: Explore = green (the hero finding new folks), Exploit = amber (useful but not hero) */
   .pill-test     { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
   .pill-explore  { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
   .pill-exploit  { background: #fef3c7; color: #92400e; border-color: #fde68a; }
-  .pill-bo       { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
-  .pill-cs       { background: #f5f5f5; color: #525252; border-color: #d4d4d4; }
-  .arrow-good { color: #047857; }
-  .arrow-bad { color: #b91c1c; }
-  .arrow-neutral { color: #737373; }
-  .kpi-card {
-    background: white; border: 1px solid #e5e5e5; border-radius: 10px; padding: 0.875rem 1rem;
+  .pill-burnt    { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+  .pill-suppr    { background: #f5f5f5; color: #525252; border-color: #d4d4d4; }
+
+  /* Stacked spend bar — order always: test, explore, exploit, burnt, suppressed */
+  .stack {
+    display: flex; height: 10px; border-radius: 999px; overflow: hidden;
+    background: #f5f5f5;
   }
-  .kpi-num { font-size: 1.5rem; font-weight: 700; line-height: 1; letter-spacing: -0.02em; }
-  .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; color: #737373; }
-  .kpi-sub { font-size: 11px; color: #737373; margin-top: 4px; }
-  .row-thumb {
-    width: 32px; height: 32px; border-radius: 5px;
-    background: linear-gradient(135deg, #d4d4d4, #a3a3a3);
-    flex-shrink: 0;
-  }
-  table { font-size: 13px; }
-  th { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; color: #737373; padding: 8px 12px; text-align: left; border-bottom: 1px solid #e5e5e5; }
-  td { padding: 8px 12px; vertical-align: middle; border-bottom: 1px solid #f5f5f5; }
-  tr:hover td { background: #fafafa; }
+  .stack.tall { height: 18px; }
+  .stack > div { display: block; }
+  .seg-test     { background: #93c5fd; }
+  .seg-explore  { background: #34d399; }
+  .seg-exploit  { background: #fbbf24; }
+  .seg-burnt    { background: #f87171; }
+  .seg-suppr    { background: #d4d4d4; }
+
+  /* Breadcrumb */
   .breadcrumb {
     display: inline-flex; align-items: center; gap: 6px;
     font-size: 13px; color: #525252;
@@ -49,485 +44,527 @@
   .breadcrumb a {
     color: #1f2937; text-decoration: none;
     padding: 3px 8px; border-radius: 6px; border: 1px solid transparent;
+    cursor: pointer;
   }
   .breadcrumb a:hover { background: white; border-color: #e5e5e5; }
   .breadcrumb .sep { color: #a3a3a3; }
-  .breadcrumb .active { color: #090a08; font-weight: 600; background: white; border: 1px solid #e5e5e5; }
-  .toggle-group {
-    display: inline-flex; background: #f5f5f5; border-radius: 8px; padding: 2px;
-  }
-  .toggle-btn {
-    padding: 4px 12px; font-size: 12px; font-weight: 500; color: #525252;
-    border-radius: 6px; cursor: pointer; border: none; background: transparent;
-  }
-  .toggle-btn.active { background: white; color: #090a08; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+  .breadcrumb .active { color: #090a08; font-weight: 600; }
 
-  /* Stacked spend distribution bar */
-  .stack-bar {
-    display: flex; height: 10px; border-radius: 999px; overflow: hidden;
-    background: #f5f5f5; min-width: 120px;
+  /* Hero card */
+  .hero {
+    background: white; border: 1px solid #e5e5e5; border-radius: 14px;
+    padding: 1.5rem 1.75rem;
   }
-  .stack-bar.tall { height: 16px; }
-  .stack-bar > div { display: block; }
-  .stack-explore  { background: #34d399; }
-  .stack-exploit  { background: #fbbf24; }
-  .stack-bo       { background: #f87171; }
-  .stack-cs       { background: #d4d4d4; }
-  .stack-test     { background: #93c5fd; }
+  .hero-title { font-size: 1.625rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+  .hero-meta { font-size: 13px; color: #525252; }
+  .stack-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; }
+  .stack-legend > div { display: flex; align-items: center; gap: 6px; }
+  .stack-legend-dot { width: 9px; height: 9px; border-radius: 2px; }
 
-  .level-row {
+  /* Campaign list rows (only on konto level) */
+  .camp-row {
     display: grid;
-    grid-template-columns: minmax(220px, 1fr) 70px minmax(220px, 2fr) 70px;
+    grid-template-columns: minmax(220px, 1.5fr) 80px minmax(220px, 2fr) 70px;
     align-items: center;
-    gap: 14px;
-    padding: 10px 14px;
-    border-bottom: 1px solid #f5f5f5;
+    gap: 16px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0;
     cursor: pointer;
+    transition: background 80ms;
   }
-  .level-row:last-child { border-bottom: 0; }
-  .level-row:hover { background: #fafafa; }
+  .camp-row:last-child { border-bottom: 0; }
+  .camp-row:hover { background: #fafafa; }
+  .camp-row .arrow { color: #a3a3a3; font-size: 11px; opacity: 0; }
+  .camp-row:hover .arrow { opacity: 1; }
 
-  .group-row {
+  /* Group cards (when grouping ≠ Ingen) */
+  .group-card {
+    background: white; border: 1px solid #e5e5e5; border-radius: 12px;
+    overflow: hidden; margin-bottom: 12px;
+  }
+  .group-header {
     display: grid;
-    grid-template-columns: 16px minmax(220px, 1fr) 70px minmax(180px, 1.5fr) 60px;
+    grid-template-columns: minmax(220px, 1.5fr) 80px minmax(180px, 1.5fr) 60px;
     align-items: center;
-    gap: 14px;
-    padding: 10px 14px;
+    gap: 16px;
+    padding: 12px 16px;
     background: #fafafa;
     border-bottom: 1px solid #e5e5e5;
-    cursor: pointer;
-    font-weight: 500;
   }
-  .group-row:hover { background: #f5f5f5; }
-  .group-row .chev { color: #737373; font-size: 11px; }
-  .group-row.expanded { background: #f5f5f5; }
+  .group-name { font-weight: 600; font-size: 13.5px; }
 
-  .nested-row td {
-    background: white;
-    padding-left: 36px;
+  /* Tables */
+  table { font-size: 13px; width: 100%; }
+  th {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+    font-weight: 600; color: #737373;
+    padding: 8px 12px; text-align: left;
+    border-bottom: 1px solid #e5e5e5;
   }
+  td {
+    padding: 10px 12px; vertical-align: middle;
+    border-bottom: 1px solid #f5f5f5;
+  }
+  tr:last-child td { border-bottom: 0; }
+  tr:hover td { background: #fafafa; }
+  .ad-name { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .ad-thumb {
+    width: 30px; height: 30px; border-radius: 5px; flex-shrink: 0;
+    background: linear-gradient(135deg, #d4d4d4, #a3a3a3);
+  }
+
+  /* Grouping dropdown */
+  .group-select {
+    appearance: none; -webkit-appearance: none;
+    background: white; border: 1px solid #d4d4d4; border-radius: 8px;
+    padding: 6px 32px 6px 12px;
+    font-size: 13px; color: #1f2937; cursor: pointer;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23737373' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+  .group-select:focus { outline: 2px solid #93c5fd; outline-offset: -1px; }
+
   details summary { list-style: none; }
   details summary::-webkit-details-marker { display: none; }
 </style>
 </head>
 <body>
 
-<div class="max-w-[1400px] mx-auto px-8 py-8">
+<div class="max-w-[1200px] mx-auto px-8 py-8">
 
   <!-- Banner -->
   <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-3 mb-6">
     <div class="flex items-center gap-2">
-      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v1.2</span>
-      <span class="text-sm text-neutral-700">Spend-fordeling som primær linse — på konto, kampanje og ad set</span>
+      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v1.3</span>
+      <span class="text-sm text-neutral-700">Spend-fordeling — drill-down med ett aktivt nivå</span>
     </div>
   </div>
 
-  <!-- Drill-down breadcrumb -->
-  <div class="mb-6 flex items-center justify-between">
-    <div class="breadcrumb">
-      <a href="#" class="active">Konto: MYYK</a>
-      <span class="sep">›</span>
-      <a href="#">Alle kampanjer</a>
-      <span class="sep">›</span>
-      <a href="#">Alle adsets</a>
-    </div>
-    <div class="text-xs text-neutral-500 mono">siste sync 06:01 i dag</div>
+  <!-- Breadcrumb -->
+  <div class="breadcrumb mb-4" id="breadcrumb">
+    <a data-nav="account" class="active">MYYK</a>
   </div>
 
-  <!-- ============== SECTION 1: KPI Strip ============== -->
-  <section class="mb-8">
-    <div class="grid grid-cols-4 gap-3">
+  <!-- Hero card -->
+  <div class="hero mb-6" id="hero">
+    <p class="eyebrow" id="hero-eyebrow">Konto</p>
+    <h1 class="hero-title mt-1" id="hero-title">MYYK</h1>
+    <p class="hero-meta mt-1" id="hero-meta">128k spend (4u) · 37 aktive annonser</p>
 
-      <div class="kpi-card">
-        <p class="kpi-label">Reach (28d)</p>
-        <p class="kpi-num mono mt-2">245k</p>
-        <p class="kpi-sub"><span class="arrow-good">↗ +4%</span> vs forrige 28d</p>
-      </div>
-
-      <div class="kpi-card">
-        <p class="kpi-label">CPMr (4u)</p>
-        <p class="kpi-num mono mt-2">372</p>
-        <p class="kpi-sub"><span class="arrow-bad">↗ +3%</span> vs forrige 4u</p>
-      </div>
-
-      <div class="kpi-card">
-        <p class="kpi-label">Aktive annonser</p>
-        <p class="kpi-num mono mt-2">37</p>
-        <p class="kpi-sub"><span class="arrow-neutral">·</span> uendret</p>
-      </div>
-
-      <div class="kpi-card">
-        <p class="kpi-label">Diversifisering</p>
-        <p class="kpi-num mono mt-2">11<span class="text-neutral-400 text-base">/22</span></p>
-        <p class="kpi-sub">verdier dekket på 5 dimensjoner</p>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ============== SECTION 2: Spend-fordeling per nivå ============== -->
-  <section class="mb-10">
-    <h2 class="section-title">Spend-fordeling</h2>
-
-    <!-- Legend at top of section -->
-    <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mb-4 text-xs">
-      <div class="flex items-center gap-1.5">
-        <div class="w-3 h-3 rounded-sm" style="background:#34d399"></div>
-        <span class="text-neutral-700">Explore</span>
-      </div>
-      <div class="flex items-center gap-1.5">
-        <div class="w-3 h-3 rounded-sm" style="background:#fbbf24"></div>
-        <span class="text-neutral-700">Exploit</span>
-      </div>
-      <div class="flex items-center gap-1.5">
-        <div class="w-3 h-3 rounded-sm" style="background:#f87171"></div>
-        <span class="text-neutral-700">Burnt-out</span>
-      </div>
-      <div class="flex items-center gap-1.5">
-        <div class="w-3 h-3 rounded-sm" style="background:#d4d4d4"></div>
-        <span class="text-neutral-700">Cold-suppressed</span>
-      </div>
-      <div class="flex items-center gap-1.5">
-        <div class="w-3 h-3 rounded-sm" style="background:#93c5fd"></div>
-        <span class="text-neutral-700">Test</span>
+    <div class="mt-4 mb-2">
+      <div class="stack tall" id="hero-stack">
+        <!-- segments injected by JS -->
       </div>
     </div>
 
-    <!-- Konto-nivå (one big bar) -->
-    <div class="bg-white rounded-xl border border-neutral-200 p-5 mb-4">
-      <div class="flex items-center justify-between mb-2.5">
-        <span class="text-sm font-semibold text-neutral-800">Konto totalt</span>
-        <span class="text-xs text-neutral-500 mono">128k spend (4u) · 37 ads</span>
+    <div class="stack-legend mt-3" id="hero-legend">
+      <!-- legend injected by JS -->
+    </div>
+  </div>
+
+  <!-- Campaign list (only on account level) -->
+  <div id="campaign-list-section" class="mb-8">
+    <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+      <div class="px-4 py-2.5 border-b border-neutral-200 flex items-center justify-between">
+        <span class="eyebrow">Kampanjer</span>
+        <span class="text-xs text-neutral-500">3 aktive · klikk for å åpne</span>
       </div>
-      <div class="stack-bar tall">
-        <div class="stack-exploit" style="width: 36%" title="Exploit 36%"></div>
-        <div class="stack-explore" style="width: 18%" title="Explore 18%"></div>
-        <div class="stack-bo" style="width: 24%" title="Burnt-out 24%"></div>
-        <div class="stack-cs" style="width: 11%" title="Cold-suppressed 11%"></div>
-        <div class="stack-test" style="width: 11%" title="Test 11%"></div>
-      </div>
-      <div class="flex items-center gap-4 mt-2 text-xs mono">
-        <span class="text-amber-700">Exploit 36%</span>
-        <span class="text-emerald-700">Explore 18%</span>
-        <span class="text-rose-700">Burnt-out 24%</span>
-        <span class="text-neutral-500">Cold-suppr 11%</span>
-        <span class="text-blue-700">Test 11%</span>
+      <div id="campaign-list">
+        <!-- campaign rows injected by JS -->
       </div>
     </div>
+  </div>
 
-    <!-- Per kampanje -->
-    <div class="bg-white rounded-xl border border-neutral-200 mb-4">
-      <div class="px-5 py-3 border-b border-neutral-200 flex items-center justify-between">
-        <span class="kpi-label">Per kampanje</span>
-        <span class="text-xs text-neutral-500">3 aktive · klikk for å drille til ad set</span>
-      </div>
-      <div class="level-row">
-        <span class="text-neutral-800 truncate">MYYK BAU 2026 / Vårsalg-Bestselgere</span>
-        <span class="text-right mono text-neutral-700">52k</span>
-        <div>
-          <div class="stack-bar">
-            <div class="stack-exploit" style="width: 54%"></div>
-            <div class="stack-explore" style="width: 32%"></div>
-            <div class="stack-test" style="width: 14%"></div>
-          </div>
-        </div>
-        <span class="text-right text-xs mono text-neutral-500">8 ads</span>
-      </div>
-      <div class="level-row">
-        <span class="text-neutral-800 truncate">MYYK BAU 2026 / Konvertering-Warm</span>
-        <span class="text-right mono text-neutral-700">42k</span>
-        <div>
-          <div class="stack-bar">
-            <div class="stack-exploit" style="width: 22%"></div>
-            <div class="stack-bo" style="width: 51%"></div>
-            <div class="stack-cs" style="width: 19%"></div>
-            <div class="stack-test" style="width: 8%"></div>
-          </div>
-        </div>
-        <span class="text-right text-xs mono text-neutral-500">14 ads</span>
-      </div>
-      <div class="level-row">
-        <span class="text-neutral-800 truncate">MYYK BAU 2026 / Prospecting-Bredt</span>
-        <span class="text-right mono text-neutral-700">34k</span>
-        <div>
-          <div class="stack-bar">
-            <div class="stack-exploit" style="width: 18%"></div>
-            <div class="stack-explore" style="width: 22%"></div>
-            <div class="stack-bo" style="width: 18%"></div>
-            <div class="stack-cs" style="width: 28%"></div>
-            <div class="stack-test" style="width: 14%"></div>
-          </div>
-        </div>
-        <span class="text-right text-xs mono text-neutral-500">15 ads</span>
-      </div>
-    </div>
-
-    <!-- Per ad set (one campaign expanded as example) -->
-    <div class="bg-white rounded-xl border border-neutral-200">
-      <div class="px-5 py-3 border-b border-neutral-200 flex items-center justify-between">
-        <div>
-          <span class="kpi-label">Per ad set</span>
-          <span class="text-xs text-neutral-500 ml-2">— viser ad sets i <span class="font-medium text-neutral-700">MYYK BAU 2026 / Vårsalg-Bestselgere</span></span>
-        </div>
-        <span class="text-xs text-neutral-500">3 ad sets</span>
-      </div>
-      <div class="level-row">
-        <span class="text-neutral-800 truncate pl-4">↳ AS_Vaarsalg_Lookalike-1pct</span>
-        <span class="text-right mono text-neutral-700">28k</span>
-        <div>
-          <div class="stack-bar">
-            <div class="stack-exploit" style="width: 78%"></div>
-            <div class="stack-test" style="width: 22%"></div>
-          </div>
-        </div>
-        <span class="text-right text-xs mono text-neutral-500">3 ads</span>
-      </div>
-      <div class="level-row">
-        <span class="text-neutral-800 truncate pl-4">↳ AS_Vaarsalg_Bredt-25-55</span>
-        <span class="text-right mono text-neutral-700">15k</span>
-        <div>
-          <div class="stack-bar">
-            <div class="stack-explore" style="width: 56%"></div>
-            <div class="stack-test" style="width: 44%"></div>
-          </div>
-        </div>
-        <span class="text-right text-xs mono text-neutral-500">3 ads</span>
-      </div>
-      <div class="level-row">
-        <span class="text-neutral-800 truncate pl-4">↳ AS_Vaarsalg_Retargeting-7d</span>
-        <span class="text-right mono text-neutral-700">9k</span>
-        <div>
-          <div class="stack-bar">
-            <div class="stack-exploit" style="width: 38%"></div>
-            <div class="stack-explore" style="width: 28%"></div>
-            <div class="stack-test" style="width: 34%"></div>
-          </div>
-        </div>
-        <span class="text-right text-xs mono text-neutral-500">2 ads</span>
-      </div>
-    </div>
-
-  </section>
-
-  <!-- ============== SECTION 3: Per annonse ============== -->
-  <section class="mb-10">
+  <!-- Annonse-seksjon -->
+  <section>
     <div class="flex items-center justify-between mb-3">
-      <h2 class="section-title mb-0">Per annonse</h2>
+      <div>
+        <p class="eyebrow">Annonser</p>
+        <p class="text-xs text-neutral-500 mt-0.5" id="ads-subtitle">37 annonser på tvers av 3 kampanjer</p>
+      </div>
       <div class="flex items-center gap-2">
         <span class="text-xs text-neutral-500">Grupper:</span>
-        <div class="toggle-group" id="group-toggle">
-          <button class="toggle-btn" data-mode="flat">Ingen</button>
-          <button class="toggle-btn active" data-mode="campaign">Kampanje</button>
-          <button class="toggle-btn" data-mode="adset">Ad set</button>
-        </div>
+        <select id="grouping" class="group-select">
+          <!-- options injected by JS based on level -->
+        </select>
       </div>
     </div>
 
-    <!-- View 1: Flat (no grouping) -->
-    <div id="view-flat" class="bg-white rounded-xl border border-neutral-200 overflow-hidden" style="display:none">
-      <table class="w-full">
-        <thead>
-          <tr>
-            <th>Annonse</th>
-            <th>Type</th>
-            <th class="text-right">Spend (4u)</th>
-            <th class="text-right">CPMr</th>
-            <th class="text-right">Frekvens</th>
-            <th class="text-right">Reach</th>
-            <th class="text-right">ROAS</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Video-Vårsalg-Perlemor</span></div></td><td class="mono text-[11px] text-neutral-600">PROD</td><td class="text-right mono font-semibold">28k</td><td class="text-right mono">312</td><td class="text-right mono">4.2</td><td class="text-right mono">62 000</td><td class="text-right mono">3.8×</td><td><span class="pill pill-exploit">Exploit</span></td></tr>
-          <tr><td><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Bilde-Nyhet-Striper-Hvit-Brun</span></div></td><td class="mono text-[11px] text-neutral-600">PROD</td><td class="text-right mono font-semibold">14k</td><td class="text-right mono">478</td><td class="text-right mono">5.4</td><td class="text-right mono">15 200</td><td class="text-right mono">2.8×</td><td><span class="pill pill-bo">Burnt-out</span></td></tr>
-          <tr><td><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Bilde-Vårsalg-Produkt-Due</span></div></td><td class="mono text-[11px] text-neutral-600">PROD</td><td class="text-right mono font-semibold">9.8k</td><td class="text-right mono">218</td><td class="text-right mono">2.4</td><td class="text-right mono">38 500</td><td class="text-right mono">1.6×</td><td><span class="pill pill-explore">Explore</span></td></tr>
-          <tr><td><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Bilde-Vårsalg-Miljø-gingham</span></div></td><td class="mono text-[11px] text-neutral-600">PROD</td><td class="text-right mono font-semibold">8.4k</td><td class="text-right mono">240</td><td class="text-right mono">2.6</td><td class="text-right mono">31 200</td><td class="text-right mono">1.4×</td><td><span class="pill pill-explore">Explore</span></td></tr>
-          <tr><td><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Bilde-2-for-1-Sengetøy-rustrød</span></div></td><td class="mono text-[11px] text-neutral-600">PROD</td><td class="text-right mono font-semibold">7.6k</td><td class="text-right mono">510</td><td class="text-right mono">6.1</td><td class="text-right mono">11 800</td><td class="text-right mono">1.4×</td><td><span class="pill pill-bo">Burnt-out</span></td></tr>
-          <tr><td><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">myyk-native-handklepakker</span></div></td><td class="mono text-[11px] text-neutral-600">CRT</td><td class="text-right mono font-semibold">6.8k</td><td class="text-right mono">298</td><td class="text-right mono">3.0</td><td class="text-right mono">22 800</td><td class="text-right mono">2.0×</td><td><span class="pill pill-explore">Explore</span></td></tr>
-          <tr><td><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Video-2-for-1-Flanell</span></div></td><td class="mono text-[11px] text-neutral-600">DEMO</td><td class="text-right mono font-semibold">5.2k</td><td class="text-right mono">462</td><td class="text-right mono">4.7</td><td class="text-right mono">10 800</td><td class="text-right mono">1.7×</td><td><span class="pill pill-bo">Burnt-out</span></td></tr>
-          <tr><td><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Karusell-Vårsalg-Alle-farger</span></div></td><td class="mono text-[11px] text-neutral-600">LIST</td><td class="text-right mono font-semibold">3.2k</td><td class="text-right mono">—</td><td class="text-right mono">—</td><td class="text-right mono">—</td><td class="text-right mono">2.1×</td><td><span class="pill pill-test">Test</span></td></tr>
-          <tr><td colspan="8" class="text-right text-xs text-neutral-400">+ 29 flere annonser …</td></tr>
-        </tbody>
-      </table>
+    <div id="ads-content">
+      <!-- list injected by JS -->
     </div>
-
-    <!-- View 2: Grouped by Campaign (default) -->
-    <div id="view-campaign" class="space-y-3">
-
-      <!-- Campaign 1: Vårsalg-Bestselgere -->
-      <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-        <div class="group-row expanded">
-          <span class="chev">▼</span>
-          <span class="text-neutral-900">MYYK BAU 2026 / Vårsalg-Bestselgere</span>
-          <span class="text-right mono text-neutral-700">52k</span>
-          <div>
-            <div class="stack-bar">
-              <div class="stack-exploit" style="width: 54%"></div>
-              <div class="stack-explore" style="width: 32%"></div>
-              <div class="stack-test" style="width: 14%"></div>
-            </div>
-          </div>
-          <span class="text-right text-xs mono text-neutral-500">8 ads</span>
-        </div>
-        <table class="w-full">
-          <thead>
-            <tr>
-              <th style="padding-left: 36px">Annonse</th>
-              <th>Type</th>
-              <th class="text-right">Spend</th>
-              <th class="text-right">CPMr</th>
-              <th class="text-right">Frekvens</th>
-              <th class="text-right">ROAS</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td style="padding-left: 36px"><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Video-Vårsalg-Perlemor</span></div></td><td class="mono text-[11px] text-neutral-600">PROD</td><td class="text-right mono font-semibold">28k</td><td class="text-right mono">312</td><td class="text-right mono">4.2</td><td class="text-right mono">3.8×</td><td><span class="pill pill-exploit">Exploit</span></td></tr>
-            <tr><td style="padding-left: 36px"><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Bilde-Vårsalg-Produkt-Due</span></div></td><td class="mono text-[11px] text-neutral-600">PROD</td><td class="text-right mono font-semibold">9.8k</td><td class="text-right mono">218</td><td class="text-right mono">2.4</td><td class="text-right mono">1.6×</td><td><span class="pill pill-explore">Explore</span></td></tr>
-            <tr><td style="padding-left: 36px"><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Bilde-Vårsalg-Miljø-gingham</span></div></td><td class="mono text-[11px] text-neutral-600">PROD</td><td class="text-right mono font-semibold">8.4k</td><td class="text-right mono">240</td><td class="text-right mono">2.6</td><td class="text-right mono">1.4×</td><td><span class="pill pill-explore">Explore</span></td></tr>
-            <tr><td style="padding-left: 36px"><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Karusell-Vårsalg-Alle-farger</span></div></td><td class="mono text-[11px] text-neutral-600">LIST</td><td class="text-right mono font-semibold">3.2k</td><td class="text-right mono">—</td><td class="text-right mono">—</td><td class="text-right mono">2.1×</td><td><span class="pill pill-test">Test</span></td></tr>
-            <tr><td colspan="7" style="padding-left: 36px" class="text-xs text-neutral-400">+ 4 flere ads i denne kampanjen …</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Campaign 2: Konvertering-Warm (collapsed) -->
-      <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-        <div class="group-row">
-          <span class="chev">▶</span>
-          <span class="text-neutral-900">MYYK BAU 2026 / Konvertering-Warm</span>
-          <span class="text-right mono text-neutral-700">42k</span>
-          <div>
-            <div class="stack-bar">
-              <div class="stack-exploit" style="width: 22%"></div>
-              <div class="stack-bo" style="width: 51%"></div>
-              <div class="stack-cs" style="width: 19%"></div>
-              <div class="stack-test" style="width: 8%"></div>
-            </div>
-          </div>
-          <span class="text-right text-xs mono text-neutral-500">14 ads</span>
-        </div>
-      </div>
-
-      <!-- Campaign 3: Prospecting-Bredt (collapsed) -->
-      <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-        <div class="group-row">
-          <span class="chev">▶</span>
-          <span class="text-neutral-900">MYYK BAU 2026 / Prospecting-Bredt</span>
-          <span class="text-right mono text-neutral-700">34k</span>
-          <div>
-            <div class="stack-bar">
-              <div class="stack-exploit" style="width: 18%"></div>
-              <div class="stack-explore" style="width: 22%"></div>
-              <div class="stack-bo" style="width: 18%"></div>
-              <div class="stack-cs" style="width: 28%"></div>
-              <div class="stack-test" style="width: 14%"></div>
-            </div>
-          </div>
-          <span class="text-right text-xs mono text-neutral-500">15 ads</span>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- View 3: Grouped by Ad set -->
-    <div id="view-adset" class="space-y-3" style="display:none">
-
-      <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-        <div class="group-row expanded">
-          <span class="chev">▼</span>
-          <span class="text-neutral-900">AS_Vaarsalg_Lookalike-1pct</span>
-          <span class="text-right mono text-neutral-700">28k</span>
-          <div>
-            <div class="stack-bar">
-              <div class="stack-exploit" style="width: 78%"></div>
-              <div class="stack-test" style="width: 22%"></div>
-            </div>
-          </div>
-          <span class="text-right text-xs mono text-neutral-500">3 ads</span>
-        </div>
-        <table class="w-full">
-          <thead>
-            <tr>
-              <th style="padding-left: 36px">Annonse</th>
-              <th>Type</th>
-              <th class="text-right">Spend</th>
-              <th class="text-right">CPMr</th>
-              <th class="text-right">Frekvens</th>
-              <th class="text-right">ROAS</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td style="padding-left: 36px"><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Video-Vårsalg-Perlemor</span></div></td><td class="mono text-[11px] text-neutral-600">PROD</td><td class="text-right mono font-semibold">22k</td><td class="text-right mono">312</td><td class="text-right mono">4.2</td><td class="text-right mono">3.8×</td><td><span class="pill pill-exploit">Exploit</span></td></tr>
-            <tr><td style="padding-left: 36px"><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Karusell-Vårsalg-Alle-farger</span></div></td><td class="mono text-[11px] text-neutral-600">LIST</td><td class="text-right mono font-semibold">3.2k</td><td class="text-right mono">—</td><td class="text-right mono">—</td><td class="text-right mono">2.1×</td><td><span class="pill pill-test">Test</span></td></tr>
-            <tr><td style="padding-left: 36px"><div class="flex items-center gap-2.5"><div class="row-thumb"></div><span class="truncate">Video-Unboxing-Sengetøy-Native</span></div></td><td class="mono text-[11px] text-neutral-600">DEMO</td><td class="text-right mono font-semibold">2.8k</td><td class="text-right mono">—</td><td class="text-right mono">—</td><td class="text-right mono">1.2×</td><td><span class="pill pill-test">Test</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-        <div class="group-row">
-          <span class="chev">▶</span>
-          <span class="text-neutral-900">AS_Vaarsalg_Bredt-25-55</span>
-          <span class="text-right mono text-neutral-700">15k</span>
-          <div>
-            <div class="stack-bar">
-              <div class="stack-explore" style="width: 56%"></div>
-              <div class="stack-test" style="width: 44%"></div>
-            </div>
-          </div>
-          <span class="text-right text-xs mono text-neutral-500">3 ads</span>
-        </div>
-      </div>
-
-      <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-        <div class="group-row">
-          <span class="chev">▶</span>
-          <span class="text-neutral-900">AS_KonvWarm_Retarget-30d</span>
-          <span class="text-right mono text-neutral-700">28k</span>
-          <div>
-            <div class="stack-bar">
-              <div class="stack-bo" style="width: 67%"></div>
-              <div class="stack-cs" style="width: 22%"></div>
-              <div class="stack-test" style="width: 11%"></div>
-            </div>
-          </div>
-          <span class="text-right text-xs mono text-neutral-500">9 ads</span>
-        </div>
-      </div>
-
-      <div class="text-xs text-neutral-400 text-center pt-2">+ 5 flere ad sets …</div>
-
-    </div>
-
   </section>
 
   <p class="text-xs text-neutral-400 text-center mt-12">
-    Mock-data · prototype-lab.html · v1.2
+    Mock-data · prototype-lab.html · v1.3
   </p>
-
 </div>
 
 <script>
-  // Group-by toggle
-  const buttons = document.querySelectorAll('#group-toggle .toggle-btn');
-  const views = {
-    flat: document.getElementById('view-flat'),
-    campaign: document.getElementById('view-campaign'),
-    adset: document.getElementById('view-adset'),
-  };
-  buttons.forEach(btn => btn.addEventListener('click', () => {
-    buttons.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    Object.keys(views).forEach(k => views[k].style.display = 'none');
-    const mode = btn.dataset.mode;
-    views[mode].style.display = mode === 'flat' ? 'block' : 'block';
-    if (mode === 'flat' || mode === 'campaign' || mode === 'adset') {
-      // already set above
-    }
+// ─── Mock data ────────────────────────────────────────────────────────────
+// Status order — used everywhere
+const STATUS_ORDER = ['test', 'explore', 'exploit', 'burnt', 'suppr'];
+const STATUS_LABELS = {
+  test: 'Test', explore: 'Explore', exploit: 'Exploit', burnt: 'Burnt-out', suppr: 'Suppressed'
+};
+const STATUS_COLORS = {
+  test: '#93c5fd', explore: '#34d399', exploit: '#fbbf24', burnt: '#f87171', suppr: '#d4d4d4'
+};
+
+const campaigns = [
+  { id: 'c1', name: 'MYYK BAU 2026 / Vårsalg-Bestselgere', spend: 52000, adCount: 8 },
+  { id: 'c2', name: 'MYYK BAU 2026 / Konvertering-Warm', spend: 42000, adCount: 14 },
+  { id: 'c3', name: 'MYYK BAU 2026 / Prospecting-Bredt', spend: 34000, adCount: 15 },
+];
+
+// Each ad has: name, campaign id, ad set, format, tone, concept (or null), spend, cpm, freq, roas, status
+const ads = [
+  // ===== Vårsalg-Bestselgere (c1) — 8 ads =====
+  { name: 'Video-Vårsalg-Perlemor', campaign: 'c1', adset: 'Lookalike-1pct', format: 'Video', tone: 'EMO', concept: 'Vårsalg', spend: 28000, cpm: 312, freq: 4.2, roas: 3.8, status: 'exploit' },
+  { name: 'Bilde-Vårsalg-Produkt-Due', campaign: 'c1', adset: 'Bredt-25-55', format: 'Bilde', tone: 'EMO', concept: 'Vårsalg', spend: 9800, cpm: 218, freq: 2.4, roas: 1.6, status: 'explore' },
+  { name: 'Bilde-Vårsalg-Miljø-gingham', campaign: 'c1', adset: 'Bredt-25-55', format: 'Bilde', tone: 'EMO', concept: 'Vårsalg', spend: 6800, cpm: 240, freq: 2.6, roas: 1.4, status: 'explore' },
+  { name: 'Karusell-Vårsalg-Alle-farger', campaign: 'c1', adset: 'Lookalike-1pct', format: 'Karusell', tone: 'FUN', concept: 'Vårsalg', spend: 3200, cpm: null, freq: null, roas: 2.1, status: 'test' },
+  { name: 'Video-Unboxing-Sengetøy', campaign: 'c1', adset: 'Lookalike-1pct', format: 'Video', tone: 'FUN', concept: null, spend: 2800, cpm: null, freq: null, roas: 1.2, status: 'test' },
+  { name: 'Bilde-Vårsalg-Lifestyle-1', campaign: 'c1', adset: 'Retargeting-7d', format: 'Bilde', tone: 'EMO', concept: 'Vårsalg', spend: 600, cpm: 410, freq: 3.2, roas: 0.9, status: 'suppr' },
+  { name: 'Bilde-Vårsalg-Detalj-2', campaign: 'c1', adset: 'Retargeting-7d', format: 'Bilde', tone: 'FUN', concept: 'Vårsalg', spend: 500, cpm: 420, freq: 3.4, roas: 1.0, status: 'suppr' },
+  { name: 'Video-Vårsalg-Sløyfeoppsett', campaign: 'c1', adset: 'Bredt-25-55', format: 'Video', tone: 'EMO', concept: 'Vårsalg', spend: 300, cpm: null, freq: null, roas: null, status: 'test' },
+
+  // ===== Konvertering-Warm (c2) — 14 ads =====
+  { name: 'Bilde-Nyhet-Striper-Hvit-Brun', campaign: 'c2', adset: 'Retarget-30d', format: 'Bilde', tone: 'EMO', concept: 'Nyhet', spend: 14000, cpm: 478, freq: 5.4, roas: 2.8, status: 'burnt' },
+  { name: 'Bilde-2-for-1-Sengetøy-rustrød', campaign: 'c2', adset: 'Retarget-30d', format: 'Bilde', tone: 'FUN', concept: '2-for-1', spend: 7600, cpm: 510, freq: 6.1, roas: 1.4, status: 'burnt' },
+  { name: 'Bilde-2-for-1-Produkt-Skumring', campaign: 'c2', adset: 'Retarget-30d', format: 'Bilde', tone: 'EMO', concept: '2-for-1', spend: 6400, cpm: 462, freq: 5.2, roas: 1.7, status: 'burnt' },
+  { name: 'Video-2-for-1-Flanell', campaign: 'c2', adset: 'Retarget-7d', format: 'Video', tone: 'FUN', concept: '2-for-1', spend: 5200, cpm: 462, freq: 4.7, roas: 1.7, status: 'burnt' },
+  { name: 'myyk-native-handklepakker', campaign: 'c2', adset: 'Retarget-30d', format: 'Video', tone: 'EMO', concept: null, spend: 4800, cpm: 298, freq: 3.0, roas: 2.0, status: 'exploit' },
+  { name: 'Bilde-2-for-1-Miljø-Havre', campaign: 'c2', adset: 'Retarget-30d', format: 'Bilde', tone: 'EMO', concept: '2-for-1', spend: 1500, cpm: 388, freq: 4.1, roas: 1.3, status: 'suppr' },
+  { name: 'Karusell-Sengetøy-Alle', campaign: 'c2', adset: 'Retarget-7d', format: 'Karusell', tone: 'FUN', concept: null, spend: 1200, cpm: 356, freq: 3.5, roas: 1.5, status: 'suppr' },
+  { name: 'Bilde-Nyhet-Striper-Blå', campaign: 'c2', adset: 'Retarget-30d', format: 'Bilde', tone: 'EMO', concept: 'Nyhet', spend: 800, cpm: 442, freq: 4.8, roas: 1.2, status: 'suppr' },
+  { name: 'Video-Sengetøy-5-Grunner', campaign: 'c2', adset: 'Retarget-7d', format: 'Video', tone: 'FUN', concept: null, spend: 200, cpm: null, freq: null, roas: null, status: 'test' },
+  { name: 'Bilde-Sengetøy-Tilbud-Variant-A', campaign: 'c2', adset: 'Retarget-7d', format: 'Bilde', tone: 'FUN', concept: null, spend: 100, cpm: null, freq: null, roas: null, status: 'test' },
+  { name: 'Bilde-Sengetøy-Tilbud-Variant-B', campaign: 'c2', adset: 'Retarget-7d', format: 'Bilde', tone: 'FUN', concept: null, spend: 100, cpm: null, freq: null, roas: null, status: 'test' },
+  { name: 'Bilde-Sengetøy-Pakkeshot-1', campaign: 'c2', adset: 'Retarget-30d', format: 'Bilde', tone: 'FUN', concept: null, spend: 80, cpm: null, freq: null, roas: null, status: 'test' },
+  { name: 'Bilde-Sengetøy-Pakkeshot-2', campaign: 'c2', adset: 'Retarget-30d', format: 'Bilde', tone: 'FUN', concept: null, spend: 60, cpm: null, freq: null, roas: null, status: 'test' },
+  { name: 'Karusell-Sengetøy-Bestseller', campaign: 'c2', adset: 'Retarget-30d', format: 'Karusell', tone: 'FUN', concept: null, spend: 0, cpm: null, freq: null, roas: null, status: 'suppr' },
+
+  // ===== Prospecting-Bredt (c3) — 15 ads =====
+  { name: 'Bilde-Vårsalg-Stillingsmiljø', campaign: 'c3', adset: 'Bredt-Norge', format: 'Bilde', tone: 'EMO', concept: 'Vårsalg', spend: 6200, cpm: 195, freq: 2.0, roas: 1.3, status: 'explore' },
+  { name: 'Video-Brand-Story-Kort', campaign: 'c3', adset: 'Bredt-Norge', format: 'Video', tone: 'EMO', concept: 'Brand', spend: 3400, cpm: 215, freq: 1.9, roas: 0.9, status: 'explore' },
+  { name: 'Bilde-Brand-Logo-Rent', campaign: 'c3', adset: 'Bredt-Norge', format: 'Bilde', tone: 'EMO', concept: 'Brand', spend: 2800, cpm: 268, freq: 2.5, roas: 1.1, status: 'explore' },
+  { name: 'Video-Vårsalg-Kvinne-Bestil', campaign: 'c3', adset: 'Lookalike-2pct', format: 'Video', tone: 'EMO', concept: 'Vårsalg', spend: 3800, cpm: 340, freq: 3.4, roas: 1.6, status: 'exploit' },
+  { name: 'Bilde-Brand-Mosaikk', campaign: 'c3', adset: 'Lookalike-2pct', format: 'Bilde', tone: 'FUN', concept: 'Brand', spend: 2200, cpm: 380, freq: 4.0, roas: 1.8, status: 'burnt' },
+  { name: 'Karusell-Brand-Personas', campaign: 'c3', adset: 'Bredt-Norge', format: 'Karusell', tone: 'EMO', concept: 'Brand', spend: 1800, cpm: 425, freq: 4.2, roas: 1.0, status: 'burnt' },
+  { name: 'Bilde-Brand-Pakke-Wide', campaign: 'c3', adset: 'Bredt-Norge', format: 'Bilde', tone: 'EMO', concept: 'Brand', spend: 1100, cpm: 350, freq: 3.0, roas: 0.7, status: 'suppr' },
+  { name: 'Video-Brand-Detalj-Stoff', campaign: 'c3', adset: 'Lookalike-2pct', format: 'Video', tone: 'EMO', concept: 'Brand', spend: 900, cpm: 320, freq: 2.8, roas: 0.9, status: 'suppr' },
+  { name: 'Bilde-Vårsalg-Pakke-Liten', campaign: 'c3', adset: 'Lookalike-2pct', format: 'Bilde', tone: 'EMO', concept: 'Vårsalg', spend: 700, cpm: 380, freq: 3.1, roas: 1.0, status: 'suppr' },
+  { name: 'Karusell-Vårsalg-Trio', campaign: 'c3', adset: 'Bredt-Norge', format: 'Karusell', tone: 'FUN', concept: 'Vårsalg', spend: 600, cpm: 330, freq: 2.6, roas: 1.1, status: 'suppr' },
+  { name: 'Video-Brand-Kunde-2', campaign: 'c3', adset: 'Lookalike-2pct', format: 'Video', tone: 'EMO', concept: 'Brand', spend: 400, cpm: null, freq: null, roas: null, status: 'test' },
+  { name: 'Video-Brand-Kunde-3', campaign: 'c3', adset: 'Lookalike-2pct', format: 'Video', tone: 'EMO', concept: 'Brand', spend: 350, cpm: null, freq: null, roas: null, status: 'test' },
+  { name: 'Bilde-Brand-Quote-1', campaign: 'c3', adset: 'Bredt-Norge', format: 'Bilde', tone: 'FUN', concept: null, spend: 300, cpm: null, freq: null, roas: null, status: 'test' },
+  { name: 'Bilde-Brand-Quote-2', campaign: 'c3', adset: 'Bredt-Norge', format: 'Bilde', tone: 'FUN', concept: null, spend: 250, cpm: null, freq: null, roas: null, status: 'test' },
+  { name: 'Karusell-Brand-Mosaikk-2', campaign: 'c3', adset: 'Bredt-Norge', format: 'Karusell', tone: 'EMO', concept: null, spend: 200, cpm: null, freq: null, roas: null, status: 'test' },
+];
+
+// ─── State ────────────────────────────────────────────────────────────────
+const state = {
+  level: 'account',           // 'account' | 'campaign'
+  campaignId: null,           // when level=campaign
+  groupingByLevel: {          // remember per level
+    account: 'campaign',
+    campaign: 'adset',
+  },
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────────────
+function fmtSpend(v) {
+  if (v == null) return '—';
+  if (v >= 1000) return `${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k`;
+  return Math.round(v).toString();
+}
+function fmtNum(v, digits = 0) {
+  if (v == null) return '—';
+  return v.toFixed(digits);
+}
+function pct(v) { return `${Math.round(v * 100)}%`; }
+
+// Compute spend distribution by status for a list of ads
+function distribution(adList) {
+  const total = adList.reduce((s, a) => s + a.spend, 0);
+  const counts = STATUS_ORDER.map(st => ({
+    status: st,
+    spend: adList.filter(a => a.status === st).reduce((s, a) => s + a.spend, 0),
   }));
+  return { total, segments: counts.map(c => ({ ...c, share: total > 0 ? c.spend / total : 0 })) };
+}
+
+function renderStack(targetEl, dist, opts = {}) {
+  const segs = dist.segments
+    .filter(s => s.share > 0)
+    .map(s => `<div class="seg-${s.status}" style="width:${s.share * 100}%" title="${STATUS_LABELS[s.status]} ${pct(s.share)}"></div>`)
+    .join('');
+  targetEl.innerHTML = segs;
+}
+
+function renderLegend(targetEl, dist, opts = {}) {
+  const items = STATUS_ORDER
+    .map(st => {
+      const seg = dist.segments.find(s => s.status === st);
+      if (!seg || seg.share === 0) return null;
+      return `<div><span class="stack-legend-dot" style="background:${STATUS_COLORS[st]}"></span><span>${STATUS_LABELS[st]} <span class="mono text-neutral-500 ml-0.5">${pct(seg.share)}</span></span></div>`;
+    })
+    .filter(Boolean)
+    .join('');
+  targetEl.innerHTML = items;
+}
+
+// ─── Renderers ────────────────────────────────────────────────────────────
+function getActiveAds() {
+  if (state.level === 'campaign') {
+    return ads.filter(a => a.campaign === state.campaignId);
+  }
+  return ads;
+}
+
+function renderHero() {
+  const eyebrow = document.getElementById('hero-eyebrow');
+  const title = document.getElementById('hero-title');
+  const meta = document.getElementById('hero-meta');
+  const stack = document.getElementById('hero-stack');
+  const legend = document.getElementById('hero-legend');
+
+  if (state.level === 'account') {
+    eyebrow.textContent = 'Konto';
+    title.textContent = 'MYYK';
+  } else {
+    eyebrow.textContent = 'Kampanje';
+    const c = campaigns.find(c => c.id === state.campaignId);
+    title.textContent = c ? c.name.replace(/^MYYK BAU 2026 \/ /, '') : '—';
+  }
+
+  const activeAds = getActiveAds();
+  const dist = distribution(activeAds);
+  meta.textContent = `${fmtSpend(dist.total)} spend (4u) · ${activeAds.length} aktive annonser`;
+  renderStack(stack, dist);
+  renderLegend(legend, dist);
+}
+
+function renderBreadcrumb() {
+  const bc = document.getElementById('breadcrumb');
+  if (state.level === 'account') {
+    bc.innerHTML = '<a data-nav="account" class="active">MYYK</a>';
+  } else {
+    const c = campaigns.find(c => c.id === state.campaignId);
+    const shortName = c ? c.name.replace(/^MYYK BAU 2026 \/ /, '') : '—';
+    bc.innerHTML = `<a data-nav="account">MYYK</a><span class="sep">›</span><a class="active">${shortName}</a>`;
+  }
+  bc.querySelectorAll('a[data-nav]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      navigateTo(a.dataset.nav);
+    });
+  });
+}
+
+function renderCampaignList() {
+  const section = document.getElementById('campaign-list-section');
+  if (state.level !== 'account') {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = '';
+  const list = document.getElementById('campaign-list');
+  list.innerHTML = campaigns.map(c => {
+    const cAds = ads.filter(a => a.campaign === c.id);
+    const dist = distribution(cAds);
+    const segHtml = dist.segments
+      .filter(s => s.share > 0)
+      .map(s => `<div class="seg-${s.status}" style="width:${s.share * 100}%"></div>`)
+      .join('');
+    return `
+      <div class="camp-row" data-campaign="${c.id}">
+        <div class="font-medium text-neutral-800 truncate">${c.name}</div>
+        <div class="text-right mono text-neutral-700">${fmtSpend(dist.total)}</div>
+        <div><div class="stack">${segHtml}</div></div>
+        <div class="text-right text-xs mono text-neutral-500 flex items-center justify-end gap-1.5">
+          <span>${c.adCount} ads</span>
+          <span class="arrow">›</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+  list.querySelectorAll('.camp-row').forEach(r => {
+    r.addEventListener('click', () => navigateTo('campaign', r.dataset.campaign));
+  });
+}
+
+function renderGroupingDropdown() {
+  const sel = document.getElementById('grouping');
+  const isAccount = state.level === 'account';
+  const opts = isAccount
+    ? `<option value="none">Ingen</option>
+       <option value="campaign">Kampanje</option>
+       <optgroup label="Kreativ dimensjon">
+         <option value="format">Format</option>
+         <option value="tone">Tone</option>
+         <option value="concept">Konsept</option>
+       </optgroup>`
+    : `<option value="none">Ingen</option>
+       <option value="adset">Ad set</option>
+       <optgroup label="Kreativ dimensjon">
+         <option value="format">Format</option>
+         <option value="tone">Tone</option>
+         <option value="concept">Konsept</option>
+       </optgroup>`;
+  sel.innerHTML = opts;
+  sel.value = state.groupingByLevel[state.level];
+}
+
+function renderAdsSubtitle() {
+  const el = document.getElementById('ads-subtitle');
+  const list = getActiveAds();
+  if (state.level === 'account') {
+    el.textContent = `${list.length} annonser på tvers av ${campaigns.length} kampanjer`;
+  } else {
+    el.textContent = `${list.length} annonser i denne kampanjen`;
+  }
+}
+
+// Get the grouping key for an ad given the grouping mode
+function getGroupKey(ad, mode) {
+  if (mode === 'campaign') return ad.campaign;
+  if (mode === 'adset') return ad.adset;
+  if (mode === 'format') return ad.format;
+  if (mode === 'tone') return ad.tone;
+  if (mode === 'concept') return ad.concept || '— uten konsept';
+  return null;
+}
+
+function getGroupLabel(key, mode) {
+  if (mode === 'campaign') {
+    const c = campaigns.find(c => c.id === key);
+    return c ? c.name : key;
+  }
+  return key;
+}
+
+const STATUS_RANK = { test: 0, explore: 1, exploit: 2, burnt: 3, suppr: 4 };
+
+function adRowHtml(ad, indent = false) {
+  return `
+    <tr>
+      <td ${indent ? 'style="padding-left:36px"' : ''}>
+        <div class="ad-name">
+          <div class="ad-thumb"></div>
+          <span class="text-neutral-800 truncate" style="max-width: 280px">${ad.name}</span>
+        </div>
+      </td>
+      <td class="text-right mono font-semibold">${fmtSpend(ad.spend)}</td>
+      <td class="text-right mono">${ad.cpm == null ? '—' : Math.round(ad.cpm)}</td>
+      <td class="text-right mono">${ad.freq == null ? '—' : ad.freq.toFixed(1)}</td>
+      <td class="text-right mono">${ad.roas == null ? '—' : ad.roas.toFixed(1) + '×'}</td>
+      <td><span class="pill pill-${ad.status === 'burnt' ? 'burnt' : ad.status === 'suppr' ? 'suppr' : ad.status}">${STATUS_LABELS[ad.status]}</span></td>
+    </tr>
+  `;
+}
+
+function renderAds() {
+  const mode = state.groupingByLevel[state.level];
+  const activeAds = getActiveAds();
+  const target = document.getElementById('ads-content');
+
+  if (mode === 'none') {
+    // Flat table sorted by status order, then spend desc
+    const sorted = [...activeAds].sort((a, b) => {
+      const r = STATUS_RANK[a.status] - STATUS_RANK[b.status];
+      if (r !== 0) return r;
+      return b.spend - a.spend;
+    });
+    target.innerHTML = `
+      <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+        <table>
+          <thead>
+            <tr>
+              <th>Annonse</th>
+              <th class="text-right">Spend</th>
+              <th class="text-right">CPM</th>
+              <th class="text-right">Frekvens</th>
+              <th class="text-right">ROAS</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sorted.map(a => adRowHtml(a)).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+    return;
+  }
+
+  // Grouped view
+  const groups = new Map();
+  activeAds.forEach(a => {
+    const key = getGroupKey(a, mode);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(a);
+  });
+
+  const sortedGroups = Array.from(groups.entries())
+    .map(([key, group]) => ({
+      key,
+      label: getGroupLabel(key, mode),
+      ads: group,
+      total: group.reduce((s, a) => s + a.spend, 0),
+      dist: distribution(group),
+    }))
+    .sort((a, b) => b.total - a.total);
+
+  target.innerHTML = sortedGroups.map(g => {
+    const segHtml = g.dist.segments
+      .filter(s => s.share > 0)
+      .map(s => `<div class="seg-${s.status}" style="width:${s.share * 100}%"></div>`)
+      .join('');
+    const sortedAds = [...g.ads].sort((a, b) => b.spend - a.spend);
+    return `
+      <div class="group-card">
+        <div class="group-header">
+          <div class="group-name truncate">${g.label}</div>
+          <div class="text-right mono text-neutral-700">${fmtSpend(g.total)}</div>
+          <div><div class="stack">${segHtml}</div></div>
+          <div class="text-right text-xs mono text-neutral-500">${g.ads.length} ads</div>
+        </div>
+        <table>
+          <tbody>
+            ${sortedAds.map(a => adRowHtml(a, true)).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }).join('');
+}
+
+// ─── Navigation + bindings ────────────────────────────────────────────────
+function navigateTo(level, campaignId = null) {
+  state.level = level;
+  state.campaignId = campaignId;
+  renderAll();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderAll() {
+  renderBreadcrumb();
+  renderHero();
+  renderCampaignList();
+  renderGroupingDropdown();
+  renderAdsSubtitle();
+  renderAds();
+}
+
+document.getElementById('grouping').addEventListener('change', e => {
+  state.groupingByLevel[state.level] = e.target.value;
+  renderAds();
+});
+
+renderAll();
 </script>
 
 </body>
