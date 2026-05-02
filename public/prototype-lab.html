@@ -150,29 +150,21 @@
   /* Diversifisering rows */
   .dim-row {
     display: grid;
-    grid-template-columns: minmax(180px, 1.2fr) 70px minmax(110px, 0.9fr) minmax(220px, 2fr) 70px;
+    grid-template-columns: minmax(140px, 1fr) 70px minmax(280px, 2.5fr) 70px;
     gap: 18px;
     align-items: center;
     padding: 14px 18px;
     border-bottom: 1px solid #f0f0f0;
   }
   .dim-row:last-child { border-bottom: 0; }
-  .dim-sub { font-size: 11px; color: #a3a3a3; font-family: 'IBM Plex Mono', monospace; margin-top: 2px; }
-  .dim-bullets { display: inline-flex; gap: 4px; }
-  .bullet { width: 9px; height: 9px; border-radius: 50%; background: #e5e5e5; }
-  .bullet.fill-good { background: #047857; }
-  .bullet.fill-mid { background: #d97706; }
-  .bullet.fill-bad { background: #b91c1c; }
-  .dim-missing {
-    font-size: 12px; color: #737373;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  .dim-values { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    border: 1px solid;
   }
-  .dim-missing .tag {
-    display: inline-block; padding: 1px 6px; border-radius: 4px;
-    background: #f5f5f5; font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px; color: #525252; margin-right: 2px;
-  }
-  .dim-missing.warn .tag { background: #fef2f2; color: #991b1b; }
+  .tag-covered { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+  .tag-missing { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
 </style>
 </head>
 <body>
@@ -289,8 +281,7 @@
         <div class="dim-row" style="background:#fafafa;border-bottom:1px solid #e5e5e5">
           <div class="eyebrow">Dimensjon</div>
           <div class="eyebrow">Dekket</div>
-          <div class="eyebrow">Bredde</div>
-          <div class="eyebrow">Mangler</div>
+          <div class="eyebrow">Verdier</div>
           <div class="eyebrow text-right">Aktive ads</div>
         </div>
         <div id="dim-list">
@@ -783,16 +774,6 @@ const dimensions = [
     activeAds: 12 },
 ];
 
-function bulletViz(covered, total) {
-  const pct = covered / total;
-  const tone = pct >= 0.66 ? 'fill-good' : pct >= 0.4 ? 'fill-mid' : 'fill-bad';
-  let html = '';
-  for (let i = 0; i < total; i++) {
-    html += `<span class="bullet ${i < covered ? tone : ''}"></span>`;
-  }
-  return `<span class="dim-bullets">${html}</span>`;
-}
-
 function renderDiversity() {
   const list = document.getElementById('dim-list');
   if (!list) return;
@@ -818,19 +799,15 @@ function renderDiversity() {
   // Per-dim rows
   list.innerHTML = dimensions.map(d => {
     const total = d.covered.length + d.missing.length;
-    const missingHtml = d.missing.length === 0
-      ? '<span class="text-neutral-400">alt dekket</span>'
-      : d.missing.map(m => `<span class="tag">${m}</span>`).join(' ');
-    const missingClass = d.warn ? 'dim-missing warn' : 'dim-missing';
+    const valuesHtml = [
+      ...d.covered.map(v => `<span class="tag tag-covered">${v}</span>`),
+      ...d.missing.map(v => `<span class="tag tag-missing">${v}</span>`),
+    ].join('');
     return `
       <div class="dim-row">
-        <div>
-          <div class="font-medium text-neutral-800">${d.name}</div>
-          <div class="dim-sub">${d.sub}</div>
-        </div>
+        <div class="font-medium text-neutral-800">${d.name}</div>
         <div class="mono text-neutral-700"><span class="font-semibold">${d.covered.length}</span><span class="text-neutral-400">/${total}</span></div>
-        <div>${bulletViz(d.covered.length, total)}</div>
-        <div class="${missingClass}">${missingHtml}</div>
+        <div class="dim-values">${valuesHtml}</div>
         <div class="text-right mono text-neutral-500 text-xs">${d.activeAds}</div>
       </div>
     `;
