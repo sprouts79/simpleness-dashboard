@@ -778,23 +778,34 @@ function renderDiversity() {
   const list = document.getElementById('dim-list');
   if (!list) return;
 
-  // KPIer — total + svakest + best dekket
-  let totalCovered = 0, totalAll = 0;
-  let weakest = null, strongest = null;
-  for (const d of dimensions) {
-    const all = d.covered.length + d.missing.length;
-    totalCovered += d.covered.length;
-    totalAll += all;
-    const pct = d.covered.length / all;
-    if (!weakest || pct < weakest.covered.length / (weakest.covered.length + weakest.missing.length)) weakest = d;
-    if (!strongest || pct > strongest.covered.length / (strongest.covered.length + strongest.missing.length)) strongest = d;
+  // KPIer — total + svakest + best dekket. Tar høyde for ties.
+  const ranked = dimensions.map(d => ({
+    ...d,
+    total: d.covered.length + d.missing.length,
+    pct: d.covered.length / (d.covered.length + d.missing.length),
+  }));
+  const totalCovered = ranked.reduce((s, d) => s + d.covered.length, 0);
+  const totalAll = ranked.reduce((s, d) => s + d.total, 0);
+  const minPct = Math.min(...ranked.map(d => d.pct));
+  const maxPct = Math.max(...ranked.map(d => d.pct));
+  const weakest = ranked.filter(d => d.pct === minPct);
+  const strongest = ranked.filter(d => d.pct === maxPct);
+
+  // Når flere er likt dekket, vis prosent som value og list alle navnene som delta
+  function ratioOrPct(group) {
+    if (group.length === 1) return `${group[0].covered.length}/${group[0].total}`;
+    return `${Math.round(group[0].pct * 100)}%`;
   }
+  function namesList(group) {
+    return group.map(d => d.name).join(' · ');
+  }
+
   document.getElementById('div-covered').textContent = totalCovered;
   document.getElementById('div-total').textContent = totalAll;
-  document.getElementById('div-weak-ratio').textContent = `${weakest.covered.length}/${weakest.covered.length + weakest.missing.length}`;
-  document.getElementById('div-weak-name').textContent = weakest.name;
-  document.getElementById('div-strong-ratio').textContent = `${strongest.covered.length}/${strongest.covered.length + strongest.missing.length}`;
-  document.getElementById('div-strong-name').textContent = strongest.name;
+  document.getElementById('div-weak-ratio').textContent = ratioOrPct(weakest);
+  document.getElementById('div-weak-name').textContent = namesList(weakest);
+  document.getElementById('div-strong-ratio').textContent = ratioOrPct(strongest);
+  document.getElementById('div-strong-name').textContent = namesList(strongest);
 
   // Per-dim rows
   list.innerHTML = dimensions.map(d => {
