@@ -261,15 +261,24 @@
   <!-- ====================== DIVERSITY VIEW ====================== -->
   <div id="view-diversity" style="display:none">
 
-    <!-- Hovedfunn card -->
-    <div class="bg-white rounded-xl border border-neutral-200 p-5 mb-6 flex items-baseline justify-between gap-6 flex-wrap">
-      <div class="min-w-0">
-        <p class="eyebrow mb-1">Hovedfunn</p>
-        <p class="text-base text-neutral-900" id="div-verdict">—</p>
-      </div>
-      <div class="flex items-baseline gap-2 flex-shrink-0">
-        <span class="kpi-num mono"><span id="div-covered">11</span><span class="text-neutral-400">/<span id="div-total">22</span></span></span>
-        <span class="text-xs text-neutral-500">verdier dekket</span>
+    <!-- Hero med KPIer -->
+    <div class="hero mb-6">
+      <div class="hero-kpis" style="grid-template-columns: repeat(3, 1fr);">
+        <div>
+          <p class="hero-kpi-label">Total dekning</p>
+          <p class="hero-kpi-value mono"><span id="div-covered">11</span><span class="text-neutral-400">/<span id="div-total">22</span></span></p>
+          <p class="hero-kpi-delta">verdier på 6 dimensjoner</p>
+        </div>
+        <div>
+          <p class="hero-kpi-label">Svakest dekket</p>
+          <p class="hero-kpi-value mono" id="div-weak-ratio">1/6</p>
+          <p class="hero-kpi-delta" id="div-weak-name">Avsender</p>
+        </div>
+        <div>
+          <p class="hero-kpi-label">Best dekket</p>
+          <p class="hero-kpi-value mono" id="div-strong-ratio">2/3</p>
+          <p class="hero-kpi-delta" id="div-strong-name">Tone</p>
+        </div>
       </div>
     </div>
 
@@ -288,22 +297,7 @@
           <!-- dim rows injected by JS -->
         </div>
       </div>
-
-      <details class="bg-white rounded-xl border border-neutral-200 px-4 py-3 mt-3">
-        <summary class="cursor-pointer text-sm font-medium text-neutral-800">▸ Hvordan dette regnes ut</summary>
-        <div class="mt-3 text-sm text-neutral-700 space-y-2 leading-relaxed">
-          <p>
-            Kun annonser i status <strong>Test, Explore eller Exploit</strong> teller som dekning. Burnt-out og Suppressed ads er ikke menu-material algoen aktivt distribuerer — derfor regnes ikke deres dimensjoner som dekket.
-          </p>
-          <p>
-            Hver aktiv annonse parses fra navn etter konvensjonen
-            <code class="px-1 py-0.5 rounded bg-neutral-100 mono text-[11px]">[KONTO]_[ANNONSETYPE]_[KONSEPT|-]_[TONE]_[AVSENDER]_[FORMAT]_[KVALITET]_[PERSONA]_v[N]</code>.
-          </p>
-          <p class="text-xs text-neutral-500">
-            Krever navnekonvensjon i adlaunch — for nå er dette mock-data.
-          </p>
-        </div>
-      </details>
+      <p class="text-xs text-neutral-500 mt-2">Bare ads i Test/Explore/Exploit teller — Burnt-out og Suppressed ikke.</p>
     </section>
 
   </div>
@@ -803,22 +797,23 @@ function renderDiversity() {
   const list = document.getElementById('dim-list');
   if (!list) return;
 
-  // Hovedfunn — finn dimensjonen med svakest dekning og pek på det
+  // KPIer — total + svakest + best dekket
   let totalCovered = 0, totalAll = 0;
-  let weakest = null;
+  let weakest = null, strongest = null;
   for (const d of dimensions) {
     const all = d.covered.length + d.missing.length;
     totalCovered += d.covered.length;
     totalAll += all;
     const pct = d.covered.length / all;
-    if (!weakest || pct < (weakest.covered.length / (weakest.covered.length + weakest.missing.length))) {
-      weakest = d;
-    }
+    if (!weakest || pct < weakest.covered.length / (weakest.covered.length + weakest.missing.length)) weakest = d;
+    if (!strongest || pct > strongest.covered.length / (strongest.covered.length + strongest.missing.length)) strongest = d;
   }
-  const verdict = `Svakest dekket: <strong>${weakest.name}</strong> — bare ${weakest.covered.join(' · ')} (mangler ${weakest.missing.length} verdier)`;
-  document.getElementById('div-verdict').innerHTML = verdict;
   document.getElementById('div-covered').textContent = totalCovered;
   document.getElementById('div-total').textContent = totalAll;
+  document.getElementById('div-weak-ratio').textContent = `${weakest.covered.length}/${weakest.covered.length + weakest.missing.length}`;
+  document.getElementById('div-weak-name').textContent = weakest.name;
+  document.getElementById('div-strong-ratio').textContent = `${strongest.covered.length}/${strongest.covered.length + strongest.missing.length}`;
+  document.getElementById('div-strong-name').textContent = strongest.name;
 
   // Per-dim rows
   list.innerHTML = dimensions.map(d => {
