@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spend-fordeling — prototype v3.1</title>
+<title>Spend-fordeling — prototype v3.2</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -151,7 +151,7 @@
   <!-- Banner -->
   <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-3 mb-6">
     <div class="flex items-center gap-2">
-      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v3.1</span>
+      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v3.2</span>
       <span class="text-sm text-neutral-700">Drilldown via breadcrumb</span>
     </div>
   </div>
@@ -159,8 +159,8 @@
   <!-- Breadcrumb -->
   <div class="breadcrumb mb-4" id="breadcrumb"></div>
 
-  <!-- ============== HERO (samme kort på Konto og Kampanje) ============== -->
-  <div class="hero mb-8">
+  <!-- ============== HERO (Konto-kort eller Kampanje-kort) ============== -->
+  <div class="hero mb-8" id="hero-card">
     <div id="hero-header"></div>
     <div class="hero-kpis" id="hero-kpis"></div>
     <div class="mt-6 mb-2"><div class="stack tall" id="hero-stack"></div></div>
@@ -186,8 +186,8 @@
     <div id="ads-content"></div>
   </section>
 
-  <!-- ============== KREATIV DIVERSIFISERING (begge nivåer) ============== -->
-  <section class="mt-10">
+  <!-- ============== KREATIV DIVERSIFISERING (kun kampanje-detalj) ============== -->
+  <section class="mt-10" id="diversity-section">
     <p class="eyebrow mb-3">Kreativ diversifisering</p>
     <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
       <table>
@@ -206,7 +206,7 @@
   </section>
 
   <p class="text-xs text-neutral-400 text-center mt-12">
-    Mock-data · prototype-lab-v3.html · v3.1
+    Mock-data · prototype-lab-v3.html · v3.2
   </p>
 </div>
 
@@ -286,13 +286,14 @@ const ads = [
 
 // ─── State ────────────────────────────────────────────────────────────────
 const state = {
-  campaignId: null,           // null = Konto, satt = kampanje-detalj
+  view: 'account',            // 'account' | 'campaigns' | 'campaign'
+  campaignId: null,           // satt når view === 'campaign'
   groupingByLevel: { campaign: 'none' },
 };
 
-// Hjelp: nåværende "level" — bestemmer om man jobber på konto eller kampanje
+// Hjelp: nåværende "level" — bestemmer om hovedkort viser konto- eller kampanje-data
 function currentLevel() {
-  return state.campaignId ? 'campaign' : 'account';
+  return state.view === 'campaign' ? 'campaign' : 'account';
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
@@ -429,19 +430,21 @@ function renderHero() {
 
 function renderBreadcrumb() {
   const bc = document.getElementById('breadcrumb');
-  if (!state.campaignId) {
-    bc.innerHTML = `<span class="active">Konto · MYYK</span>`;
-    return;
+  let html = '';
+  if (state.view === 'account') {
+    html = `<span class="active">Konto · MYYK</span>`;
+  } else if (state.view === 'campaigns') {
+    html = `<a data-nav="account">Konto · MYYK</a><span class="sep">›</span><span class="active">Kampanjer</span>`;
+  } else if (state.view === 'campaign') {
+    const c = campaigns.find(c => c.id === state.campaignId);
+    const shortName = c ? shortCampaignName(c.name) : '—';
+    html = `<a data-nav="account">Konto · MYYK</a><span class="sep">›</span><a data-nav="campaigns">Kampanjer</a><span class="sep">›</span><span class="active">${shortName}</span>`;
   }
-  const c = campaigns.find(c => c.id === state.campaignId);
-  const shortName = c ? shortCampaignName(c.name) : '—';
-  bc.innerHTML = `<a data-nav="account">Konto · MYYK</a><span class="sep">›</span><span class="active">${shortName}</span>`;
-  bc.querySelectorAll('a[data-nav="account"]').forEach(a => {
+  bc.innerHTML = html;
+  bc.querySelectorAll('a[data-nav]').forEach(a => {
     a.addEventListener('click', e => {
       e.preventDefault();
-      state.campaignId = null;
-      renderAll();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      navigateTo(a.dataset.nav);
     });
   });
 }
@@ -590,8 +593,9 @@ function renderAds() {
 }
 
 // ─── Navigation ──────────────────────────────────────────────────────────
-function navigateTo(campaignId = null) {
-  state.campaignId = campaignId;
+function navigateTo(view, campaignId = null) {
+  state.view = view;
+  state.campaignId = view === 'campaign' ? campaignId : null;
   renderAll();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -693,10 +697,16 @@ function renderDiversity() {
 
 // ─── Section visibility ───────────────────────────────────────────────────
 function renderSectionSwitch() {
-  const isAccount = !state.campaignId;
-  // Konto: vis Kampanjer-listen. Kampanje: vis Annonser-listen.
-  document.getElementById('campaigns-section').style.display = isAccount ? '' : 'none';
-  document.getElementById('ads-section').style.display = isAccount ? 'none' : '';
+  const v = state.view;
+  // Hero vises på Konto + Kampanje-detalj. Skjult på Kampanjer-listen.
+  const heroEl = document.getElementById('hero-card');
+  heroEl.style.display = v === 'campaigns' ? 'none' : '';
+  // Konto: hovedkortet er klikkbart (drilldown til kampanjer)
+  heroEl.classList.toggle('hero-clickable', v === 'account');
+
+  document.getElementById('campaigns-section').style.display = v === 'campaigns' ? '' : 'none';
+  document.getElementById('ads-section').style.display = v === 'campaign' ? '' : 'none';
+  document.getElementById('diversity-section').style.display = v === 'campaign' ? '' : 'none';
 }
 
 // Kampanje-liste — samme hero-card som på kampanje-detalj
@@ -747,26 +757,34 @@ function renderCampaignsRichList() {
     `;
   }).join('');
   target.querySelectorAll('.hero-clickable').forEach(card => {
-    card.addEventListener('click', () => navigateTo(card.dataset.campaign));
+    card.addEventListener('click', () => navigateTo('campaign', card.dataset.campaign));
   });
 }
 
 function renderAll() {
   renderSectionSwitch();
   renderBreadcrumb();
-  renderHero();
-  renderDiversity();
-  if (state.campaignId) {
+  if (state.view !== 'campaigns') {
+    renderHero();
+  }
+  if (state.view === 'campaigns') {
+    renderCampaignsRichList();
+  }
+  if (state.view === 'campaign') {
     renderGroupingDropdown();
     renderAds();
-  } else {
-    renderCampaignsRichList();
+    renderDiversity();
   }
 }
 
 document.getElementById('grouping').addEventListener('change', e => {
   state.groupingByLevel.campaign = e.target.value;
   renderAds();
+});
+
+// Klikk på Konto-hovedkortet → naviger til Kampanjer-listen
+document.getElementById('hero-card').addEventListener('click', () => {
+  if (state.view === 'account') navigateTo('campaigns');
 });
 
 renderAll();
