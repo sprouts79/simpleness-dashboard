@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spend-fordeling — prototype v3.0</title>
+<title>Spend-fordeling — prototype v3.1</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -39,6 +39,16 @@
   /* Hero clickable variant (Kampanjer-listen) */
   .hero-clickable { cursor: pointer; transition: border-color 80ms; }
   .hero-clickable:hover { border-color: #a3a3a3; }
+
+  /* Kompakt hero-variant — brukes for sekundære kort (kampanje-listen på Konto) */
+  .hero-compact { padding: 1.15rem 1.4rem; border-radius: 12px; }
+  .hero-compact .hero-kpis { gap: 18px; }
+  .hero-compact .hero-kpi-value { font-size: 1.25rem; }
+  .hero-compact .hero-kpi-label { font-size: 10px; }
+  .hero-compact .hero-title { font-size: 0.9375rem; }
+  .hero-compact .stack.tall { height: 14px; }
+  .hero-compact .stack-legend { font-size: 11px; gap: 12px; }
+  .hero-compact .hero-meta { font-size: 11px; }
 
   /* Breadcrumb */
   .breadcrumb {
@@ -123,16 +133,7 @@
   details summary { list-style: none; }
   details summary::-webkit-details-marker { display: none; }
 
-  /* Diversifisering rows */
-  .dim-row {
-    display: grid;
-    grid-template-columns: minmax(140px, 1fr) 70px minmax(280px, 2.5fr) 70px;
-    gap: 18px;
-    align-items: center;
-    padding: 14px 18px;
-    border-bottom: 1px solid #f0f0f0;
-  }
-  .dim-row:last-child { border-bottom: 0; }
+  /* Diversifisering — verdier-tags */
   .dim-values { display: flex; flex-wrap: wrap; gap: 4px; }
   .tag {
     display: inline-block; padding: 2px 8px; border-radius: 4px;
@@ -150,7 +151,7 @@
   <!-- Banner -->
   <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-3 mb-6">
     <div class="flex items-center gap-2">
-      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v3.0</span>
+      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v3.1</span>
       <span class="text-sm text-neutral-700">Drilldown via breadcrumb</span>
     </div>
   </div>
@@ -189,33 +190,23 @@
   <section class="mt-10">
     <p class="eyebrow mb-3">Kreativ diversifisering</p>
     <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-      <div style="padding: 1.5rem 1.75rem;">
-        <div class="hero-kpis" style="grid-template-columns: repeat(2, 1fr);">
-          <div>
-            <p class="hero-kpi-label">Svakest dekket</p>
-            <p class="hero-kpi-value mono" id="div-weak-ratio">1/6</p>
-            <p class="hero-kpi-delta" id="div-weak-name">Avsender</p>
-          </div>
-          <div>
-            <p class="hero-kpi-label">Best dekket</p>
-            <p class="hero-kpi-value mono" id="div-strong-ratio">2/3</p>
-            <p class="hero-kpi-delta" id="div-strong-name">Tone</p>
-          </div>
-        </div>
-      </div>
-      <div class="dim-row" style="background:#fafafa;border-top:1px solid #e5e5e5;border-bottom:1px solid #e5e5e5">
-        <div class="eyebrow">Dimensjon</div>
-        <div class="eyebrow">Dekket</div>
-        <div class="eyebrow">Verdier</div>
-        <div class="eyebrow text-right">Aktive ads</div>
-      </div>
-      <div id="dim-list"></div>
+      <table>
+        <thead>
+          <tr>
+            <th>Dimensjon</th>
+            <th class="num-sm">Dekket</th>
+            <th>Verdier</th>
+            <th class="num-sm">Aktive ads</th>
+          </tr>
+        </thead>
+        <tbody id="dim-list"></tbody>
+      </table>
     </div>
     <p class="text-xs text-neutral-500 mt-2">Bare ads i Test/Explore/Exploit teller — Burnt-out og Suppressed ikke.</p>
   </section>
 
   <p class="text-xs text-neutral-400 text-center mt-12">
-    Mock-data · prototype-lab-v3.html · v3.0
+    Mock-data · prototype-lab-v3.html · v3.1
   </p>
 </div>
 
@@ -390,7 +381,7 @@ function renderHero() {
   let metrics;
   if (isAccount) {
     metrics = accountMetrics;
-    header.innerHTML = '';
+    header.innerHTML = `<h1 class="hero-title mb-5">MYYK</h1>`;
   } else {
     const c = campaigns.find(c => c.id === state.campaignId);
     metrics = c || { spend: 0, cpmr: 0, frequency: 0, netNewPct: 0, adCount: 0 };
@@ -683,31 +674,6 @@ function renderDiversity() {
 
   const dims = getDimensions(state.campaignId);
 
-  // KPIer — svakest + best dekket. Tar høyde for ties.
-  const ranked = dims.map(d => ({
-    ...d,
-    total: d.covered.length + d.missing.length,
-    pct: d.covered.length / Math.max(1, d.covered.length + d.missing.length),
-  }));
-  const minPct = Math.min(...ranked.map(d => d.pct));
-  const maxPct = Math.max(...ranked.map(d => d.pct));
-  const weakest = ranked.filter(d => d.pct === minPct);
-  const strongest = ranked.filter(d => d.pct === maxPct);
-
-  function ratioOrPct(group) {
-    if (group.length === 1) return `${group[0].covered.length}/${group[0].total}`;
-    return `${Math.round(group[0].pct * 100)}%`;
-  }
-  function namesList(group) {
-    return group.map(d => d.name).join(' · ');
-  }
-
-  document.getElementById('div-weak-ratio').textContent = ratioOrPct(weakest);
-  document.getElementById('div-weak-name').textContent = namesList(weakest);
-  document.getElementById('div-strong-ratio').textContent = ratioOrPct(strongest);
-  document.getElementById('div-strong-name').textContent = namesList(strongest);
-
-  // Per-dim rows
   list.innerHTML = dims.map(d => {
     const total = d.covered.length + d.missing.length;
     const valuesHtml = [
@@ -715,12 +681,12 @@ function renderDiversity() {
       ...d.missing.map(v => `<span class="tag tag-missing">${v}</span>`),
     ].join('');
     return `
-      <div class="dim-row">
-        <div class="font-medium text-neutral-800">${d.name}</div>
-        <div class="mono text-neutral-700"><span class="font-semibold">${d.covered.length}</span><span class="text-neutral-400">/${total}</span></div>
-        <div class="dim-values">${valuesHtml}</div>
-        <div class="text-right mono text-neutral-500 text-xs">${d.activeAds}</div>
-      </div>
+      <tr>
+        <td class="font-medium text-neutral-800">${d.name}</td>
+        <td class="num-sm mono"><span class="font-semibold">${d.covered.length}</span><span class="text-neutral-400">/${total}</span></td>
+        <td><div class="dim-values">${valuesHtml}</div></td>
+        <td class="num-sm mono text-neutral-500">${d.activeAds}</td>
+      </tr>
     `;
   }).join('');
 }
@@ -750,8 +716,8 @@ function renderCampaignsRichList() {
     }).filter(Boolean).join('');
     const div = diversificationFor(c.id);
     return `
-      <div class="hero hero-clickable" data-campaign="${c.id}">
-        <h1 class="hero-title mb-5">${shortCampaignName(c.name)}</h1>
+      <div class="hero hero-compact hero-clickable" data-campaign="${c.id}">
+        <h1 class="hero-title mb-4">${shortCampaignName(c.name)}</h1>
         <div class="hero-kpis">
           <div>
             <p class="hero-kpi-label">Spend (4u)</p>
