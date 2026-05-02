@@ -227,6 +227,18 @@
     </div>
   </section>
 
+  <!-- Kreativ diversifisering -->
+  <section id="diversity-section" class="mt-10">
+    <p class="eyebrow mb-3">Kreativ diversifisering</p>
+    <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden" id="dim-list">
+      <!-- dim rows injected by JS -->
+    </div>
+    <p class="text-xs text-neutral-500 mt-2">
+      Krever navnekonvensjon i adlaunch.
+      <code class="px-1 py-0.5 rounded bg-neutral-100 mono text-[11px]">[KONTO]_[ANNONSETYPE]_[KONSEPT|-]_[TONE]_[AVSENDER]_[FORMAT]_[KVALITET]_[PERSONA]_v[N]</code>
+    </p>
+  </section>
+
   <p class="text-xs text-neutral-400 text-center mt-12">
     Mock-data · prototype-lab.html · v1.4
   </p>
@@ -636,12 +648,49 @@ function navigateTo(level, campaignId = null) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// Diversifisering — hardcoded for now (avhenger av navnekonvensjon i adlaunch)
+const dimensions = [
+  { name: 'Annonsetype', covered: ['PROD','DEMO','CRT','SOCPROOF','LIST'], missing: ['VOX','FND','BEFAFT','COMP','PROBSOL','EDU','STMT','UNBOX'] },
+  { name: 'Avsender',    covered: ['BRD'],                                  missing: ['CRT','CST','FND','EXP','EMP'] },
+  { name: 'Format',      covered: ['EDIT','MOT','CAR','LIFE'],              missing: ['TALK','VOX','SCR','UGC','UNBOX'] },
+  { name: 'Tone',        covered: ['FUN','EMO'],                            missing: ['HUM'] },
+  { name: 'Persona',     covered: ['BRAND','BROAD'],                        missing: ['SLEEPER','GAVE'] },
+  { name: 'Kvalitet',    covered: ['HIFI'],                                 missing: ['LOFI'] },
+];
+
+function renderDiversity() {
+  const section = document.getElementById('diversity-section');
+  // Kun på konto-nivå for v1
+  if (state.level !== 'account') {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = '';
+  const list = document.getElementById('dim-list');
+  list.innerHTML = dimensions.map(d => {
+    const total = d.covered.length + d.missing.length;
+    const pctFilled = (d.covered.length / total) * 100;
+    const missingText = d.missing.length === 0
+      ? '<span class="text-neutral-400">— alt dekket</span>'
+      : `Mangler: <strong>${d.missing.join(' · ')}</strong>`;
+    return `
+      <div class="dim-row">
+        <div class="font-medium text-neutral-800">${d.name}</div>
+        <div class="mono text-neutral-700"><span class="font-semibold">${d.covered.length}</span><span class="text-neutral-400">/${total}</span></div>
+        <div><div class="dim-bar"><div style="width:${pctFilled}%"></div></div></div>
+        <div class="dim-missing">${missingText}</div>
+      </div>
+    `;
+  }).join('');
+}
+
 function renderAll() {
   renderBreadcrumb();
   renderHero();
   renderCampaignList();
   renderGroupingDropdown();
   renderAds();
+  renderDiversity();
 }
 
 document.getElementById('grouping').addEventListener('change', e => {
