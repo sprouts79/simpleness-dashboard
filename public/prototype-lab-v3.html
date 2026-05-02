@@ -430,15 +430,21 @@ function renderHero() {
 
 function renderBreadcrumb() {
   const bc = document.getElementById('breadcrumb');
-  let html = '';
+  // På Konto-toppnivå rendres labelen som en eyebrow (lik andre seksjons-eyebrows).
+  // På drilldown-nivåer rendres den som breadcrumb.
   if (state.view === 'account') {
-    html = `<span class="active">Konto · MYYK</span>`;
-  } else if (state.view === 'campaigns') {
-    html = `<a data-nav="account">Konto · MYYK</a><span class="sep">›</span><span class="active">Kampanjer</span>`;
+    bc.className = 'eyebrow mb-3';
+    bc.textContent = 'Konto';
+    return;
+  }
+  bc.className = 'breadcrumb mb-4';
+  let html = '';
+  if (state.view === 'campaigns') {
+    html = `<a data-nav="account">Konto</a><span class="sep">›</span><span class="active">Kampanjer</span>`;
   } else if (state.view === 'campaign') {
     const c = campaigns.find(c => c.id === state.campaignId);
     const shortName = c ? shortCampaignName(c.name) : '—';
-    html = `<a data-nav="account">Konto · MYYK</a><span class="sep">›</span><a data-nav="campaigns">Kampanjer</a><span class="sep">›</span><span class="active">${shortName}</span>`;
+    html = `<a data-nav="account">Konto</a><span class="sep">›</span><a data-nav="campaigns">Kampanjer</a><span class="sep">›</span><span class="active">${shortName}</span>`;
   }
   bc.innerHTML = html;
   bc.querySelectorAll('a[data-nav]').forEach(a => {
