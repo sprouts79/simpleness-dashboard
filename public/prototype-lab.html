@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spend-fordeling — prototype v1.3</title>
+<title>Spend-fordeling — prototype v1.4</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -55,8 +55,12 @@
     background: white; border: 1px solid #e5e5e5; border-radius: 14px;
     padding: 1.5rem 1.75rem;
   }
-  .hero-title { font-size: 1.625rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
-  .hero-meta { font-size: 13px; color: #525252; }
+  .hero-title { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin-top: 4px; }
+  .hero-meta { font-size: 12px; color: #737373; }
+  .hero-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
+  .hero-kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; color: #737373; }
+  .hero-kpi-value { font-size: 1.5rem; font-weight: 700; line-height: 1; letter-spacing: -0.02em; margin-top: 6px; }
+  .hero-kpi-delta { font-size: 11px; color: #737373; margin-top: 6px; }
   .stack-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; }
   .stack-legend > div { display: flex; align-items: center; gap: 6px; }
   .stack-legend-dot { width: 9px; height: 9px; border-radius: 2px; }
@@ -136,7 +140,7 @@
   <!-- Banner -->
   <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-3 mb-6">
     <div class="flex items-center gap-2">
-      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v1.3</span>
+      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · mock-data · v1.4</span>
       <span class="text-sm text-neutral-700">Spend-fordeling — drill-down med ett aktivt nivå</span>
     </div>
   </div>
@@ -148,11 +152,15 @@
 
   <!-- Hero card -->
   <div class="hero mb-6" id="hero">
-    <p class="eyebrow" id="hero-eyebrow">Konto</p>
-    <h1 class="hero-title mt-1" id="hero-title">MYYK</h1>
-    <p class="hero-meta mt-1" id="hero-meta">128k spend (4u) · 37 aktive annonser</p>
+    <div id="hero-header" class="mb-5">
+      <!-- eyebrow + (optional) title injected by JS -->
+    </div>
 
-    <div class="mt-4 mb-2">
+    <div class="hero-kpis" id="hero-kpis">
+      <!-- 4 KPIs injected by JS -->
+    </div>
+
+    <div class="mt-6 mb-2">
       <div class="stack tall" id="hero-stack">
         <!-- segments injected by JS -->
       </div>
@@ -161,6 +169,8 @@
     <div class="stack-legend mt-3" id="hero-legend">
       <!-- legend injected by JS -->
     </div>
+
+    <p class="hero-meta mt-4" id="hero-footer">37 aktive annonser</p>
   </div>
 
   <!-- Campaign list (only on account level) -->
@@ -184,7 +194,7 @@
         <p class="text-xs text-neutral-500 mt-0.5" id="ads-subtitle">37 annonser på tvers av 3 kampanjer</p>
       </div>
       <div class="flex items-center gap-2">
-        <span class="text-xs text-neutral-500">Grupper:</span>
+        <span class="text-xs text-neutral-500">Gruppering:</span>
         <select id="grouping" class="group-select">
           <!-- options injected by JS based on level -->
         </select>
@@ -197,7 +207,7 @@
   </section>
 
   <p class="text-xs text-neutral-400 text-center mt-12">
-    Mock-data · prototype-lab.html · v1.3
+    Mock-data · prototype-lab.html · v1.4
   </p>
 </div>
 
@@ -212,10 +222,21 @@ const STATUS_COLORS = {
   test: '#93c5fd', explore: '#34d399', exploit: '#fbbf24', burnt: '#f87171', suppr: '#d4d4d4'
 };
 
+const accountMetrics = {
+  spend: 128000, cpmr: 372, frequency: 4.2, netNewPct: 14, adCount: 37,
+  spendDelta: 0.06,    // +6% vs forrige 4u
+  cpmrDelta: 0.03,     // +3% (bad)
+  freqDelta: 0.05,     // +5% (bad)
+  netNewDelta: -0.10,  // -10% (bad)
+};
+
 const campaigns = [
-  { id: 'c1', name: 'MYYK BAU 2026 / Vårsalg-Bestselgere', spend: 52000, adCount: 8 },
-  { id: 'c2', name: 'MYYK BAU 2026 / Konvertering-Warm', spend: 42000, adCount: 14 },
-  { id: 'c3', name: 'MYYK BAU 2026 / Prospecting-Bredt', spend: 34000, adCount: 15 },
+  { id: 'c1', name: 'MYYK BAU 2026 / Vårsalg-Bestselgere', spend: 52000, adCount: 8,
+    cpmr: 285, frequency: 3.4, netNewPct: 22 },
+  { id: 'c2', name: 'MYYK BAU 2026 / Konvertering-Warm', spend: 42000, adCount: 14,
+    cpmr: 462, frequency: 5.6, netNewPct: 4 },
+  { id: 'c3', name: 'MYYK BAU 2026 / Prospecting-Bredt', spend: 34000, adCount: 15,
+    cpmr: 318, frequency: 2.9, netNewPct: 28 },
 ];
 
 // Each ad has: name, campaign id, ad set, format, tone, concept (or null), spend, cpm, freq, roas, status
@@ -269,8 +290,8 @@ const state = {
   level: 'account',           // 'account' | 'campaign'
   campaignId: null,           // when level=campaign
   groupingByLevel: {          // remember per level
-    account: 'campaign',
-    campaign: 'adset',
+    account: 'none',
+    campaign: 'none',
   },
 };
 
@@ -324,27 +345,70 @@ function getActiveAds() {
   return ads;
 }
 
+function deltaHtml(delta, higherIsBad) {
+  if (delta == null || Math.abs(delta) < 0.01) {
+    return `<span class="text-neutral-400">·</span> <span class="text-neutral-500">stabil</span>`;
+  }
+  const rising = delta > 0;
+  const bad = higherIsBad ? rising : !rising;
+  const tone = bad ? 'text-rose-700' : 'text-emerald-700';
+  const arrow = rising ? '↗' : '↘';
+  return `<span class="${tone}">${arrow} ${Math.abs(delta * 100).toFixed(0)}%</span> <span class="text-neutral-500">vs forrige 4u</span>`;
+}
+
 function renderHero() {
-  const eyebrow = document.getElementById('hero-eyebrow');
-  const title = document.getElementById('hero-title');
-  const meta = document.getElementById('hero-meta');
+  const header = document.getElementById('hero-header');
+  const kpisEl = document.getElementById('hero-kpis');
   const stack = document.getElementById('hero-stack');
   const legend = document.getElementById('hero-legend');
-
-  if (state.level === 'account') {
-    eyebrow.textContent = 'Konto';
-    title.textContent = 'MYYK';
-  } else {
-    eyebrow.textContent = 'Kampanje';
-    const c = campaigns.find(c => c.id === state.campaignId);
-    title.textContent = c ? c.name.replace(/^MYYK BAU 2026 \/ /, '') : '—';
-  }
+  const footer = document.getElementById('hero-footer');
 
   const activeAds = getActiveAds();
   const dist = distribution(activeAds);
-  meta.textContent = `${fmtSpend(dist.total)} spend (4u) · ${activeAds.length} aktive annonser`;
+
+  let metrics, headerHtml;
+  if (state.level === 'account') {
+    metrics = accountMetrics;
+    headerHtml = `<p class="eyebrow">Konto</p>`;
+  } else {
+    const c = campaigns.find(c => c.id === state.campaignId);
+    metrics = c
+      ? { spend: c.spend, cpmr: c.cpmr, frequency: c.frequency, netNewPct: c.netNewPct, adCount: c.adCount }
+      : { spend: 0, cpmr: 0, frequency: 0, netNewPct: 0, adCount: 0 };
+    const shortName = c ? c.name.replace(/^MYYK BAU 2026 \/ /, '') : '—';
+    headerHtml = `<p class="eyebrow">Kampanje</p><h1 class="hero-title">${shortName}</h1>`;
+  }
+  header.innerHTML = headerHtml;
+
+  // 4 KPIs
+  const isAccount = state.level === 'account';
+  kpisEl.innerHTML = `
+    <div>
+      <p class="hero-kpi-label">Spend (4u)</p>
+      <p class="hero-kpi-value mono">${fmtSpend(metrics.spend)}</p>
+      <p class="hero-kpi-delta">${isAccount ? deltaHtml(accountMetrics.spendDelta, false) : '—'}</p>
+    </div>
+    <div>
+      <p class="hero-kpi-label">CPMr</p>
+      <p class="hero-kpi-value mono">${Math.round(metrics.cpmr)}</p>
+      <p class="hero-kpi-delta">${isAccount ? deltaHtml(accountMetrics.cpmrDelta, true) : '—'}</p>
+    </div>
+    <div>
+      <p class="hero-kpi-label">Frekvens</p>
+      <p class="hero-kpi-value mono">${metrics.frequency.toFixed(1)}</p>
+      <p class="hero-kpi-delta">${isAccount ? deltaHtml(accountMetrics.freqDelta, true) : '—'}</p>
+    </div>
+    <div>
+      <p class="hero-kpi-label">Net new %</p>
+      <p class="hero-kpi-value mono">${Math.round(metrics.netNewPct)}%</p>
+      <p class="hero-kpi-delta">${isAccount ? deltaHtml(accountMetrics.netNewDelta, false) : '—'}</p>
+    </div>
+  `;
+
   renderStack(stack, dist);
   renderLegend(legend, dist);
+
+  footer.textContent = `${metrics.adCount} aktive annonser · ${fmtSpend(dist.total)} fordelt på status under`;
 }
 
 function renderBreadcrumb() {
