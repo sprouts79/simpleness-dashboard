@@ -29,6 +29,17 @@
   .card-sub { font-size: 13px; color: #525252; margin-top: 3px; }
   .card-meta { font-size: 12px; color: #737373; margin-top: 10px; }
 
+  .hook-line {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    color: #404040;
+    background: #f5f5f5;
+    border-left: 2px solid #d4d4d4;
+    padding: 6px 10px;
+    margin-top: 8px;
+    border-radius: 0 4px 4px 0;
+  }
+
   .tag {
     display: inline-flex; align-items: center;
     padding: 2px 8px; border-radius: 9999px;
@@ -37,11 +48,9 @@
   }
   .tag-utd  { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }   /* utdanne */
   .tag-dif  { background: #fef3c7; color: #92400e; border-color: #fde68a; }   /* differensiere */
-  .tag-funnel-pa { background: #f5f5f5; color: #404040; border-color: #d4d4d4; } /* problem-aware */
-  .tag-funnel-sa { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; } /* solution-aware */
-  .tag-tov-fnk  { background: #f5f5f4; color: #44403c; border-color: #d6d3d1; }
-  .tag-tov-emo  { background: #fdf2f8; color: #9d174d; border-color: #fbcfe8; }
-  .tag-tov-hum  { background: #fef9c3; color: #854d0e; border-color: #fde047; }
+  .tag-tov-fnk { background: #f5f5f4; color: #44403c; border-color: #d6d3d1; }
+  .tag-tov-emo { background: #fdf2f8; color: #9d174d; border-color: #fbcfe8; }
+  .tag-tov-hum { background: #fef9c3; color: #854d0e; border-color: #fde047; }
   .tag-status-live { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
   .tag-status-plan { background: #f5f5f5; color: #525252; border-color: #d4d4d4; }
   .tag-status-paus { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
@@ -56,15 +65,15 @@
   <!-- Banner -->
   <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-3 mb-6">
     <div class="flex items-center gap-2 flex-wrap">
-      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · v0.1</span>
-      <span class="text-sm text-neutral-700">Kreativ-rammeverk · drill-down · Kokkeløren som eksempel</span>
+      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Prototype · v0.2</span>
+      <span class="text-sm text-neutral-700">4-nivå drilldown · Audience → Motivasjon → Tema → Annonse</span>
     </div>
   </div>
 
   <!-- Breadcrumb -->
   <nav class="breadcrumb mb-4" id="breadcrumb"></nav>
 
-  <!-- Optional context block (vises når man drilled inn) -->
+  <!-- Optional context block -->
   <div id="context" class="mb-6"></div>
 
   <!-- Section title -->
@@ -73,116 +82,111 @@
   <!-- List -->
   <div id="list" class="space-y-3"></div>
 
-  <!-- Footer -->
-  <p class="text-xs text-neutral-400 text-center mt-12">Mock-data · creative-ops.html · v0.1</p>
+  <p class="text-xs text-neutral-400 text-center mt-12">Mock-data · creative-ops.html · v0.2</p>
 </div>
 
 <script>
 // ───────────────────────────────────────────────────────────────────
-// MOCK-DATA — Kokkeløren-eksempel
-// Hierarki: Kunde → Audience → Motivasjon → Tema → Konsept → Annonse
+// Hierarki: Kunde → Audience → Motivasjon → Tema → Annonse
+// Tema bærer: navn, hook, awareness (utdanne/differensiere), TOV, beskrivelse
+// Tema absorberer det vi tidligere kalte "konsept" (POV/Demo/Listicle/etc).
 // ───────────────────────────────────────────────────────────────────
 
 const data = {
   kunde: { navn: 'Kokkeløren' },
   audiences: [
     {
-      id: 'a1',
-      navn: 'Matentusiaster',
-      sub: '28–50 · elsker mat, søker variasjon',
+      id: 'a1', navn: 'Matentusiaster', sub: '28–50 · elsker mat, søker variasjon',
       motivasjoner: [
         { id: 'm1a', navn: 'Vil prøve nye smaker uten å forske',
           inner: '"Jeg vil oppdage, men har ikke tid til å lete"',
           temaer: [
-            { id: 't1', navn: 'Aldri det samme to ganger',
-              benefit: 'Ny meny hver uke — kuratert av kokker',
-              konsepter: [
-                { id: 'k1', navn: 'POV — Madeleine i Oslo', funksjon: 'differensiere', tov: 'emosjon',
-                  beskrivelse: 'Kreatør pakker opp ukens boks, viser overraskelsen', annonser: [
-                    { v: 'v.1', format: 'Reels 9:16', status: 'Live' },
-                    { v: 'v.2', format: 'Reels 9:16', status: 'Planlagt' },
-                  ]},
-                { id: 'k2', navn: 'Listicle — 4 retter du ikke ville laget selv', funksjon: 'differensiere', tov: 'funksjon',
-                  beskrivelse: 'Tekst-stickers + kjapt kutt, native Reels-stil', annonser: [
-                    { v: 'v.1', format: 'Reels 9:16', status: 'Live' },
-                  ]},
+            { id: 't1', navn: 'POV — Madeleine pakker opp ukens boks',
+              hook: 'Pakker opp ukens boks — har ALDRI spist dette før',
+              awareness: 'differensiere', tov: 'emosjon',
+              beskrivelse: 'Kreatør pakker opp boksen i sanntid, viser ekte overraskelse.',
+              annonser: [
+                { v: 'v.1', format: 'Reels 9:16', status: 'Live' },
+                { v: 'v.2', format: 'Reels 9:16', status: 'Planlagt' },
               ]},
-            { id: 't2', navn: 'Smaker fra hele verden, hjemme',
-              benefit: 'Internasjonale retter som ellers krever spesialisert butikk',
-              konsepter: [
-                { id: 'k3', navn: 'Demo — krydder du ikke har', funksjon: 'utdanne', tov: 'funksjon',
-                  beskrivelse: 'Vis ingredienser frem, fortell hva de gjør', annonser: [
-                    { v: 'v.1', format: 'Static 1:1', status: 'Live' },
-                  ]},
+            { id: 't2', navn: 'Listicle — retter du ikke ville laget selv',
+              hook: '4 retter du aldri ville handlet ingrediensene til',
+              awareness: 'differensiere', tov: 'funksjon',
+              beskrivelse: 'Native Reels-stil, tekst-stickers, kjapt kutt mellom retter.',
+              annonser: [
+                { v: 'v.1', format: 'Reels 9:16', status: 'Live' },
+              ]},
+            { id: 't3', navn: 'Demo — krydderet du aldri har kjøpt',
+              hook: 'Hva er sumac? Du finner det i denne ukas boks.',
+              awareness: 'utdanne', tov: 'funksjon',
+              beskrivelse: 'Vis ingredienser frem en og en, fortell hva de gjør.',
+              annonser: [
+                { v: 'v.1', format: 'Static 1:1', status: 'Live' },
               ]},
           ]},
         { id: 'm1b', navn: 'Frykter prisen er for høy',
           inner: '"Det ser dyrt ut for det jeg får"',
           temaer: [
-            { id: 't3', navn: 'Pris per porsjon, ikke per boks',
-              benefit: 'Når du regner per porsjon er det billigere enn handletur',
-              konsepter: [
-                { id: 'k4', navn: 'Demo — handlevogn vs Kokkeløren-boks', funksjon: 'utdanne', tov: 'funksjon',
-                  beskrivelse: 'Sammenligning side-by-side med priser synlig', annonser: [
-                    { v: 'v.1', format: 'Static 1:1', status: 'Planlagt' },
-                  ]},
+            { id: 't4', navn: 'Demo — handlevogn vs Kokkeløren-boks',
+              hook: 'Vi handlet ingrediensene til samme middag — se forskjellen',
+              awareness: 'utdanne', tov: 'funksjon',
+              beskrivelse: 'Side-by-side sammenligning, priser synlig, regn ut per porsjon.',
+              annonser: [
+                { v: 'v.1', format: 'Static 1:1', status: 'Planlagt' },
               ]},
           ]},
       ]},
     {
-      id: 'a2',
-      navn: 'Travle foreldre',
-      sub: '30–48 · trenger middag på kort tid',
+      id: 'a2', navn: 'Travle foreldre', sub: '30–48 · trenger middag på kort tid',
       motivasjoner: [
         { id: 'm2a', navn: 'Slipp middags-debatten',
           inner: '"Jeg gidder ikke høre \'jeg vil ikke ha det\' igjen"',
           temaer: [
-            { id: 't4', navn: 'Familiens enighet på 5 min',
-              benefit: '3-4 retter ukentlig hele familien spiser',
-              konsepter: [
-                { id: 'k5', navn: 'POV — pappa i Stavanger', funksjon: 'differensiere', tov: 'humor',
-                  beskrivelse: 'Far snakker direkte til kamera, lettforståelig kverulering', annonser: [
-                    { v: 'v.1', format: 'Reels 9:16', status: 'Live' },
-                    { v: 'v.2', format: 'Reels 9:16', status: 'Live' },
-                    { v: 'v.1', format: 'Static 1:1', status: 'Live' },
-                  ]},
-                { id: 'k6', navn: 'Tutorial — slik bruker du familie-modus', funksjon: 'utdanne', tov: 'funksjon',
-                  beskrivelse: 'Skjermopptak av app, hvordan velge familie-vennlige retter', annonser: [
-                    { v: 'v.1', format: 'Reels 9:16', status: 'Planlagt' },
-                  ]},
+            { id: 't5', navn: 'POV — pappa i Stavanger',
+              hook: 'Vi sluttet å krangle om middag for 3 uker siden',
+              awareness: 'differensiere', tov: 'humor',
+              beskrivelse: 'Far snakker direkte til kamera, lett kverulering, native Reels-stemme.',
+              annonser: [
+                { v: 'v.1', format: 'Reels 9:16', status: 'Live' },
+                { v: 'v.2', format: 'Reels 9:16', status: 'Live' },
+                { v: 'v.1', format: 'Static 1:1', status: 'Live' },
               ]},
-            { id: 't5', navn: '3 dager i uka uten diskusjon',
-              benefit: 'Mindre planlegging — middagen kommer ferdig',
-              konsepter: [
-                { id: 'k7', navn: 'Spokesperson — kjent kokk anbefaler', funksjon: 'differensiere', tov: 'emosjon',
-                  beskrivelse: 'Profil-kokk forteller hva han ville velge', annonser: [
-                    { v: 'v.1', format: 'Reels 9:16', status: 'Pauset' },
-                  ]},
+            { id: 't6', navn: 'Tutorial — slik bruker du familie-modus',
+              hook: 'Slik finner du retter alle elsker på 30 sek',
+              awareness: 'utdanne', tov: 'funksjon',
+              beskrivelse: 'Skjermopptak av app, vis utvelgelse av familie-vennlige retter.',
+              annonser: [
+                { v: 'v.1', format: 'Reels 9:16', status: 'Planlagt' },
+              ]},
+            { id: 't7', navn: 'Spokesperson — kjent kokk anbefaler',
+              hook: 'Min favoritt-rett denne uka — den er enkel',
+              awareness: 'differensiere', tov: 'emosjon',
+              beskrivelse: 'Profil-kokk peker på 1 rett, forteller hvorfor han ville valgt den.',
+              annonser: [
+                { v: 'v.1', format: 'Reels 9:16', status: 'Pauset' },
               ]},
           ]},
         { id: 'm2b', navn: 'Frykt for abonnement-binding',
           inner: '"Jeg vil ikke binde meg, det blir alltid kjedelig"',
           temaer: [
-            { id: 't6', navn: 'Pause når du vil, uten kostnad',
-              benefit: 'Ingen binding — pause uke for uke',
-              konsepter: [
-                { id: 'k8', navn: 'Q&A — vanligste spørsmål om abonnement', funksjon: 'utdanne', tov: 'funksjon',
-                  beskrivelse: 'Direkte adressering av binding-frykt med tekst-overlegg', annonser: [
-                    { v: 'v.1', format: 'Static 1:1', status: 'Live' },
-                  ]},
+            { id: 't8', navn: 'Q&A — vanligste spørsmål om abonnement',
+              hook: 'Kan jeg pause? Svar: hver uke, gratis.',
+              awareness: 'utdanne', tov: 'funksjon',
+              beskrivelse: 'Direkte tekst-overlegg som adresserer binding-frykt.',
+              annonser: [
+                { v: 'v.1', format: 'Static 1:1', status: 'Live' },
               ]},
           ]},
         { id: 'm2c', navn: 'Restaurantkvalitet på en travel onsdag',
           inner: '"Jeg orker ikke restaurant, men vil ha noe mer enn pasta"',
           temaer: [
-            { id: 't7', navn: 'Restaurantkvalitet på 25 min',
-              benefit: 'Tilbereding på under 30 min, kvaliteten holder opp',
-              konsepter: [
-                { id: 'k9', navn: 'Tutorial — fra boks til middag', funksjon: 'utdanne', tov: 'funksjon',
-                  beskrivelse: 'Time-lapse av tilbereding, ferdig-rett zoom', annonser: [
-                    { v: 'v.1', format: 'Reels 9:16', status: 'Live' },
-                    { v: 'v.2', format: 'Reels 9:16', status: 'Planlagt' },
-                  ]},
+            { id: 't9', navn: 'Tutorial — fra boks til middag',
+              hook: 'Fra boks til ferdig middag — på 25 min',
+              awareness: 'utdanne', tov: 'funksjon',
+              beskrivelse: 'Time-lapse av tilbereding, ferdig-rett zoom på slutten.',
+              annonser: [
+                { v: 'v.1', format: 'Reels 9:16', status: 'Live' },
+                { v: 'v.2', format: 'Reels 9:16', status: 'Planlagt' },
               ]},
           ]},
       ]},
@@ -194,26 +198,20 @@ const data = {
 // ───────────────────────────────────────────────────────────────────
 
 const state = {
-  level: 'audience',  // 'audience' | 'motivasjon' | 'tema' | 'konsept' | 'annonse'
+  level: 'audience',  // 'audience' | 'motivasjon' | 'tema' | 'annonse'
   audienceId: null,
   motivasjonId: null,
   temaId: null,
-  konseptId: null,
 };
 
 function navigateTo(level, ids = {}) {
-  // Clear current-level og deeper selections først
-  if (level === 'audience')   { state.audienceId = null; state.motivasjonId = null; state.temaId = null; state.konseptId = null; }
-  else if (level === 'motivasjon') { state.motivasjonId = null; state.temaId = null; state.konseptId = null; }
-  else if (level === 'tema')      { state.temaId = null; state.konseptId = null; }
-  else if (level === 'konsept')   { state.konseptId = null; }
-  // Sett nytt nivå
+  if (level === 'audience')        { state.audienceId = null; state.motivasjonId = null; state.temaId = null; }
+  else if (level === 'motivasjon') { state.motivasjonId = null; state.temaId = null; }
+  else if (level === 'tema')       { state.temaId = null; }
   state.level = level;
-  // Apply ids fra drill-down (overstyrer clearen over for current-level)
   if (ids.audienceId !== undefined) state.audienceId = ids.audienceId;
   if (ids.motivasjonId !== undefined) state.motivasjonId = ids.motivasjonId;
   if (ids.temaId !== undefined) state.temaId = ids.temaId;
-  if (ids.konseptId !== undefined) state.konseptId = ids.konseptId;
   renderAll();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -222,17 +220,25 @@ function navigateTo(level, ids = {}) {
 // Lookup helpers
 // ───────────────────────────────────────────────────────────────────
 
-const findAudience    = () => data.audiences.find(a => a.id === state.audienceId);
-const findMotivasjon  = () => findAudience()?.motivasjoner.find(m => m.id === state.motivasjonId);
-const findTema        = () => findMotivasjon()?.temaer.find(t => t.id === state.temaId);
-const findKonsept     = () => findTema()?.konsepter.find(k => k.id === state.konseptId);
+const findAudience   = () => data.audiences.find(a => a.id === state.audienceId);
+const findMotivasjon = () => findAudience()?.motivasjoner.find(m => m.id === state.motivasjonId);
+const findTema       = () => findMotivasjon()?.temaer.find(t => t.id === state.temaId);
 
 function totalAds(node) {
   if (node.annonser) return node.annonser.length;
-  if (node.konsepter) return node.konsepter.reduce((s, k) => s + totalAds(k), 0);
-  if (node.temaer)    return node.temaer.reduce((s, t) => s + totalAds(t), 0);
+  if (node.temaer)   return node.temaer.reduce((s, t) => s + totalAds(t), 0);
   if (node.motivasjoner) return node.motivasjoner.reduce((s, m) => s + totalAds(m), 0);
   return 0;
+}
+
+function awarenessTag(awareness) {
+  return awareness === 'utdanne'
+    ? `<span class="tag tag-utd">utdanne</span>`
+    : `<span class="tag tag-dif">differensiere</span>`;
+}
+function tovTag(tov) {
+  const cls = tov === 'funksjon' ? 'tag-tov-fnk' : tov === 'emosjon' ? 'tag-tov-emo' : 'tag-tov-hum';
+  return `<span class="tag ${cls}">${tov}</span>`;
 }
 
 // ───────────────────────────────────────────────────────────────────
@@ -242,63 +248,38 @@ function totalAds(node) {
 function renderBreadcrumb() {
   const bc = document.getElementById('breadcrumb');
   const parts = [];
-  // Root-noden navigerer til 'audience' (root-listen)
   parts.push({ label: `Kunde · ${data.kunde.navn}`, level: 'audience', active: state.level === 'audience' });
-  if (state.audienceId) {
-    parts.push({ label: findAudience().navn, level: 'motivasjon', active: state.level === 'motivasjon' });
-  }
-  if (state.motivasjonId) {
-    parts.push({ label: findMotivasjon().navn, level: 'tema', active: state.level === 'tema' });
-  }
-  if (state.temaId) {
-    parts.push({ label: findTema().navn, level: 'konsept', active: state.level === 'konsept' });
-  }
-  if (state.konseptId) {
-    parts.push({ label: findKonsept().navn, level: 'annonse', active: state.level === 'annonse' });
-  }
+  if (state.audienceId) parts.push({ label: findAudience().navn, level: 'motivasjon', active: state.level === 'motivasjon' });
+  if (state.motivasjonId) parts.push({ label: findMotivasjon().navn, level: 'tema', active: state.level === 'tema' });
+  if (state.temaId) parts.push({ label: findTema().navn, level: 'annonse', active: state.level === 'annonse' });
 
   bc.innerHTML = parts.map((p, i) => {
     const sep = i > 0 ? `<span class="sep">›</span>` : '';
-    // En aktiv node = nåværende nivå, vises som tekst (ikke klikkbar).
-    // Alle andre noder er klikkbare lenker som navigerer til *deres egen* aktive visning.
-    // For root: data-level="audience" tar deg tilbake til audience-listen.
-    // For audience-noden: data-level="motivasjon" tar deg tilbake til motivasjon-listen for *den* audiencen.
     if (p.active) return `${sep}<span class="active">${p.label}</span>`;
     return `${sep}<a data-level="${p.level}">${p.label}</a>`;
   }).join('');
 
   bc.querySelectorAll('a[data-level]').forEach(a => {
-    a.addEventListener('click', e => {
-      e.preventDefault();
-      navigateTo(a.dataset.level);
-    });
+    a.addEventListener('click', e => { e.preventDefault(); navigateTo(a.dataset.level); });
   });
 }
 
 function renderContext() {
-  // Vis litt context om valgt parent når man har drilled inn
   const ctx = document.getElementById('context');
   let html = '';
   if (state.level === 'motivasjon' && findAudience()) {
-    const a = findAudience();
-    html = `<p class="text-sm text-neutral-600">${a.sub}</p>`;
+    html = `<p class="text-sm text-neutral-600">${findAudience().sub}</p>`;
   } else if (state.level === 'tema' && findMotivasjon()) {
-    const m = findMotivasjon();
-    html = `<p class="text-sm text-neutral-600 italic">${m.inner}</p>`;
-  } else if (state.level === 'konsept' && findTema()) {
+    html = `<p class="text-sm text-neutral-600 italic">${findMotivasjon().inner}</p>`;
+  } else if (state.level === 'annonse' && findTema()) {
     const t = findTema();
-    html = `<p class="text-sm text-neutral-600"><span class="text-neutral-400">Benefit:</span> ${t.benefit}</p>`;
-  } else if (state.level === 'annonse' && findKonsept()) {
-    const k = findKonsept();
-    const tagFn = k.funksjon === 'utdanne' ? 'tag-utd' : 'tag-dif';
-    const tagFnLabel = k.funksjon === 'utdanne' ? 'utdanne' : 'differensiere';
-    const tagTov = k.tov === 'funksjon' ? 'tag-tov-fnk' : k.tov === 'emosjon' ? 'tag-tov-emo' : 'tag-tov-hum';
     html = `
-      <div class="flex items-center gap-2 flex-wrap mb-2">
-        <span class="tag ${tagFn}">${tagFnLabel}</span>
-        <span class="tag ${tagTov}">${k.tov}</span>
+      <div class="hook-line">${t.hook}</div>
+      <div class="flex items-center gap-2 flex-wrap mt-3">
+        ${awarenessTag(t.awareness)}
+        ${tovTag(t.tov)}
       </div>
-      <p class="text-sm text-neutral-600">${k.beskrivelse}</p>`;
+      <p class="text-sm text-neutral-600 mt-3">${t.beskrivelse}</p>`;
   }
   ctx.innerHTML = html;
 }
@@ -318,8 +299,7 @@ function renderList() {
     `).join('');
   } else if (state.level === 'motivasjon') {
     title.textContent = 'Motivasjoner';
-    const a = findAudience();
-    list.innerHTML = a.motivasjoner.map(m => `
+    list.innerHTML = findAudience().motivasjoner.map(m => `
       <div class="card" data-action="drill-motivasjon" data-id="${m.id}">
         <p class="card-name">${m.navn}</p>
         <p class="card-sub italic">${m.inner}</p>
@@ -328,39 +308,23 @@ function renderList() {
     `).join('');
   } else if (state.level === 'tema') {
     title.textContent = 'Temaer';
-    const m = findMotivasjon();
-    list.innerHTML = m.temaer.map(t => `
+    list.innerHTML = findMotivasjon().temaer.map(t => `
       <div class="card" data-action="drill-tema" data-id="${t.id}">
-        <p class="card-name">${t.navn}</p>
-        <p class="card-sub">${t.benefit}</p>
-        <p class="card-meta mono">${t.konsepter.length} konsept${t.konsepter.length === 1 ? '' : 'er'} · ${totalAds(t)} annonser</p>
+        <div class="flex items-start justify-between gap-3">
+          <p class="card-name">${t.navn}</p>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            ${awarenessTag(t.awareness)}
+            ${tovTag(t.tov)}
+          </div>
+        </div>
+        <div class="hook-line">${t.hook}</div>
+        <p class="card-sub">${t.beskrivelse}</p>
+        <p class="card-meta mono">${t.annonser.length} annonse${t.annonser.length === 1 ? '' : 'r'}</p>
       </div>
     `).join('');
-  } else if (state.level === 'konsept') {
-    title.textContent = 'Konsepter';
-    const t = findTema();
-    list.innerHTML = t.konsepter.map(k => {
-      const tagFn = k.funksjon === 'utdanne' ? 'tag-utd' : 'tag-dif';
-      const tagFnLabel = k.funksjon === 'utdanne' ? 'utdanne' : 'differensiere';
-      const tagTov = k.tov === 'funksjon' ? 'tag-tov-fnk' : k.tov === 'emosjon' ? 'tag-tov-emo' : 'tag-tov-hum';
-      return `
-        <div class="card" data-action="drill-konsept" data-id="${k.id}">
-          <div class="flex items-start justify-between gap-3">
-            <p class="card-name">${k.navn}</p>
-            <div class="flex items-center gap-1.5 flex-shrink-0">
-              <span class="tag ${tagFn}">${tagFnLabel}</span>
-              <span class="tag ${tagTov}">${k.tov}</span>
-            </div>
-          </div>
-          <p class="card-sub">${k.beskrivelse}</p>
-          <p class="card-meta mono">${k.annonser.length} annonse${k.annonser.length === 1 ? '' : 'r'}</p>
-        </div>
-      `;
-    }).join('');
   } else if (state.level === 'annonse') {
     title.textContent = 'Annonser';
-    const k = findKonsept();
-    list.innerHTML = k.annonser.map(ad => {
+    list.innerHTML = findTema().annonser.map(ad => {
       const statusClass = ad.status === 'Live' ? 'tag-status-live' : ad.status === 'Pauset' ? 'tag-status-paus' : 'tag-status-plan';
       return `
         <div class="card terminal">
@@ -376,15 +340,13 @@ function renderList() {
     }).join('');
   }
 
-  // Bind drill-down click handlers
   list.querySelectorAll('[data-action]').forEach(el => {
     el.addEventListener('click', () => {
       const action = el.dataset.action;
       const id = el.dataset.id;
-      if (action === 'drill-audience')  navigateTo('motivasjon', { audienceId: id });
+      if (action === 'drill-audience')   navigateTo('motivasjon', { audienceId: id });
       if (action === 'drill-motivasjon') navigateTo('tema',       { motivasjonId: id });
-      if (action === 'drill-tema')      navigateTo('konsept',    { temaId: id });
-      if (action === 'drill-konsept')   navigateTo('annonse',    { konseptId: id });
+      if (action === 'drill-tema')       navigateTo('annonse',    { temaId: id });
     });
   });
 }
