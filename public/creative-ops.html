@@ -51,6 +51,7 @@
   .tag-prod-pro  { background: #faf5ff; color: #6b21a8; border-color: #e9d5ff; }
   .tag-prod-ai   { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
   .tag-prod-bilde{ background: #fff7ed; color: #9a3412; border-color: #fed7aa; }
+  .tag-avs { background: #fafafa; color: #404040; border-color: #d4d4d4; }
   .tag-status-live { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
   .tag-status-plan { background: #f5f5f5; color: #525252; border-color: #d4d4d4; }
   .tag-status-paus { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
@@ -86,6 +87,7 @@
 // ───────────────────────────────────────────────────────────────────
 
 const PROD_LABELS = { 'lo-fi': 'Lo-fi', 'pro': 'Pro', 'ai': 'AI-illustrasjon', 'bilde': 'Produktbilde' };
+const AVS_LABELS  = { 'brand': 'Brand', 'creator': 'Creator', 'kunde': 'Kunde', 'ekspert': 'Ekspert', 'founder': 'Founder' };
 
 const data = {
   kunde: { navn: 'Kokkeløren' },
@@ -104,14 +106,14 @@ const data = {
                   beskrivelse: 'Kreatør pakker opp boksen i sanntid, viser ekte overraskelse.',
                   awareness: 'differensiere', tov: 'emosjon',
                   versjoner: [
-                    { id: 'v1', prod: 'lo-fi', format: 'Reels 9:16', status: 'Live' },
+                    { id: 'v1', prod: 'lo-fi', avsender: 'creator', format: 'Reels 9:16', status: 'Live' },
                   ]},
                 { id: 'ad2',
                   hook: '4 retter du aldri ville handlet ingrediensene til',
                   beskrivelse: 'Native Reels-stil, tekst-stickers, kjapt kutt mellom retter.',
                   awareness: 'differensiere', tov: 'funksjon',
                   versjoner: [
-                    { id: 'v2', prod: 'lo-fi', format: 'Reels 9:16', status: 'Live' },
+                    { id: 'v2', prod: 'lo-fi', avsender: 'brand', format: 'Reels 9:16', status: 'Live' },
                   ]},
               ]},
             { id: 't2', navn: 'Smaker fra hele verden',
@@ -122,8 +124,8 @@ const data = {
                   beskrivelse: 'Vis ingredienser frem en og en, fortell hva de gjør.',
                   awareness: 'utdanne', tov: 'funksjon',
                   versjoner: [
-                    { id: 'v3', prod: 'bilde', format: 'Static 1:1', status: 'Live' },
-                    { id: 'v4', prod: 'ai', format: 'Static 1:1', status: 'Live' },
+                    { id: 'v3', prod: 'bilde', avsender: 'brand', format: 'Static 1:1', status: 'Live' },
+                    { id: 'v4', prod: 'ai', avsender: 'brand', format: 'Static 1:1', status: 'Live' },
                   ]},
               ]},
           ]},
@@ -138,7 +140,7 @@ const data = {
                   beskrivelse: 'Side-by-side handlevogn vs Kokkeløren-boks, priser synlig.',
                   awareness: 'utdanne', tov: 'funksjon',
                   versjoner: [
-                    { id: 'v5', prod: 'pro', format: 'Static 1:1', status: 'Planlagt' },
+                    { id: 'v5', prod: 'pro', avsender: 'brand', format: 'Static 1:1', status: 'Planlagt' },
                   ]},
               ]},
           ]},
@@ -157,22 +159,22 @@ const data = {
                   beskrivelse: 'Far snakker direkte til kamera, lett kverulering.',
                   awareness: 'differensiere', tov: 'humor',
                   versjoner: [
-                    { id: 'v6', prod: 'lo-fi', format: 'Reels 9:16', status: 'Live' },
-                    { id: 'v7', prod: 'lo-fi', format: 'Static 1:1', status: 'Live' },
+                    { id: 'v6', prod: 'lo-fi', avsender: 'kunde', format: 'Reels 9:16', status: 'Live' },
+                    { id: 'v7', prod: 'lo-fi', avsender: 'kunde', format: 'Static 1:1', status: 'Live' },
                   ]},
                 { id: 'ad6',
                   hook: 'Slik finner du retter alle elsker på 30 sek',
                   beskrivelse: 'Skjermopptak av familie-modus i appen.',
                   awareness: 'utdanne', tov: 'funksjon',
                   versjoner: [
-                    { id: 'v8', prod: 'lo-fi', format: 'Reels 9:16', status: 'Planlagt' },
+                    { id: 'v8', prod: 'lo-fi', avsender: 'brand', format: 'Reels 9:16', status: 'Planlagt' },
                   ]},
                 { id: 'ad7',
                   hook: 'Min favoritt-rett denne uka — den er enkel',
                   beskrivelse: 'Profil-kokk peker på 1 rett, forteller hvorfor.',
                   awareness: 'differensiere', tov: 'emosjon',
                   versjoner: [
-                    { id: 'v9', prod: 'pro', format: 'Reels 9:16', status: 'Pauset' },
+                    { id: 'v9', prod: 'pro', avsender: 'ekspert', format: 'Reels 9:16', status: 'Pauset' },
                   ]},
               ]},
           ]},
@@ -187,8 +189,8 @@ const data = {
                   beskrivelse: 'Direkte tekst-overlegg som adresserer binding-frykt.',
                   awareness: 'utdanne', tov: 'funksjon',
                   versjoner: [
-                    { id: 'v10', prod: 'bilde', format: 'Static 1:1', status: 'Live' },
-                    { id: 'v11', prod: 'ai', format: 'Static 1:1', status: 'Live' },
+                    { id: 'v10', prod: 'bilde', avsender: 'brand', format: 'Static 1:1', status: 'Live' },
+                    { id: 'v11', prod: 'ai', avsender: 'brand', format: 'Static 1:1', status: 'Live' },
                   ]},
               ]},
           ]},
@@ -203,7 +205,7 @@ const data = {
                   beskrivelse: 'Time-lapse av tilbereding, ferdig-rett zoom på slutten.',
                   awareness: 'utdanne', tov: 'funksjon',
                   versjoner: [
-                    { id: 'v12', prod: 'pro', format: 'Reels 9:16', status: 'Live' },
+                    { id: 'v12', prod: 'pro', avsender: 'founder', format: 'Reels 9:16', status: 'Live' },
                   ]},
               ]},
           ]},
@@ -262,6 +264,9 @@ function tovTag(tov) {
 function prodTag(prod) {
   const cls = `tag-prod-${prod === 'lo-fi' ? 'lofi' : prod}`;
   return `<span class="tag ${cls}">${PROD_LABELS[prod]}</span>`;
+}
+function avsenderTag(avsender) {
+  return `<span class="tag tag-avs">${AVS_LABELS[avsender]}</span>`;
 }
 function statusTag(status) {
   const cls = status === 'Live' ? 'tag-status-live' : status === 'Pauset' ? 'tag-status-paus' : 'tag-status-plan';
@@ -370,6 +375,7 @@ function renderList() {
       <div class="card terminal">
         <div class="flex items-center gap-1.5 flex-wrap">
           ${prodTag(v.prod)}
+          ${avsenderTag(v.avsender)}
           <span class="pill-format">${v.format}</span>
           ${statusTag(v.status)}
         </div>
