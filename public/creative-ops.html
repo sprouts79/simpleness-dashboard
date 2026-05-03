@@ -42,8 +42,7 @@
     font-size: 11px; font-weight: 600;
     border: 1px solid;
   }
-  .tag-utd { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
-  .tag-dif { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+  .tag-kunnskap { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
   .tag-tov-fnk { background: #f5f5f4; color: #44403c; border-color: #d6d3d1; }
   .tag-tov-emo { background: #fdf2f8; color: #9d174d; border-color: #fbcfe8; }
   .tag-tov-hum { background: #fef9c3; color: #854d0e; border-color: #fde047; }
@@ -94,35 +93,36 @@ const data = {
   malgrupper: [
     {
       id: 'mg1', navn: 'Matentusiaster', sub: '28–50 · elsker mat, søker variasjon',
+      kunnskapsgap: 'At ingrediensene er kuratert av profesjonelle kokker, ikke standard meny',
       motivasjoner: [
         { id: 'm1a', navn: 'Vil prøve nye smaker uten å forske',
           inner: '"Jeg vil oppdage, men har ikke tid til å lete"',
           temaer: [
             { id: 't1', navn: 'Aldri det samme to ganger',
-              benefit: 'Kuratert av kokker — du oppdager uten å lete',
+              benefit: 'Kuratert av kokker — du oppdager uten å lete', kunnskap: false,
               annonser: [
                 { id: 'ad1',
                   hook: 'Pakker opp ukens boks — har ALDRI spist dette før',
                   beskrivelse: 'Kreatør pakker opp boksen i sanntid, viser ekte overraskelse.',
-                  awareness: 'differensiere', tov: 'emosjon',
+                  tov: 'emosjon',
                   versjoner: [
                     { id: 'v1', prod: 'lo-fi', avsender: 'creator', format: 'Reels 9:16', status: 'Live' },
                   ]},
                 { id: 'ad2',
                   hook: '4 retter du aldri ville handlet ingrediensene til',
                   beskrivelse: 'Native Reels-stil, tekst-stickers, kjapt kutt mellom retter.',
-                  awareness: 'differensiere', tov: 'funksjon',
+                  tov: 'funksjon',
                   versjoner: [
                     { id: 'v2', prod: 'lo-fi', avsender: 'brand', format: 'Reels 9:16', status: 'Live' },
                   ]},
               ]},
             { id: 't2', navn: 'Smaker fra hele verden',
-              benefit: 'Internasjonale ingredienser som ellers krever spesialbutikk',
+              benefit: 'Internasjonale ingredienser som ellers krever spesialbutikk', kunnskap: true,
               annonser: [
                 { id: 'ad3',
                   hook: 'Hva er sumac? Du finner det i denne ukas boks',
                   beskrivelse: 'Vis ingredienser frem en og en, fortell hva de gjør.',
-                  awareness: 'utdanne', tov: 'funksjon',
+                  tov: 'funksjon',
                   versjoner: [
                     { id: 'v3', prod: 'bilde', avsender: 'brand', format: 'Static 1:1', status: 'Live' },
                     { id: 'v4', prod: 'ai', avsender: 'brand', format: 'Static 1:1', status: 'Live' },
@@ -133,12 +133,12 @@ const data = {
           inner: '"Det ser dyrt ut for det jeg får"',
           temaer: [
             { id: 't3', navn: 'Pris per porsjon, ikke per boks',
-              benefit: 'Per-porsjon-pris under handletur når du regner det ut',
+              benefit: 'Per-porsjon-pris under handletur når du regner det ut', kunnskap: true,
               annonser: [
                 { id: 'ad4',
                   hook: 'Vi handlet ingrediensene til samme middag — se forskjellen',
                   beskrivelse: 'Side-by-side handlevogn vs Kokkeløren-boks, priser synlig.',
-                  awareness: 'utdanne', tov: 'funksjon',
+                  tov: 'funksjon',
                   versjoner: [
                     { id: 'v5', prod: 'pro', avsender: 'brand', format: 'Static 1:1', status: 'Planlagt' },
                   ]},
@@ -147,34 +147,39 @@ const data = {
       ]},
     {
       id: 'mg2', navn: 'Travle foreldre', sub: '30–48 · trenger middag på kort tid',
+      kunnskapsgap: 'At du kan pause uka uten kostnad, ingen binding',
       motivasjoner: [
         { id: 'm2a', navn: 'Slipp middags-debatten',
           inner: '"Jeg gidder ikke høre \'jeg vil ikke ha det\' igjen"',
           temaer: [
             { id: 't4', navn: 'Familiens enighet på 5 min',
-              benefit: 'Pre-kuraterte retter hele familien spiser, ingen diskusjon',
+              benefit: 'Pre-kuraterte retter hele familien spiser, ingen diskusjon', kunnskap: false,
               annonser: [
                 { id: 'ad5',
                   hook: 'Vi sluttet å krangle om middag for 3 uker siden',
                   beskrivelse: 'Far snakker direkte til kamera, lett kverulering.',
-                  awareness: 'differensiere', tov: 'humor',
+                  tov: 'humor',
                   versjoner: [
                     { id: 'v6', prod: 'lo-fi', avsender: 'kunde', format: 'Reels 9:16', status: 'Live' },
                     { id: 'v7', prod: 'lo-fi', avsender: 'kunde', format: 'Static 1:1', status: 'Live' },
                   ]},
-                { id: 'ad6',
-                  hook: 'Slik finner du retter alle elsker på 30 sek',
-                  beskrivelse: 'Skjermopptak av familie-modus i appen.',
-                  awareness: 'utdanne', tov: 'funksjon',
-                  versjoner: [
-                    { id: 'v8', prod: 'lo-fi', avsender: 'brand', format: 'Reels 9:16', status: 'Planlagt' },
-                  ]},
                 { id: 'ad7',
                   hook: 'Min favoritt-rett denne uka — den er enkel',
                   beskrivelse: 'Profil-kokk peker på 1 rett, forteller hvorfor.',
-                  awareness: 'differensiere', tov: 'emosjon',
+                  tov: 'emosjon',
                   versjoner: [
                     { id: 'v9', prod: 'pro', avsender: 'ekspert', format: 'Reels 9:16', status: 'Pauset' },
+                  ]},
+              ]},
+            { id: 't4b', navn: 'Slik bruker du familie-modus',
+              benefit: 'App-funksjon som filtrerer på familie-vennlige retter', kunnskap: true,
+              annonser: [
+                { id: 'ad6',
+                  hook: 'Slik finner du retter alle elsker på 30 sek',
+                  beskrivelse: 'Skjermopptak av familie-modus i appen.',
+                  tov: 'funksjon',
+                  versjoner: [
+                    { id: 'v8', prod: 'lo-fi', avsender: 'brand', format: 'Reels 9:16', status: 'Planlagt' },
                   ]},
               ]},
           ]},
@@ -182,12 +187,12 @@ const data = {
           inner: '"Jeg vil ikke binde meg, det blir alltid kjedelig"',
           temaer: [
             { id: 't5', navn: 'Pause når du vil',
-              benefit: 'Ingen binding — pause uke for uke, gratis',
+              benefit: 'Ingen binding — pause uke for uke, gratis', kunnskap: true,
               annonser: [
                 { id: 'ad8',
                   hook: 'Kan jeg pause? Svar: hver uke, gratis',
                   beskrivelse: 'Direkte tekst-overlegg som adresserer binding-frykt.',
-                  awareness: 'utdanne', tov: 'funksjon',
+                  tov: 'funksjon',
                   versjoner: [
                     { id: 'v10', prod: 'bilde', avsender: 'brand', format: 'Static 1:1', status: 'Live' },
                     { id: 'v11', prod: 'ai', avsender: 'brand', format: 'Static 1:1', status: 'Live' },
@@ -198,12 +203,12 @@ const data = {
           inner: '"Jeg orker ikke restaurant, men vil ha noe mer enn pasta"',
           temaer: [
             { id: 't6', navn: 'Restaurantkvalitet på 25 min',
-              benefit: 'Tilbereding under 30 min, kvalitet som å spise ute',
+              benefit: 'Tilbereding under 30 min, kvalitet som å spise ute', kunnskap: false,
               annonser: [
                 { id: 'ad9',
                   hook: 'Fra boks til ferdig middag — på 25 min',
                   beskrivelse: 'Time-lapse av tilbereding, ferdig-rett zoom på slutten.',
-                  awareness: 'utdanne', tov: 'funksjon',
+                  tov: 'funksjon',
                   versjoner: [
                     { id: 'v12', prod: 'pro', avsender: 'founder', format: 'Reels 9:16', status: 'Live' },
                   ]},
@@ -252,10 +257,8 @@ function totalAds(node) {
   return 0;
 }
 
-function awarenessTag(awareness) {
-  return awareness === 'utdanne'
-    ? `<span class="tag tag-utd">utdanne</span>`
-    : `<span class="tag tag-dif">differensiere</span>`;
+function kunnskapTag() {
+  return `<span class="tag tag-kunnskap">kunnskap</span>`;
 }
 function tovTag(tov) {
   const cls = tov === 'funksjon' ? 'tag-tov-fnk' : tov === 'emosjon' ? 'tag-tov-emo' : 'tag-tov-hum';
@@ -312,7 +315,6 @@ function renderContext() {
     html = `
       <p class="hook-line">"${a.hook}"</p>
       <div class="flex items-center gap-1.5 flex-wrap mt-3">
-        ${awarenessTag(a.awareness)}
         ${tovTag(a.tov)}
       </div>
       <p class="text-sm text-neutral-600 mt-3">${a.beskrivelse}</p>`;
@@ -335,6 +337,7 @@ function renderList() {
       <div class="card" data-action="drill-malgruppe" data-id="${g.id}">
         <p class="card-name">${g.navn}</p>
         <p class="card-sub">${g.sub}</p>
+        <p class="card-sub"><span class="text-neutral-400">Kunnskapsgap:</span> ${g.kunnskapsgap}</p>
         <p class="card-meta mono">${g.motivasjoner.length} motivasjoner · ${totalAds(g)} annonser</p>
       </div>
     `).join('');
@@ -351,7 +354,10 @@ function renderList() {
     title.textContent = 'Temaer';
     list.innerHTML = findMotivasjon().temaer.map(t => `
       <div class="card" data-action="drill-tema" data-id="${t.id}">
-        <p class="card-name">${t.navn}</p>
+        <div class="flex items-start justify-between gap-3">
+          <p class="card-name">${t.navn}</p>
+          ${t.kunnskap ? kunnskapTag() : ''}
+        </div>
         <p class="card-sub"><span class="text-neutral-400">Benefit:</span> ${t.benefit}</p>
         <p class="card-meta mono">${t.annonser.length} annonse${t.annonser.length === 1 ? '' : 'r'}</p>
       </div>
@@ -362,7 +368,6 @@ function renderList() {
       <div class="card" data-action="drill-annonse" data-id="${a.id}">
         <p class="hook-line">"${a.hook}"</p>
         <div class="flex items-center gap-1.5 flex-wrap mt-3">
-          ${awarenessTag(a.awareness)}
           ${tovTag(a.tov)}
         </div>
         <p class="card-sub">${a.beskrivelse}</p>
