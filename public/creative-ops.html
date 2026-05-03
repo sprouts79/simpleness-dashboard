@@ -202,15 +202,18 @@ const state = {
 };
 
 function navigateTo(level, ids = {}) {
+  // Clear current-level og deeper selections først
+  if (level === 'audience')   { state.audienceId = null; state.motivasjonId = null; state.temaId = null; state.konseptId = null; }
+  else if (level === 'motivasjon') { state.motivasjonId = null; state.temaId = null; state.konseptId = null; }
+  else if (level === 'tema')      { state.temaId = null; state.konseptId = null; }
+  else if (level === 'konsept')   { state.konseptId = null; }
+  // Sett nytt nivå
   state.level = level;
+  // Apply ids fra drill-down (overstyrer clearen over for current-level)
   if (ids.audienceId !== undefined) state.audienceId = ids.audienceId;
   if (ids.motivasjonId !== undefined) state.motivasjonId = ids.motivasjonId;
   if (ids.temaId !== undefined) state.temaId = ids.temaId;
   if (ids.konseptId !== undefined) state.konseptId = ids.konseptId;
-  // Clear deeper selections when navigating up
-  if (level === 'audience') { state.motivasjonId = null; state.temaId = null; state.konseptId = null; }
-  if (level === 'motivasjon') { state.temaId = null; state.konseptId = null; }
-  if (level === 'tema') { state.konseptId = null; }
   renderAll();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -239,31 +242,28 @@ function totalAds(node) {
 function renderBreadcrumb() {
   const bc = document.getElementById('breadcrumb');
   const parts = [];
-  parts.push({ label: `Kunde · ${data.kunde.navn}`, level: null });
-  if (state.level === 'audience') {
-    parts[parts.length - 1].active = true;
-  }
+  // Root-noden navigerer til 'audience' (root-listen)
+  parts.push({ label: `Kunde · ${data.kunde.navn}`, level: 'audience', active: state.level === 'audience' });
   if (state.audienceId) {
-    parts.push({ label: findAudience().navn, level: 'audience', ids: {} });
-    if (state.level === 'motivasjon') parts[parts.length - 1].active = true;
+    parts.push({ label: findAudience().navn, level: 'motivasjon', active: state.level === 'motivasjon' });
   }
   if (state.motivasjonId) {
-    parts.push({ label: findMotivasjon().navn, level: 'motivasjon', ids: {} });
-    if (state.level === 'tema') parts[parts.length - 1].active = true;
+    parts.push({ label: findMotivasjon().navn, level: 'tema', active: state.level === 'tema' });
   }
   if (state.temaId) {
-    parts.push({ label: findTema().navn, level: 'tema', ids: {} });
-    if (state.level === 'konsept') parts[parts.length - 1].active = true;
+    parts.push({ label: findTema().navn, level: 'konsept', active: state.level === 'konsept' });
   }
   if (state.konseptId) {
-    parts.push({ label: findKonsept().navn, level: 'konsept', ids: {} });
-    if (state.level === 'annonse') parts[parts.length - 1].active = true;
+    parts.push({ label: findKonsept().navn, level: 'annonse', active: state.level === 'annonse' });
   }
 
   bc.innerHTML = parts.map((p, i) => {
     const sep = i > 0 ? `<span class="sep">›</span>` : '';
+    // En aktiv node = nåværende nivå, vises som tekst (ikke klikkbar).
+    // Alle andre noder er klikkbare lenker som navigerer til *deres egen* aktive visning.
+    // For root: data-level="audience" tar deg tilbake til audience-listen.
+    // For audience-noden: data-level="motivasjon" tar deg tilbake til motivasjon-listen for *den* audiencen.
     if (p.active) return `${sep}<span class="active">${p.label}</span>`;
-    if (p.level === null) return `<span class="active">${p.label}</span>`;
     return `${sep}<a data-level="${p.level}">${p.label}</a>`;
   }).join('');
 
