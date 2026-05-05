@@ -1,10 +1,11 @@
-type DataSource = "meta" | "google" | "snap" | "tiktok";
+type DataSource = "meta" | "google" | "snap" | "tiktok" | "manual";
 
 const SOURCE_META: Record<DataSource, { label: string; color: string }> = {
-  meta:   { label: "Meta Ads",    color: "#1877F2" }, // facebook-blå
-  google: { label: "Google Ads",  color: "#4285F4" }, // google-blå
-  snap:   { label: "Snap Ads",    color: "#FFFC00" }, // snap-gul
-  tiktok: { label: "TikTok Ads",  color: "#FE2C55" }, // tiktok-rød
+  meta:   { label: "Meta Ads",      color: "#1877F2" }, // facebook-blå
+  google: { label: "Google Ads",    color: "#4285F4" }, // google-blå
+  snap:   { label: "Snap Ads",      color: "#FFFC00" }, // snap-gul
+  tiktok: { label: "TikTok Ads",    color: "#FE2C55" }, // tiktok-rød
+  manual: { label: "Manuell input", color: "#a3a3a3" }, // neutral-400
 };
 
 interface DataSourcesProps {

@@ -1,25 +1,45 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Client } from "@/lib/types";
 import clsx from "clsx";
 import PulseIcon from "@/components/ui/PulseIcon";
 import ClientPicker from "./ClientPicker";
 
-const CLIENT_SUBNAV = [
-  { label: "Performance", path: "performance" },
-  { label: "Reach", path: "reach" },
-  { label: "Creative", path: "creative" },
-] as const;
+interface NavItem {
+  label: string;
+  path: string;
+  hideInPrototype?: boolean;
+}
+
+// Aktivt arbeid — det vi går inn på daglig/ukentlig
+const CLIENT_SUBNAV_ACTIVE: NavItem[] = [
+  { label: "Oversikt",        path: "oversikt" },
+  { label: "Aktivitetsplan",  path: "aktivitetsplan" },
+  { label: "Forecast",        path: "forecast" },
+  { label: "Kreativ rapport", path: "creative" },
+  // Skjules i prototype-modus (innebygget i Oversikt)
+  { label: "Reach",           path: "reach", hideInPrototype: true },
+];
+
+// Statisk konfig — kvartalsvis revidering
+const CLIENT_SUBNAV_STATIC: NavItem[] = [
+  { label: "Budsjetter",     path: "budsjetter" },
+  { label: "Enhetsøkonomi",  path: "enhetsokonomi" },
+];
 
 export default function Sidebar({ clients }: { clients: Client[] }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const isPrototype = searchParams.get("prototype") === "1";
   const isPulse = pathname === "/";
   const isGuide = pathname === "/guide";
 
   // Aktiv klient = første path-segment matcher en client.slug
-  const slug = pathname.split("/")[1];
+  const segments = pathname.split("/").filter(Boolean);
+  const slug = segments[0];
+  const sectionSegment = segments[1];
   const activeClient = clients.find((c) => c.slug === slug);
 
   return (
@@ -29,25 +49,20 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
         <ClientPicker clients={clients} />
 
         {activeClient && (
-          <div className="mt-1 space-y-0.5">
-            {CLIENT_SUBNAV.map((item) => {
-              const href = `/${activeClient.slug}/${item.path}`;
-              const active = pathname.endsWith(item.path);
-              return (
-                <Link
-                  key={item.path}
-                  href={href}
-                  className={clsx(
-                    "flex items-center gap-2.5 pl-12 pr-2.5 py-1.5 rounded-lg text-sm transition-colors",
-                    active
-                      ? "bg-neutral-100 text-neutral-900 font-medium"
-                      : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
-                  )}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
+          <div className="mt-1">
+            <NavGroup
+              items={CLIENT_SUBNAV_ACTIVE}
+              slug={activeClient.slug}
+              sectionSegment={sectionSegment}
+              isPrototype={isPrototype}
+            />
+            <div className="my-2 mx-12 border-t border-neutral-200" />
+            <NavGroup
+              items={CLIENT_SUBNAV_STATIC}
+              slug={activeClient.slug}
+              sectionSegment={sectionSegment}
+              isPrototype={isPrototype}
+            />
           </div>
         )}
       </nav>
@@ -87,6 +102,44 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
         </Link>
       </div>
     </aside>
+  );
+}
+
+function NavGroup({
+  items,
+  slug,
+  sectionSegment,
+  isPrototype,
+}: {
+  items: NavItem[];
+  slug: string;
+  sectionSegment: string | undefined;
+  isPrototype: boolean;
+}) {
+  return (
+    <div className="space-y-0.5">
+      {items
+        .filter((item) => !(isPrototype && item.hideInPrototype))
+        .map((item) => {
+          const baseHref = `/${slug}/${item.path}`;
+          const href = isPrototype ? `${baseHref}?prototype=1` : baseHref;
+          const active = sectionSegment === item.path;
+          return (
+            <Link
+              key={item.path}
+              href={href}
+              className={clsx(
+                "flex items-center gap-2.5 pl-12 pr-2.5 py-1.5 rounded-lg text-sm transition-colors",
+                active
+                  ? "bg-neutral-100 text-neutral-900 font-medium"
+                  : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900",
+              )}
+            >
+              {item.label}
+            </Link>
+          );
+        })}
+    </div>
   );
 }
 

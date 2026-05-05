@@ -1,5 +1,14 @@
-import { getPerformanceKpis, getSpendTrend, getCampaigns, getPeriodRange, getCompareRange } from "@/lib/db";
+import {
+  getPerformanceKpis,
+  getSpendTrend,
+  getCampaigns,
+  getPeriodRange,
+  getCompareRange,
+  getReachComposition,
+  getReachKpis,
+} from "@/lib/db";
 import PerformanceClient from "@/components/performance/PerformanceClient";
+import PerformancePrototype from "@/components/performance/PerformancePrototype";
 import { PeriodKey, CompareKey } from "@/lib/types";
 
 const PERIOD_LABELS: Record<PeriodKey, string> = {
@@ -17,7 +26,7 @@ const COMPARE_LABELS: Record<CompareKey, string> = {
   year: "vs forrige år",
 };
 
-export default async function PerformancePage({
+export default async function OversiktPage({
   params,
   searchParams,
 }: {
@@ -29,6 +38,7 @@ export default async function PerformancePage({
 
   const period = (sp.period as PeriodKey) || "7d";
   const compare = (sp.compare as CompareKey) || "period";
+  const isPrototype = sp.prototype === "1";
 
   const { since, until } = getPeriodRange(period);
   const { compSince, compUntil } = getCompareRange(since, until, compare);
@@ -36,15 +46,31 @@ export default async function PerformancePage({
   const periodLabel = PERIOD_LABELS[period] ?? PERIOD_LABELS["7d"];
   const compareLabel = COMPARE_LABELS[compare] ?? COMPARE_LABELS["period"];
 
-  const [kpis, trend, campaigns] = await Promise.all([
+  const [kpis, trend, campaigns, reachKpis, reachComposition] = await Promise.all([
     getPerformanceKpis(clientId, since, until, compSince, compUntil, periodLabel, compareLabel),
     getSpendTrend(clientId, since, until),
     getCampaigns(clientId, since, until),
+    isPrototype ? getReachKpis(clientId) : Promise.resolve(null),
+    isPrototype ? getReachComposition(clientId) : Promise.resolve([]),
   ]);
 
   if (!kpis) {
     return (
       <div className="p-8 text-sm text-[rgba(9,10,8,0.4)]">Ingen data.</div>
+    );
+  }
+
+  if (isPrototype) {
+    return (
+      <PerformancePrototype
+        clientId={clientId}
+        kpis={kpis}
+        trend={trend}
+        reachKpis={reachKpis}
+        reachComposition={reachComposition}
+        period={period}
+        compare={compare}
+      />
     );
   }
 
