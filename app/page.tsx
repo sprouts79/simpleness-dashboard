@@ -73,7 +73,7 @@ export default async function PulsePage() {
                 </td>
                 <td className="px-3 py-3 text-right">
                   <Link
-                    href={`/${row.client.slug}/performance`}
+                    href={`/${row.client.slug}/oversikt`}
                     className="text-neutral-300 group-hover:text-neutral-900 transition-colors"
                   >
                     →

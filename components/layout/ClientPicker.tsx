@@ -75,7 +75,7 @@ export default function ClientPicker({ clients }: ClientPickerProps) {
             return (
               <Link
                 key={client.id}
-                href={`/${client.slug}/performance`}
+                href={`/${client.slug}/oversikt`}
                 onClick={() => setOpen(false)}
                 className={`flex items-center gap-2.5 px-2.5 py-1.5 mx-1 rounded-md text-sm transition-colors ${
                   isActive
