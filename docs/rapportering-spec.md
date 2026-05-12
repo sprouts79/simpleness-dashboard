@@ -549,6 +549,13 @@ Pensjoneres etter at konsolidert Rapportering er stabil. Beholdes parallelt i en
 
 ---
 
+## Backlog / kommende
+
+- **Spend-dimensjon: Rekkevidde vs Konvertering** — i kampanjeplan tagges hver kampanje på dette aksen. Senere skal det kunne filtreres/visualiseres på tvers av Resultatrapport og Kanalrapport. Ikke i v1.
+- **Flere grafer på Kanalrapport** utover rolling reach (kreativ fatigue over tid, frekvens trend osv.) — defineres etter v1 er i drift.
+- **Bla bakover i periode-strip** — i dag viser hver periode "forrige" (forrige uke, forrige måned osv.). Mulighet til å bla flere perioder bakover legges til ved behov.
+- **År-til-dato / kvartal-til-dato-modus** — for å rapportere på inneværende periode mens den pågår. Vurderes senere.
+
 ## Spørsmål som fortsatt henger
 
 1. **"Mediekjøperens kommentar" — strukturert eller fritekst?** Forslag: Nivå 1 har tre felter (*Hva skjedde · Hva fungerte · Hva videre*), andre nivåer er fritekst. OK?
