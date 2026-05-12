@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rapportering — mockup v0.1</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #fafafa; color: #090a08; }
+  .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; color: #737373; }
+
+  /* Breadcrumb */
+  .breadcrumb { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #525252; }
+  .breadcrumb a { color: #1f2937; text-decoration: none; padding: 3px 8px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; }
+  .breadcrumb a:hover { background: white; border-color: #e5e5e5; }
+  .breadcrumb .sep { color: #a3a3a3; }
+  .breadcrumb .active { color: #090a08; font-weight: 600; }
+
+  /* Hero card */
+  .hero { background: white; border: 1px solid #e5e5e5; border-radius: 14px; padding: 1.5rem 1.75rem; }
+  .hero-title { font-size: 1.0625rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; color: #404040; margin-top: 0; }
+  .hero-meta { font-size: 12px; color: #737373; }
+  .hero-kpis { display: grid; gap: 24px; }
+  .hero-kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; color: #737373; }
+  .hero-kpi-value { font-size: 1.5rem; font-weight: 700; line-height: 1; letter-spacing: -0.02em; margin-top: 6px; }
+  .hero-kpi-sub { font-size: 11px; color: #737373; margin-top: 6px; }
+  .hero-kpi-target { font-size: 11px; color: #525252; margin-top: 4px; }
+
+  /* Cards */
+  .card { background: white; border: 1px solid #e5e5e5; border-radius: 12px; padding: 1.25rem 1.5rem; }
+  .card-hover { cursor: pointer; transition: border-color 80ms; }
+  .card-hover:hover { border-color: #a3a3a3; }
+
+  /* Stack-bar */
+  .stack { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: #f5f5f5; }
+  .stack.tall { height: 18px; }
+  .stack > div { display: block; }
+  .stack-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; margin-top: 10px; }
+  .stack-legend > div { display: flex; align-items: center; gap: 6px; color: #525252; }
+  .legend-dot { width: 9px; height: 9px; border-radius: 2px; }
+
+  /* Channel colors */
+  .ch-meta    { background: #2563eb; }
+  .ch-google  { background: #34d399; }
+  .ch-snap    { background: #fbbf24; }
+  .ch-tiktok  { background: #ec4899; }
+  .ch-ohh     { background: #a78bfa; }
+  .ch-manuell { background: #94a3b8; }
+
+  /* Ad-status colors (samme som prototype-lab-v3) */
+  .seg-test    { background: #93c5fd; }
+  .seg-explore { background: #34d399; }
+  .seg-exploit { background: #fbbf24; }
+  .seg-burnt   { background: #f87171; }
+  .seg-suppr   { background: #d4d4d4; }
+
+  /* Mål-type colors */
+  .typ-konv    { background: #1f2937; }
+  .typ-rekk    { background: #94a3b8; }
+
+  /* KPI row item */
+  .delta-up   { color: #15803d; }
+  .delta-down { color: #b91c1c; }
+  .delta-flat { color: #737373; }
+
+  /* Target progress */
+  .progress { width: 100%; height: 6px; background: #f5f5f5; border-radius: 999px; overflow: hidden; }
+  .progress > div { height: 100%; background: #1f2937; }
+  .progress.green > div { background: #15803d; }
+
+  /* List rows */
+  .row { display: grid; align-items: center; gap: 16px; padding: 14px 16px; border-bottom: 1px solid #f5f5f5; cursor: pointer; transition: background 60ms; }
+  .row:last-child { border-bottom: 0; }
+  .row:hover { background: #fafafa; }
+  .row-name { font-weight: 600; font-size: 14px; color: #1f2937; }
+  .row-sub { font-size: 11px; color: #737373; }
+  .row-num { text-align: right; }
+  .row-num-value { font-weight: 600; font-size: 14px; }
+  .row-num-delta { font-size: 11px; color: #737373; margin-top: 2px; }
+
+  /* Pills */
+  .pill { display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; border: 1px solid; line-height: 1.3; height: 20px; }
+  .pill-test     { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
+  .pill-explore  { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+  .pill-exploit  { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+  .pill-burnt    { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+  .pill-suppr    { background: #f5f5f5; color: #525252; border-color: #d4d4d4; }
+  .pill-konv     { background: #f8fafc; color: #0f172a; border-color: #cbd5e1; }
+  .pill-rekk     { background: #f8fafc; color: #475569; border-color: #cbd5e1; }
+  .pill-godkjent { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+  .pill-utkast   { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+
+  /* Sammenheng-panel — distinct background */
+  .panel-sammen { background: #fafafa; border: 1px solid #e5e5e5; border-radius: 12px; padding: 1.25rem 1.5rem; }
+  .panel-sammen .panel-title { font-size: 13px; font-weight: 600; color: #1f2937; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .panel-sammen .panel-title .icon { width: 14px; height: 14px; border-radius: 3px; background: #d4d4d4; }
+
+  /* Comment box */
+  .comment-box { background: white; border: 1px solid #e5e5e5; border-radius: 12px; padding: 1.5rem; }
+  .comment-section { margin-bottom: 1rem; }
+  .comment-section:last-child { margin-bottom: 0; }
+  .comment-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; color: #737373; margin-bottom: 6px; }
+  .comment-text { font-size: 14px; line-height: 1.6; color: #1f2937; }
+
+  /* Toggle */
+  .toggle { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; border: 1px solid; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 80ms; }
+  .toggle-off { background: white; color: #525252; border-color: #e5e5e5; }
+  .toggle-off:hover { border-color: #a3a3a3; }
+  .toggle-on { background: #1f2937; color: white; border-color: #1f2937; }
+
+  /* Cohort heatmap */
+  .heatmap { display: grid; grid-template-columns: 140px repeat(5, 1fr); gap: 4px; font-size: 12px; }
+  .heatmap-header { font-weight: 600; color: #737373; text-align: center; padding: 8px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .heatmap-row-label { padding: 12px 4px; color: #525252; font-weight: 500; }
+  .heatmap-cell { padding: 12px 8px; text-align: center; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+
+  /* Ad thumb */
+  .ad-thumb { width: 96px; height: 96px; border-radius: 8px; background: linear-gradient(135deg, #d4d4d4, #a3a3a3); flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 600; }
+  .ad-thumb-sm { width: 36px; height: 36px; border-radius: 5px; background: linear-gradient(135deg, #d4d4d4, #a3a3a3); flex-shrink: 0; }
+
+  /* Sparkbar (mini bar chart) */
+  .sparkbar { display: flex; align-items: flex-end; gap: 2px; height: 32px; }
+  .sparkbar > div { flex: 1; background: #cbd5e1; border-radius: 1px; min-height: 2px; }
+  .sparkbar > div.active { background: #1f2937; }
+</style>
+</head>
+<body>
+
+<div class="max-w-[1100px] mx-auto px-6 py-8">
+
+  <!-- Banner -->
+  <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-3 mb-6">
+    <div class="flex items-center justify-between flex-wrap gap-2">
+      <div class="flex items-center gap-2">
+        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Mockup · mock-data · v0.1</span>
+        <span class="text-sm text-neutral-700">Rapportering — drilldown over hele kjeden</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-neutral-500">Visning:</span>
+        <button id="toggle-view" class="toggle toggle-on" onclick="toggleView()"><span id="toggle-view-label">Intern</span></button>
+        <button id="toggle-diagnose" class="toggle toggle-on" onclick="toggleDiagnose()"><span id="toggle-diagnose-label">Diagnose: på</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-3 text-xs text-neutral-500">
+    <div><span class="eyebrow">Datakilder</span> · Meta · Google · Snap · OHH · Shopify · Budsjett-app</div>
+    <div><span class="eyebrow">Periode</span> · Mai 2026 ▾ vs. <span class="font-medium text-neutral-700">forrige periode</span></div>
+  </div>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb mb-5" id="breadcrumb"></div>
+
+  <!-- Main render area -->
+  <div id="main-view"></div>
+
+  <p class="text-xs text-neutral-400 text-center mt-12">Mockup · rapportering-mockup.html · v0.1</p>
+</div>
+
+<script>
+// ─── Mock data ────────────────────────────────────────────────────────────
+
+const STATUS_LABELS = { test: 'Test', explore: 'Explore', exploit: 'Exploit', burnt: 'Burnt', suppr: 'Suppr.' };
+
+const KUNDE = {
+  navn: 'Kokkeløren',
+  slug: 'kokkeloren',
+  kpis: [
+    { slug: 'nye-kunder', label: 'Nye kunder', enhet: 'antall', target: 160, periode: 'måned' },
+    { slug: 'cac', label: 'CAC', enhet: 'kr', target: 400, lower_is_better: true, periode: 'måned' },
+  ],
+};
+
+const KONTO = {
+  periode: 'Mai 2026',
+  nye_kunder: 142,
+  nye_kunder_prev: 128,
+  cac: 380,
+  cac_prev: 420,
+  spend: 180000,
+  spend_budsjett_kvartal: 720000,
+  spend_brukt_kvartal: 180000,
+  inntekt: 378000,
+  inntekt_prev: 338000,
+  roas: 2.1,
+  roas_prev: 1.8,
+  spend_forecast_q2: 720000,
+  spend_actual_q2: 180000,
+  kommentar: {
+    hva_skjedde: 'Meta-konvertering driftet jevnt, men vi flyttet 12k til Google i uke 19 som ga utslag på CAC. Snap underpresterer — vurderer pause.',
+    hva_fungerte: 'Madeleine pakker opp-vinkelen ble vår største ROAS-driver, og Google Performance Max hentet inn lavere CAC på re-engagement.',
+    hva_videre: 'Øk Google + Meta i juni. Test ny Snap-vinkling. Mål ROAS 2.3x for juni.',
+  },
+  publisert_av: 'Mediekjøper',
+  publisert_dato: '2026-05-31',
+};
+
+const KANALER = [
+  { slug: 'meta',   navn: 'Meta',    spend: 110000, cac: 320, nye_kunder: 42, roas: 2.1, spend_delta: -0.08, cac_delta: -0.05, nye_delta: 0.12, roas_delta: 0.12 },
+  { slug: 'google', navn: 'Google',  spend: 35000,  cac: 280, nye_kunder: 28, roas: 2.6, spend_delta: 0.20,  cac_delta: -0.10, nye_delta: 0.25, roas_delta: 0.15 },
+  { slug: 'snap',   navn: 'Snap',    spend: 18000,  cac: 510, nye_kunder: 12, roas: 1.4, spend_delta: -0.30, cac_delta: 0.18,  nye_delta: -0.20, roas_delta: -0.05 },
+  { slug: 'ohh',    navn: 'OHH',     spend: 17000,  cac: 850, nye_kunder: 8,  roas: 0.9, spend_delta: 0.0,   cac_delta: 0.0,   nye_delta: 0.0,   roas_delta: -0.03 },
+];
+
+const META_NIV2 = {
+  navn: 'Meta',
+  spend: 110000,
+  roas: 2.1,
+  cac: 320,
+  frekvens: 1.8,
+  nye_kunder: 42,
+  cpmr: 34,
+  net_new_pct: 62,
+  hook: 11.2,
+  hold: 27,
+  ctr: 2.0,
+  // Per stadium
+  spend_stadium: { test: 8000, explore: 22000, exploit: 58000, burnt: 12000, suppr: 10000 },
+  // Per mål-type
+  spend_maltype: { konvertering: 88000, rekkevidde: 22000 },
+};
+
+const META_KAMPANJER = [
+  { id: 'bau-2026',     navn: 'BAU 2026',         type: 'konvertering', spend: 65000, roas: 2.4, cac: 298, hook: 12.3, hold: 28 },
+  { id: 'mai-kampanje', navn: 'Mai-kampanje',     type: 'konvertering', spend: 23000, roas: 2.0, cac: 345, hook: 9.8,  hold: 24 },
+  { id: 'tof-q2',       navn: 'TOF Q2',           type: 'rekkevidde',   spend: 22000, roas: null, net_new_pct: 78, cpmr: 28 },
+];
+
+const KAMPANJE_BAU = {
+  id: 'bau-2026',
+  navn: 'BAU 2026',
+  type: 'konvertering',
+  mal: 'Kjøp',
+  spend: 65000,
+  roas: 2.4,
+  cac: 298,
+  hook: 12.3,
+  hold: 28,
+  frekvens: 2.1,
+  // Annonse-fordeling
+  ad_stadium: { test: 3, explore: 8, exploit: 9, burnt: 2, suppr: 2 },
+  ad_format:  { video: 0.60, static: 0.25, carousel: 0.15 },
+  // Cohort-heatmap (ROAS, fra eldste til nyeste)
+  cohorts: [
+    { label: 'Mar 2026', w0: 2.1, w1: 1.9, w2: 1.5, w3: 1.4, lifetime: 1.8 },
+    { label: 'Apr 2026', w0: 2.8, w1: 2.6, w2: 2.2, w3: 1.9, lifetime: 2.4 },
+    { label: 'Mai 2026', w0: 3.1, w1: 2.5, w2: null, w3: null, lifetime: 2.7 },
+  ],
+};
+
+const BAU_ANNONSER = [
+  { id: 'madeleine-v2',   navn: 'Madeleine pakker opp',  versjon: 'v.2', tema: 'Aldri det samme to ganger', format: 'video',   status: 'exploit', spend: 18000, roas: 3.1, hook: 14.2, hold: 31, ctr: 2.1, cohort: 'Mai 2026', avsender: 'Creator',  prod: 'pro' },
+  { id: 'pappa-v1',       navn: 'Pappa i Stavanger',     versjon: 'v.1', tema: 'Tett på familier',         format: 'video',   status: 'exploit', spend: 12000, roas: 2.8, hook: 12.8, hold: 29, ctr: 1.9, cohort: 'Mai 2026', avsender: 'Kunde',    prod: 'lo-fi' },
+  { id: 'profil-kokk-v1', navn: 'Profil-kokk',           versjon: 'v.1', tema: 'Ekspert anbefaler',        format: 'static',  status: 'exploit', spend: 9000,  roas: 2.4, hook: null,  hold: null, ctr: 1.6, cohort: 'Apr 2026', avsender: 'Ekspert',  prod: 'pro' },
+  { id: 'familie-tut-v1', navn: 'Familie-modus tutorial',versjon: 'v.1', tema: 'Slik bruker du',           format: 'video',   status: 'explore', spend: 4000,  roas: 1.6, hook: 8.4,   hold: 22, ctr: 1.4, cohort: 'Mai 2026', avsender: 'Brand',    prod: 'pro' },
+  { id: 'hverdagsm-v1',   navn: 'Hverdagsmiddag',        versjon: 'v.1', tema: 'Aldri det samme to ganger', format: 'video',   status: 'test',    spend: 800,   roas: null, hook: null,  hold: null, ctr: null, cohort: 'Mai 2026', avsender: 'Creator',  prod: 'lo-fi' },
+];
+
+const ANNONSE_MADELEINE = {
+  id: 'madeleine-v2',
+  navn: 'Madeleine pakker opp',
+  versjon: 'v.2',
+  tema: 'Aldri det samme to ganger',
+  format: 'video',
+  varighet_s: 24,
+  avsender: 'Creator',
+  prod: 'pro',
+  status: 'exploit',
+  lansert: '2026-05-04',
+  cohort: 'Mai 2026',
+  spend: 18000,
+  roas: 3.1,
+  cpa: 298,
+  hook: 14.2,
+  hold: 31,
+  ctr: 2.1,
+  frekvens: 1.6,
+  // Sammenheng
+  tema_annonser: [
+    { id: 'madeleine-v2', navn: 'Madeleine pakker opp · v.2 (denne)', spend: 18000, roas: 3.1, current: true },
+    { id: 'aldri-v1',     navn: 'Aldri det samme · v.1 (lo-fi)',      spend: 4000,  roas: 1.9 },
+    { id: 'hverdagsm-v1', navn: 'Hverdagsmiddag · v.1',               spend: 800,   roas: null },
+  ],
+  cohort_annonser: [
+    { id: 'madeleine-v2', navn: 'Madeleine pakker opp · v.2 (denne)', roas: 3.1, current: true },
+    { id: 'pappa-v1',     navn: 'Pappa i Stavanger · v.1',            roas: 2.8 },
+    { id: 'familie-tut-v1', navn: 'Familie-modus tutorial · v.1',     roas: 1.6 },
+  ],
+  format_benchmark: {
+    denne:    { roas: 3.1, hook: 14.2, hold: 31 },
+    video:    { roas: 2.3, hook: 11.0, hold: 26 },
+    static:   { roas: 1.9, hook: null, hold: null },
+    carousel: { roas: 2.0, hook: 7.0,  hold: 22 },
+  },
+};
+
+// ─── State ───────────────────────────────────────────────────────────────
+
+const state = {
+  niva: 1,
+  kanal: null,       // 'meta' | …
+  kampanje: null,    // 'bau-2026' | …
+  annonse: null,     // 'madeleine-v2' | …
+  visning: 'intern', // 'intern' | 'kunde'
+  diagnose: true,    // intern-toggle
+};
+
+// ─── Helpers ─────────────────────────────────────────────────────────────
+
+function fmtNum(n, prefix = '') {
+  if (n === null || n === undefined) return '—';
+  if (n >= 1000000) return `${prefix}${(n/1000000).toFixed(1)}M`;
+  if (n >= 1000) return `${prefix}${Math.round(n/1000)}k`;
+  return `${prefix}${Math.round(n)}`;
+}
+
+function fmtKr(n) { return n === null || n === undefined ? '—' : `${fmtNum(n)} kr`; }
+function fmtPct(n, d=1) { return n === null || n === undefined ? '—' : `${n.toFixed(d)} %`; }
+function fmtRoas(n) { return n === null || n === undefined ? '—' : `${n.toFixed(1)}x`; }
+
+function fmtDelta(d, lower_is_better=false) {
+  if (d === null || d === undefined || d === 0) return `<span class="delta-flat">stabil</span>`;
+  const pct = (d * 100).toFixed(0);
+  const good = lower_is_better ? d < 0 : d > 0;
+  const arrow = d > 0 ? '↗' : '↘';
+  const cls = good ? 'delta-up' : 'delta-down';
+  return `<span class="${cls}">${arrow} ${pct > 0 ? '+' : ''}${pct} %</span>`;
+}
+
+function statusPill(status) {
+  return `<span class="pill pill-${status}">${STATUS_LABELS[status]}</span>`;
+}
+
+function typePill(type) {
+  return type === 'konvertering' ? `<span class="pill pill-konv">Konvertering</span>` : `<span class="pill pill-rekk">Rekkevidde</span>`;
+}
+
+// ─── Navigation ──────────────────────────────────────────────────────────
+
+function navigate(niva, opts = {}) {
+  state.niva = niva;
+  if (opts.kanal !== undefined) state.kanal = opts.kanal;
+  if (opts.kampanje !== undefined) state.kampanje = opts.kampanje;
+  if (opts.annonse !== undefined) state.annonse = opts.annonse;
+  // Clear deeper levels
+  if (niva < 2) state.kanal = null;
+  if (niva < 3) state.kampanje = null;
+  if (niva < 4) state.annonse = null;
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggleView() {
+  state.visning = state.visning === 'intern' ? 'kunde' : 'intern';
+  const btn = document.getElementById('toggle-view');
+  const label = document.getElementById('toggle-view-label');
+  btn.className = state.visning === 'intern' ? 'toggle toggle-on' : 'toggle toggle-off';
+  label.textContent = state.visning === 'intern' ? 'Intern' : 'Kunde';
+  // I kunde-modus: diagnose alltid av, og maks Nivå 3
+  if (state.visning === 'kunde') {
+    state.diagnose = false;
+    if (state.niva === 4) state.niva = 3;
+    updateDiagnoseToggle();
+  }
+  render();
+}
+
+function toggleDiagnose() {
+  if (state.visning === 'kunde') return; // Diagnose ikke tilgjengelig for kunde
+  state.diagnose = !state.diagnose;
+  updateDiagnoseToggle();
+  render();
+}
+
+function updateDiagnoseToggle() {
+  const btn = document.getElementById('toggle-diagnose');
+  const label = document.getElementById('toggle-diagnose-label');
+  btn.className = state.diagnose ? 'toggle toggle-on' : 'toggle toggle-off';
+  label.textContent = state.diagnose ? 'Diagnose: på' : 'Diagnose: av';
+  btn.style.opacity = state.visning === 'kunde' ? '0.4' : '1';
+  btn.style.cursor = state.visning === 'kunde' ? 'not-allowed' : 'pointer';
+}
+
+// ─── Render functions ────────────────────────────────────────────────────
+
+function renderBreadcrumb() {
+  const bc = document.getElementById('breadcrumb');
+  const crumbs = [];
+
+  if (state.niva === 1) {
+    bc.innerHTML = `<span class="active">${KUNDE.navn} · Konto</span>`;
+    return;
+  }
+  crumbs.push(`<a onclick="navigate(1)">${KUNDE.navn} · Konto</a>`);
+
+  if (state.niva >= 2 && state.kanal) {
+    const kanal = KANALER.find(k => k.slug === state.kanal);
+    if (state.niva === 2) {
+      crumbs.push(`<span class="active">${kanal.navn}</span>`);
+    } else {
+      crumbs.push(`<a onclick="navigate(2, {kanal: '${kanal.slug}'})">${kanal.navn}</a>`);
+    }
+  }
+
+  if (state.niva >= 3 && state.kampanje) {
+    if (state.niva === 3) {
+      crumbs.push(`<span class="active">${KAMPANJE_BAU.navn}</span>`);
+    } else {
+      crumbs.push(`<a onclick="navigate(3, {kampanje: '${KAMPANJE_BAU.id}'})">${KAMPANJE_BAU.navn}</a>`);
+    }
+  }
+
+  if (state.niva >= 4 && state.annonse) {
+    crumbs.push(`<span class="active">${ANNONSE_MADELEINE.navn} · ${ANNONSE_MADELEINE.versjon}</span>`);
+  }
+
+  bc.innerHTML = crumbs.join(' <span class="sep">›</span> ');
+}
+
+function renderStack(segments, totalLabel = null) {
+  const total = segments.reduce((s, x) => s + x.value, 0);
+  const bars = segments.map(s => {
+    const pct = (s.value / total) * 100;
+    return `<div class="${s.cls}" style="width: ${pct}%"></div>`;
+  }).join('');
+  const legend = segments.map(s => {
+    return `<div><span class="legend-dot ${s.cls}"></span> ${s.label} ${fmtKr(s.value)} (${Math.round((s.value/total)*100)}%)</div>`;
+  }).join('');
+  return `<div class="stack tall">${bars}</div><div class="stack-legend">${legend}</div>`;
+}
+
+// ─── NIVÅ 1 — Konto ─────────────────────────────────────────────────────
+
+function renderNiva1() {
+  const isKunde = state.visning === 'kunde';
+  const showDiagnose = !isKunde && state.diagnose;
+
+  // KPI count — kunde ser bare deres egne 2, intern ser flere
+  const kpiCols = isKunde ? 3 : (showDiagnose ? 4 : 3);
+
+  let html = `
+    <!-- Hero — outcome KPIer -->
+    <div class="hero mb-8">
+      <p class="eyebrow">${KUNDE.navn} · ${KONTO.periode}</p>
+
+      <div class="hero-kpis" style="grid-template-columns: repeat(${kpiCols}, 1fr); margin-top: 14px;">
+        <!-- KPI 1: Nye kunder -->
+        <div>
+          <div class="hero-kpi-label">Nye kunder</div>
+          <div class="hero-kpi-value mono">${KONTO.nye_kunder}</div>
+          <div class="hero-kpi-target">av mål ${KUNDE.kpis[0].target}</div>
+          <div class="progress mt-2 green"><div style="width: ${(KONTO.nye_kunder/160)*100}%"></div></div>
+          <div class="hero-kpi-sub mt-2">${fmtDelta((KONTO.nye_kunder-KONTO.nye_kunder_prev)/KONTO.nye_kunder_prev)} vs forrige måned</div>
+        </div>
+
+        <!-- KPI 2: CAC -->
+        <div>
+          <div class="hero-kpi-label">CAC</div>
+          <div class="hero-kpi-value mono">${KONTO.cac} kr</div>
+          <div class="hero-kpi-target">mål ${KUNDE.kpis[1].target} kr</div>
+          <div class="progress mt-2 green"><div style="width: ${100 - ((KONTO.cac/400)*100 - 100)}%"></div></div>
+          <div class="hero-kpi-sub mt-2">${fmtDelta((KONTO.cac-KONTO.cac_prev)/KONTO.cac_prev, true)} vs forrige måned</div>
+        </div>
+
+        <!-- KPI 3: Spend mot budsjett -->
+        <div>
+          <div class="hero-kpi-label">Spend · kvartal</div>
+          <div class="hero-kpi-value mono">${fmtNum(KONTO.spend_brukt_kvartal)} / ${fmtNum(KONTO.spend_budsjett_kvartal)}</div>
+          <div class="hero-kpi-target">${Math.round((KONTO.spend_brukt_kvartal/KONTO.spend_budsjett_kvartal)*100)} % brukt</div>
+          <div class="progress mt-2"><div style="width: ${(KONTO.spend_brukt_kvartal/KONTO.spend_budsjett_kvartal)*100}%"></div></div>
+          <div class="hero-kpi-sub mt-2">På sporet</div>
+        </div>
+
+        ${showDiagnose ? `
+        <!-- KPI 4: ROAS (intern-only) -->
+        <div>
+          <div class="hero-kpi-label">ROAS</div>
+          <div class="hero-kpi-value mono">${fmtRoas(KONTO.roas)}</div>
+          <div class="hero-kpi-target">Inntekt ${fmtKr(KONTO.inntekt)}</div>
+          <div class="hero-kpi-sub mt-2">${fmtDelta((KONTO.roas-KONTO.roas_prev)/KONTO.roas_prev)} vs forrige måned</div>
+        </div>
+        ` : ''}
+      </div>
+    </div>
+
+    <!-- Spend-fordeling per kanal -->
+    <div class="card mb-3">
+      <p class="eyebrow mb-3">Hvor pengene gikk · Mai 2026</p>
+      ${renderStack(KANALER.map(k => ({ label: k.navn, value: k.spend, cls: 'ch-' + k.slug })))}
+      <div class="mt-5">
+        <p class="text-xs text-neutral-500 mb-2">Per mål-type</p>
+        ${renderStack([
+          { label: 'Konvertering', value: 145000, cls: 'typ-konv' },
+          { label: 'Rekkevidde', value: 35000, cls: 'typ-rekk' },
+        ])}
+      </div>
+    </div>
+
+    <!-- Kanal-liste -->
+    <section class="mt-8">
+      <p class="eyebrow mb-3">Kanaler · klikk for å drille ned</p>
+      <div class="card" style="padding: 0;">
+        ${KANALER.map(k => `
+          <div class="row" style="grid-template-columns: 1fr repeat(4, 1fr) auto;" onclick="navigate(2, {kanal: '${k.slug}'})">
+            <div>
+              <div class="row-name flex items-center gap-2">
+                <span class="legend-dot ch-${k.slug}" style="width:8px;height:8px;"></span>
+                ${k.navn}
+              </div>
+            </div>
+            <div class="row-num">
+              <div class="row-num-value mono">${fmtKr(k.spend)}</div>
+              <div class="row-num-delta">Spend · ${fmtDelta(k.spend_delta)}</div>
+            </div>
+            <div class="row-num">
+              <div class="row-num-value mono">${k.cac} kr</div>
+              <div class="row-num-delta">CAC · ${fmtDelta(k.cac_delta, true)}</div>
+            </div>
+            <div class="row-num">
+              <div class="row-num-value mono">${k.nye_kunder}</div>
+              <div class="row-num-delta">Nye · ${fmtDelta(k.nye_delta)}</div>
+            </div>
+            ${showDiagnose ? `
+            <div class="row-num">
+              <div class="row-num-value mono">${fmtRoas(k.roas)}</div>
+              <div class="row-num-delta">ROAS · ${fmtDelta(k.roas_delta)}</div>
+            </div>
+            ` : '<div></div>'}
+            <div class="text-neutral-400">›</div>
+          </div>
+        `).join('')}
+      </div>
+    </section>
+
+    <!-- Mediekjøperens analyse -->
+    <section class="mt-8">
+      <p class="eyebrow mb-3">Mediekjøperens analyse · ${KONTO.periode}</p>
+      <div class="comment-box">
+        <div class="comment-section">
+          <div class="comment-label">Hva skjedde</div>
+          <div class="comment-text">${KONTO.kommentar.hva_skjedde}</div>
+        </div>
+        <div class="comment-section">
+          <div class="comment-label">Hva fungerte</div>
+          <div class="comment-text">${KONTO.kommentar.hva_fungerte}</div>
+        </div>
+        <div class="comment-section">
+          <div class="comment-label">Hva videre</div>
+          <div class="comment-text">${KONTO.kommentar.hva_videre}</div>
+        </div>
+        <div class="text-xs text-neutral-400 pt-3 border-t border-neutral-100 mt-3 flex items-center justify-between">
+          <span>${KONTO.publisert_av} · ${KONTO.publisert_dato}</span>
+          ${!isKunde ? '<button class="toggle toggle-off">Rediger</button>' : ''}
+        </div>
+      </div>
+    </section>
+
+    <!-- Tidligere rapporter -->
+    <section class="mt-8">
+      <p class="eyebrow mb-3">Tidligere rapporter</p>
+      <div class="flex gap-2 flex-wrap">
+        <div class="card-hover card flex items-center gap-2" style="padding: 8px 14px;">
+          <span class="pill pill-godkjent">Godkjent</span>
+          <span class="text-sm font-medium">Apr 2026</span>
+        </div>
+        <div class="card-hover card flex items-center gap-2" style="padding: 8px 14px;">
+          <span class="pill pill-godkjent">Godkjent</span>
+          <span class="text-sm font-medium">Mar 2026</span>
+        </div>
+        <div class="card-hover card flex items-center gap-2" style="padding: 8px 14px;">
+          <span class="pill pill-godkjent">Godkjent</span>
+          <span class="text-sm font-medium">Feb 2026</span>
+        </div>
+      </div>
+    </section>
+  `;
+
+  return html;
+}
+
+// ─── NIVÅ 2 — Kanal (Meta-eksempel) ─────────────────────────────────────
+
+function renderNiva2() {
+  const isKunde = state.visning === 'kunde';
+  const showDiagnose = !isKunde && state.diagnose;
+  const k = META_NIV2;
+
+  let html = `
+    <!-- Filter -->
+    <div class="flex items-center gap-2 mb-5">
+      <span class="text-xs text-neutral-500">Type:</span>
+      <button class="toggle toggle-on">Alle</button>
+      <button class="toggle toggle-off">Konvertering</button>
+      <button class="toggle toggle-off">Rekkevidde</button>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero mb-8">
+      <p class="eyebrow">${k.navn} · Mai 2026</p>
+      <div class="hero-kpis mt-3" style="grid-template-columns: repeat(${showDiagnose ? 5 : 4}, 1fr);">
+        <div>
+          <div class="hero-kpi-label">Spend</div>
+          <div class="hero-kpi-value mono">${fmtKr(k.spend)}</div>
+          <div class="hero-kpi-sub">${fmtDelta(-0.08)} vs forrige</div>
+        </div>
+        <div>
+          <div class="hero-kpi-label">CAC</div>
+          <div class="hero-kpi-value mono">${k.cac} kr</div>
+          <div class="hero-kpi-sub">${fmtDelta(-0.05, true)} vs forrige</div>
+        </div>
+        <div>
+          <div class="hero-kpi-label">Nye kunder</div>
+          <div class="hero-kpi-value mono">${k.nye_kunder}</div>
+          <div class="hero-kpi-sub">${fmtDelta(0.12)} vs forrige</div>
+        </div>
+        <div>
+          <div class="hero-kpi-label">ROAS</div>
+          <div class="hero-kpi-value mono">${fmtRoas(k.roas)}</div>
+          <div class="hero-kpi-sub">${fmtDelta(0.12)} vs forrige</div>
+        </div>
+        ${showDiagnose ? `
+        <div>
+          <div class="hero-kpi-label">Frekvens</div>
+          <div class="hero-kpi-value mono">${k.frekvens.toFixed(1)}</div>
+          <div class="hero-kpi-sub">${fmtDelta(0.13)} (varm publik.)</div>
+        </div>
+        ` : ''}
+      </div>
+
+      ${showDiagnose ? `
+      <div class="hero-kpis mt-6 pt-5 border-t border-neutral-100" style="grid-template-columns: repeat(4, 1fr);">
+        <div>
+          <div class="hero-kpi-label">CPMR</div>
+          <div class="hero-kpi-value mono">${k.cpmr} kr</div>
+          <div class="hero-kpi-sub">Cost per mille reached</div>
+        </div>
+        <div>
+          <div class="hero-kpi-label">Net new %</div>
+          <div class="hero-kpi-value mono">${k.net_new_pct} %</div>
+          <div class="hero-kpi-sub">av weekly reach</div>
+        </div>
+        <div>
+          <div class="hero-kpi-label">Hook</div>
+          <div class="hero-kpi-value mono">${k.hook} %</div>
+          <div class="hero-kpi-sub">3s view rate</div>
+        </div>
+        <div>
+          <div class="hero-kpi-label">Hold</div>
+          <div class="hero-kpi-value mono">${k.hold} %</div>
+          <div class="hero-kpi-sub">thruplay rate</div>
+        </div>
+      </div>
+      ` : ''}
+    </div>
+
+    <!-- Spend-fordeling -->
+    <div class="card mb-3">
+      <p class="eyebrow mb-3">Spend per stadium</p>
+      ${renderStack([
+        { label: 'Test',    value: k.spend_stadium.test,    cls: 'seg-test' },
+        { label: 'Explore', value: k.spend_stadium.explore, cls: 'seg-explore' },
+        { label: 'Exploit', value: k.spend_stadium.exploit, cls: 'seg-exploit' },
+        { label: 'Burnt',   value: k.spend_stadium.burnt,   cls: 'seg-burnt' },
+        { label: 'Suppr.',  value: k.spend_stadium.suppr,   cls: 'seg-suppr' },
+      ])}
+      <div class="mt-5">
+        <p class="text-xs text-neutral-500 mb-2">Per mål-type</p>
+        ${renderStack([
+          { label: 'Konvertering', value: k.spend_maltype.konvertering, cls: 'typ-konv' },
+          { label: 'Rekkevidde',   value: k.spend_maltype.rekkevidde,   cls: 'typ-rekk' },
+        ])}
+      </div>
+    </div>
+
+    <!-- Kampanje-liste -->
+    <section class="mt-8">
+      <p class="eyebrow mb-3">Kampanjer i ${k.navn} · klikk for å drille ned</p>
+      <div class="card" style="padding: 0;">
+        ${META_KAMPANJER.map(c => `
+          <div class="row" style="grid-template-columns: 2fr 110px repeat(3, 1fr) auto;" onclick="navigate(3, {kampanje: 'bau-2026'})">
+            <div>
+              <div class="row-name">${c.navn}</div>
+              <div class="row-sub mt-1">${typePill(c.type)}</div>
+            </div>
+            <div class="row-num"><div class="row-num-value mono">${fmtKr(c.spend)}</div><div class="row-num-delta">Spend</div></div>
+            ${c.type === 'konvertering' ? `
+              <div class="row-num"><div class="row-num-value mono">${fmtRoas(c.roas)}</div><div class="row-num-delta">ROAS</div></div>
+              <div class="row-num"><div class="row-num-value mono">${c.cac} kr</div><div class="row-num-delta">CAC</div></div>
+              ${showDiagnose ? `<div class="row-num"><div class="row-num-value mono">${c.hook} %</div><div class="row-num-delta">Hook</div></div>` : '<div></div>'}
+            ` : `
+              <div class="row-num"><div class="row-num-value mono">${c.net_new_pct} %</div><div class="row-num-delta">Net new</div></div>
+              <div class="row-num"><div class="row-num-value mono">${c.cpmr} kr</div><div class="row-num-delta">CPMR</div></div>
+              <div></div>
+            `}
+            <div class="text-neutral-400">›</div>
+          </div>
+        `).join('')}
+      </div>
+    </section>
+
+    <!-- Sammenheng — vs andre kanaler -->
+    <section class="mt-8">
+      <p class="eyebrow mb-3">Sammenheng · ${k.navn} vs andre kanaler</p>
+      <div class="panel-sammen">
+        <div class="card" style="padding: 0; background: white;">
+          ${KANALER.map(other => `
+            <div class="row ${other.slug === 'meta' ? '' : 'card-hover'}" style="grid-template-columns: 1fr repeat(4, 1fr); ${other.slug === 'meta' ? 'background: #f8fafc;' : ''}" ${other.slug !== 'meta' ? `onclick="navigate(2, {kanal: '${other.slug}'})"` : ''}>
+              <div>
+                <div class="row-name flex items-center gap-2">
+                  <span class="legend-dot ch-${other.slug}" style="width:8px;height:8px;"></span>
+                  ${other.navn}
+                  ${other.slug === 'meta' ? '<span class="text-xs text-neutral-400 ml-2">(her du er)</span>' : ''}
+                </div>
+              </div>
+              <div class="row-num"><div class="row-num-value mono">${fmtKr(other.spend)}</div></div>
+              <div class="row-num"><div class="row-num-value mono">${other.cac} kr</div></div>
+              <div class="row-num"><div class="row-num-value mono">${other.nye_kunder}</div></div>
+              <div class="row-num"><div class="row-num-value mono">${fmtRoas(other.roas)}</div></div>
+            </div>
+          `).join('')}
+        </div>
+        ${showDiagnose ? `<p class="text-xs text-neutral-500 mt-3">Observasjon: Meta er størst på spend, men Google har lavest CAC.</p>` : ''}
+      </div>
+    </section>
+  `;
+
+  return html;
+}
+
+// ─── NIVÅ 3 — Kampanje (BAU 2026) ───────────────────────────────────────
+
+function renderNiva3() {
+  const isKunde = state.visning === 'kunde';
+  const showDiagnose = !isKunde && state.diagnose;
+  const c = KAMPANJE_BAU;
+
+  let html = `
+    <!-- Hero -->
+    <div class="hero mb-8">
+      <p class="eyebrow">${c.navn} · ${typePill(c.type)} · Meta · Mai 2026</p>
+      <p class="hero-meta mt-1">Mål: ${c.mal}</p>
+      <div class="hero-kpis mt-5" style="grid-template-columns: repeat(${showDiagnose ? 6 : 4}, 1fr);">
+        <div><div class="hero-kpi-label">Spend</div><div class="hero-kpi-value mono">${fmtKr(c.spend)}</div><div class="hero-kpi-sub">${fmtDelta(0.15)} v/uke</div></div>
+        <div><div class="hero-kpi-label">ROAS</div><div class="hero-kpi-value mono">${fmtRoas(c.roas)}</div><div class="hero-kpi-sub">${fmtDelta(0.18)}</div></div>
+        <div><div class="hero-kpi-label">CAC</div><div class="hero-kpi-value mono">${c.cac} kr</div><div class="hero-kpi-sub">${fmtDelta(-0.10, true)}</div></div>
+        <div><div class="hero-kpi-label">Frekvens</div><div class="hero-kpi-value mono">${c.frekvens.toFixed(1)}</div><div class="hero-kpi-sub">${fmtDelta(0.15)}</div></div>
+        ${showDiagnose ? `
+        <div><div class="hero-kpi-label">Hook</div><div class="hero-kpi-value mono">${c.hook} %</div><div class="hero-kpi-sub delta-flat">stabil</div></div>
+        <div><div class="hero-kpi-label">Hold</div><div class="hero-kpi-value mono">${c.hold} %</div><div class="hero-kpi-sub delta-up">↗ +3p</div></div>
+        ` : ''}
+      </div>
+    </div>
+
+    <!-- Annonse-fordeling -->
+    <div class="card mb-3">
+      <p class="eyebrow mb-3">Annonser per stadium · 24 aktive</p>
+      ${renderStack([
+        { label: 'Test',    value: c.ad_stadium.test,    cls: 'seg-test' },
+        { label: 'Explore', value: c.ad_stadium.explore, cls: 'seg-explore' },
+        { label: 'Exploit', value: c.ad_stadium.exploit, cls: 'seg-exploit' },
+        { label: 'Burnt',   value: c.ad_stadium.burnt,   cls: 'seg-burnt' },
+        { label: 'Suppr.',  value: c.ad_stadium.suppr,   cls: 'seg-suppr' },
+      ].map(s => ({ ...s, value: s.value })))}
+      <div class="mt-5 text-xs text-neutral-500">Format: Video 60 % · Static 25 % · Carousel 15 %</div>
+    </div>
+
+    <!-- Annonse-liste -->
+    <section class="mt-8">
+      <p class="eyebrow mb-3">Annonser · klikk for å drille ned</p>
+      <div class="card" style="padding: 0;">
+        ${BAU_ANNONSER.map(a => `
+          <div class="row" style="grid-template-columns: 36px 2fr auto 100px repeat(${showDiagnose ? 3 : 2}, 100px) auto;" onclick="navigate(4, {annonse: '${a.id}'})">
+            <div class="ad-thumb-sm"></div>
+            <div>
+              <div class="row-name">${a.navn} <span class="text-neutral-400 font-normal">· ${a.versjon}</span></div>
+              <div class="row-sub mt-0.5">${a.tema} · ${a.format}</div>
+            </div>
+            <div>${statusPill(a.status)}</div>
+            <div class="row-num"><div class="row-num-value mono">${fmtKr(a.spend)}</div><div class="row-num-delta">Spend</div></div>
+            <div class="row-num"><div class="row-num-value mono">${fmtRoas(a.roas)}</div><div class="row-num-delta">ROAS</div></div>
+            ${showDiagnose ? `
+              <div class="row-num"><div class="row-num-value mono">${a.hook !== null ? a.hook.toFixed(1) + ' %' : '—'}</div><div class="row-num-delta">Hook</div></div>
+              <div class="row-num"><div class="row-num-value mono">${a.hold !== null ? a.hold + ' %' : '—'}</div><div class="row-num-delta">Hold</div></div>
+            ` : `
+              <div class="row-num"><div class="row-num-value mono">${a.ctr !== null ? a.ctr.toFixed(1) + ' %' : '—'}</div><div class="row-num-delta">CTR</div></div>
+            `}
+            <div class="text-neutral-400">›</div>
+          </div>
+        `).join('')}
+      </div>
+    </section>
+
+    ${showDiagnose ? `
+    <!-- Cohort-heatmap (kun intern) -->
+    <section class="mt-8">
+      <p class="eyebrow mb-3">Sammenheng · cohort-modning · KPI: ROAS</p>
+      <div class="panel-sammen">
+        <div class="heatmap mb-3">
+          <div></div>
+          <div class="heatmap-header">W0</div>
+          <div class="heatmap-header">W1</div>
+          <div class="heatmap-header">W2</div>
+          <div class="heatmap-header">W3</div>
+          <div class="heatmap-header">Lifetime</div>
+          ${c.cohorts.map(co => `
+            <div class="heatmap-row-label">${co.label}</div>
+            ${[co.w0, co.w1, co.w2, co.w3, co.lifetime].map(v => {
+              if (v === null) return `<div class="heatmap-cell" style="background: #f5f5f5; color: #d4d4d4;">—</div>`;
+              const intensity = Math.min(v / 3.5, 1); // scale to color
+              const hue = 30 + intensity * 90; // orange (30) to green (120)
+              return `<div class="heatmap-cell" style="background: hsla(${hue}, 65%, 78%, 1); color: hsl(${hue}, 70%, 25%);">${v.toFixed(1)}</div>`;
+            }).join('')}
+          `).join('')}
+        </div>
+        <p class="text-xs text-neutral-500">Mai-cohorten har høyest startpunkt og fortsetter sterkt — verdt å sammenligne assets på tvers.</p>
+      </div>
+    </section>
+    ` : ''}
+  `;
+
+  return html;
+}
+
+// ─── NIVÅ 4 — Annonse ───────────────────────────────────────────────────
+
+function renderNiva4() {
+  const a = ANNONSE_MADELEINE;
+  const showDiagnose = state.diagnose;
+
+  let html = `
+    <!-- Hero med annonse + KPIer -->
+    <div class="hero mb-8">
+      <div class="flex gap-5 mb-5">
+        <div class="ad-thumb">video</div>
+        <div class="flex-1">
+          <p class="eyebrow">Annonse</p>
+          <h2 class="text-xl font-bold mt-1">${a.navn} <span class="text-neutral-400 font-normal">· ${a.versjon}</span></h2>
+          <div class="mt-2 flex items-center gap-2 flex-wrap text-xs text-neutral-500">
+            <span class="px-2 py-0.5 bg-neutral-100 rounded">Tema · ${a.tema}</span>
+            <span class="px-2 py-0.5 bg-neutral-100 rounded">Avsender · ${a.avsender}</span>
+            <span class="px-2 py-0.5 bg-neutral-100 rounded">Format · ${a.format} (${a.varighet_s}s)</span>
+            <span class="px-2 py-0.5 bg-neutral-100 rounded">Produksjon · ${a.prod}</span>
+            ${statusPill(a.status)}
+          </div>
+          <div class="text-xs text-neutral-500 mt-2">Lansert ${a.lansert} · Cohort ${a.cohort}</div>
+        </div>
+      </div>
+
+      <div class="hero-kpis pt-5 border-t border-neutral-100" style="grid-template-columns: repeat(${showDiagnose ? 6 : 4}, 1fr);">
+        <div><div class="hero-kpi-label">Spend</div><div class="hero-kpi-value mono">${fmtKr(a.spend)}</div><div class="hero-kpi-sub">${fmtDelta(0.20)}</div></div>
+        <div><div class="hero-kpi-label">ROAS</div><div class="hero-kpi-value mono">${fmtRoas(a.roas)}</div><div class="hero-kpi-sub">${fmtDelta(0.15)}</div></div>
+        <div><div class="hero-kpi-label">CPA</div><div class="hero-kpi-value mono">${a.cpa} kr</div><div class="hero-kpi-sub">${fmtDelta(-0.08, true)}</div></div>
+        <div><div class="hero-kpi-label">CTR</div><div class="hero-kpi-value mono">${a.ctr} %</div><div class="hero-kpi-sub delta-flat">stabil</div></div>
+        ${showDiagnose ? `
+        <div><div class="hero-kpi-label">Hook</div><div class="hero-kpi-value mono">${a.hook} %</div><div class="hero-kpi-sub delta-flat">stabil</div></div>
+        <div><div class="hero-kpi-label">Hold</div><div class="hero-kpi-value mono">${a.hold} %</div><div class="hero-kpi-sub delta-up">↗ +3p</div></div>
+        ` : ''}
+      </div>
+    </div>
+
+    <!-- Utvikling over tid -->
+    <section class="mb-8">
+      <p class="eyebrow mb-3">Utvikling siste 8 uker</p>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-medium">Spend + ROAS</span>
+            <span class="text-xs text-neutral-500">W12 – W19</span>
+          </div>
+          <div class="sparkbar">${[0.4, 0.5, 0.55, 0.7, 0.85, 0.95, 1.0, 0.9].map((v,i) => `<div class="${i >= 5 ? 'active' : ''}" style="height: ${v*100}%"></div>`).join('')}</div>
+        </div>
+        <div class="card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-medium">Hook + Hold</span>
+            <span class="text-xs text-neutral-500">W12 – W19</span>
+          </div>
+          <div class="sparkbar">${[0.55, 0.6, 0.65, 0.7, 0.72, 0.78, 0.85, 0.88].map((v,i) => `<div class="${i >= 5 ? 'active' : ''}" style="height: ${v*100}%"></div>`).join('')}</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sammenheng 1: innen samme tema -->
+    <section class="mb-6">
+      <p class="eyebrow mb-3">Sammenheng · innen samme tema ("${a.tema}")</p>
+      <div class="panel-sammen">
+        <div class="card" style="padding: 0; background: white;">
+          ${a.tema_annonser.map(t => `
+            <div class="row" style="grid-template-columns: 1fr auto auto;${t.current ? 'background: #f8fafc;' : ''}">
+              <div>
+                <div class="row-name">${t.navn}</div>
+              </div>
+              <div class="row-num"><div class="row-num-value mono">${fmtKr(t.spend)}</div></div>
+              <div class="row-num"><div class="row-num-value mono">${fmtRoas(t.roas)}</div></div>
+            </div>
+          `).join('')}
+        </div>
+        <p class="text-xs text-neutral-500 mt-3">Denne annonsen er beste utøveren på temaet.</p>
+      </div>
+    </section>
+
+    <!-- Sammenheng 2: cohort -->
+    <section class="mb-6">
+      <p class="eyebrow mb-3">Sammenheng · samme cohort (${a.cohort})</p>
+      <div class="panel-sammen">
+        <div class="card" style="padding: 0; background: white;">
+          ${a.cohort_annonser.map(c => `
+            <div class="row" style="grid-template-columns: 1fr auto;${c.current ? 'background: #f8fafc;' : ''}">
+              <div>
+                <div class="row-name">${c.navn}</div>
+              </div>
+              <div class="row-num"><div class="row-num-value mono">${fmtRoas(c.roas)}</div></div>
+            </div>
+          `).join('')}
+        </div>
+        <p class="text-xs text-neutral-500 mt-3">Snitt for cohort: ROAS 2.5x — over snitt.</p>
+      </div>
+    </section>
+
+    <!-- Sammenheng 3: format-benchmark -->
+    ${showDiagnose ? `
+    <section class="mb-6">
+      <p class="eyebrow mb-3">Sammenheng · format-benchmark</p>
+      <div class="panel-sammen">
+        <div class="card" style="padding: 0; background: white;">
+          <div class="grid" style="grid-template-columns: 1fr repeat(3, 100px); padding: 14px 16px; border-bottom: 1px solid #f5f5f5; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; color: #737373;">
+            <div></div>
+            <div class="text-right">ROAS</div>
+            <div class="text-right">Hook</div>
+            <div class="text-right">Hold</div>
+          </div>
+          <div class="grid" style="grid-template-columns: 1fr repeat(3, 100px); padding: 14px 16px; background: #f8fafc; border-bottom: 1px solid #f5f5f5;">
+            <div class="row-name">Denne annonsen</div>
+            <div class="row-num row-num-value mono">${fmtRoas(a.format_benchmark.denne.roas)}</div>
+            <div class="row-num row-num-value mono">${a.format_benchmark.denne.hook} %</div>
+            <div class="row-num row-num-value mono">${a.format_benchmark.denne.hold} %</div>
+          </div>
+          <div class="grid" style="grid-template-columns: 1fr repeat(3, 100px); padding: 14px 16px; border-bottom: 1px solid #f5f5f5;">
+            <div class="row-name">Snitt video</div>
+            <div class="row-num row-num-value mono">${fmtRoas(a.format_benchmark.video.roas)}</div>
+            <div class="row-num row-num-value mono">${a.format_benchmark.video.hook} %</div>
+            <div class="row-num row-num-value mono">${a.format_benchmark.video.hold} %</div>
+          </div>
+          <div class="grid" style="grid-template-columns: 1fr repeat(3, 100px); padding: 14px 16px; border-bottom: 1px solid #f5f5f5;">
+            <div class="row-name text-neutral-500">Snitt static</div>
+            <div class="row-num row-num-value mono text-neutral-500">${fmtRoas(a.format_benchmark.static.roas)}</div>
+            <div class="row-num row-num-value mono text-neutral-500">—</div>
+            <div class="row-num row-num-value mono text-neutral-500">—</div>
+          </div>
+          <div class="grid" style="grid-template-columns: 1fr repeat(3, 100px); padding: 14px 16px;">
+            <div class="row-name text-neutral-500">Snitt carousel</div>
+            <div class="row-num row-num-value mono text-neutral-500">${fmtRoas(a.format_benchmark.carousel.roas)}</div>
+            <div class="row-num row-num-value mono text-neutral-500">${a.format_benchmark.carousel.hook} %</div>
+            <div class="row-num row-num-value mono text-neutral-500">${a.format_benchmark.carousel.hold} %</div>
+          </div>
+        </div>
+        <p class="text-xs text-neutral-500 mt-3">Denne over snitt på alle dimensjoner.</p>
+      </div>
+    </section>
+    ` : ''}
+  `;
+
+  return html;
+}
+
+// ─── Main render ─────────────────────────────────────────────────────────
+
+function render() {
+  renderBreadcrumb();
+  const main = document.getElementById('main-view');
+  if (state.niva === 1) main.innerHTML = renderNiva1();
+  else if (state.niva === 2) main.innerHTML = renderNiva2();
+  else if (state.niva === 3) main.innerHTML = renderNiva3();
+  else if (state.niva === 4) main.innerHTML = renderNiva4();
+}
+
+// Init
+render();
+</script>
+
+</body>
+</html>
