@@ -1,37 +1,48 @@
-# Simpleness Dashboard — Claude Code Instructions
+# Simpleness OS — Claude Code Instructions
 
-Du er ansvarlig for å bygge og deploye Simpleness Agency Dashboard autonomt.
-Spør ikke om godkjenning for vanlige operasjoner — bare kjør.
-
----
-
-## Prosjektoversikt
-
-Internt byrå-dashboard for Simpleness (performance marketing agency, ~6 ansatte).
-Viser Meta Ads-data for alle kunder på ett sted: performance, rolling reach og creative-analyse.
-Bygget for profesjonelle mediekjøpere — ikke vanity metrics, kun det som driver beslutninger.
-
-**Stack:** Next.js 15 · TypeScript · Tailwind · Recharts · Supabase (fase 2) · Vercel  
-**Repo:** https://github.com/sprouts79/simpleness-dashboard  
-**Live:** https://simpleness-dashboard.vercel.app  
-**Lokalt:** `Simple Brain/Simpleness/ops/test/report-dashboard/`
+Du er ansvarlig for å bygge og deploye Simpleness OS — byråets monolitt-applikasjon — autonomt. Spør ikke om godkjenning for vanlige operasjoner — bare kjør.
 
 ---
 
-## Fase 1 (nåværende) — Mock data
-App er live med realistiske mock-data for MYYK, Kokkeløren og Far-Far.
-Alle skjermer fungerer og er navigerbare.
+## Hva er Simpleness OS
 
-## Fase 2 (venter på tokens) — Ekte data
+Simpleness OS er én applikasjon som dekker alle kundedata-flatene:
+
+- **Intern-view** (dashboard.simpleness.no på sikt, i dag `simpleness-os.vercel.app/`): byråets eget dashboard — pulse over alle kunder, performance/reach/creative-data per kunde, admin
+- **Kunde-view** (kunde.simpleness.no/[slug] på sikt, i dag `simpleness-os.vercel.app/kunde/[slug]`): kundens grensesnitt med leveranser, status, resultater
+
+Begge views leser fra samme datalag. Auth bestemmer scope (på sikt). I dag: URL-obscurity for kunde-view, ingen auth for intern-view.
+
+**Stack:** Next.js 15 · TypeScript · Tailwind · Recharts · Supabase (fase 2) · Vercel
+**Repo:** https://github.com/sprouts79/simpleness-os
+**Live:** https://simpleness-os.vercel.app
+**Lokalt:** `Simple Brain/Simpleness/Verktøy/Produksjon/Simpleness OS/`
+
+---
+
+## Faseplan
+
+### Fase 1 (live) — Mock data + kundeområde-skall
+- Intern-view live med mock-data for MYYK, Kokkeløren og Far-Far
+- Kunde-view live med statisk leveranseliste per kunde (hardkodet)
+
+### Fase 2 (venter på tokens) — Ekte data
 - Supabase: database + migrations
 - Meta System User Token: datahenting via Marketing API
+
+### Fase 3 (senere) — Auth
+- Supabase Auth + RLS for å skille intern vs kunde-tilgang
+- Custom domains: `dashboard.simpleness.no` (intern), `kunde.simpleness.no/[slug]` (kunder)
+
+### Fase 4 (senere) — Absorber andre moduler
+- Ad Launcher (fra `sprouts79/adlaunch`) blir modul i samme app
+- Kreativ Brief-redigering, Kampanjeplan, Budsjett-verktøy bygges som moduler
 
 ---
 
 ## Tilganger
 
-Alle tokens og secrets i `.env.local` (ikke committed) og Vercel environment variables.
-Aldri hardcode tokens i kode eller markdown.
+Alle tokens og secrets i `.env.local` (ikke committed) og Vercel environment variables. Aldri hardcode tokens i kode eller markdown.
 
 ```
 GITHUB_TOKEN=             # Fra Simple Brain/.config
@@ -54,28 +65,27 @@ SUPABASE_SERVICE_ROLE_KEY= # Ikke satt opp ennå
 ## Appstruktur
 
 ```
-report-dashboard/
+simpleness-os/
 ├── app/
-│   ├── layout.tsx              # Root layout — sidebar + main
-│   ├── page.tsx                # Pulse — alle kunder
-│   └── [client]/
-│       ├── layout.tsx          # Client-layout med tabs
-│       ├── performance/page.tsx
-│       ├── reach/page.tsx
-│       └── creative/page.tsx
+│   ├── layout.tsx                 # Root layout — kun html/body
+│   ├── globals.css
+│   ├── (intern)/                  # Intern-view (Simpleness sine ansatte)
+│   │   ├── layout.tsx             # Sidebar + main chrome
+│   │   ├── page.tsx               # Puls — alle kunder
+│   │   ├── [client]/              # Per-kunde intern view
+│   │   ├── admin/
+│   │   └── guide/
+│   ├── (kunde)/                   # Kunde-view (eksterne kunder)
+│   │   ├── layout.tsx             # Kunde-spesifikt chrome (ingen sidebar)
+│   │   └── kunde/
+│   │       └── [slug]/
+│   │           └── page.tsx       # Kundeområde-oversikt
+│   └── api/                       # Felles API for begge views
 ├── components/
-│   ├── layout/Sidebar.tsx
-│   ├── ui/KpiCard.tsx
-│   ├── ui/SectionHeader.tsx
-│   ├── charts/SpendTrendChart.tsx
-│   ├── charts/ReachCompositionChart.tsx
-│   ├── charts/CreativeChurnChart.tsx
-│   ├── creative/CohortTable.tsx
-│   └── creative/AdGallery.tsx
 ├── lib/
-│   ├── types.ts                # Alle TypeScript-typer
-│   └── mock-data.ts            # Mock-data for alle kunder
-├── docs/                       # Statiske dokumenter
+│   ├── types.ts                   # Alle TypeScript-typer
+│   ├── mock-data.ts               # Mock-data for performance
+│   └── clients-leveranser.ts      # Statisk konfigurasjon per kunde (leveranser + status)
 └── CLAUDE.md
 ```
 
@@ -83,8 +93,8 @@ report-dashboard/
 
 ## Metrics (ikke legg til andre uten å spørre Jonas)
 
-**Performance:** Spend · ROAS · CPA · CPM · Frequency · CTR  
-**Reach:** Rolling Reach · Net New Reach % · Cost per 1k Net New Reach  
+**Performance:** Spend · ROAS · CPA · CPM · Frequency · CTR
+**Reach:** Rolling Reach · Net New Reach % · Cost per 1k Net New Reach
 **Creative:** Hook Rate · Hold Rate · CTR · Spend · ROAS per annonse
 
 ---
@@ -101,6 +111,22 @@ To API-kall per uke: perioden (uke N) + kumulativt fra start til uke N.
 
 ---
 
+## Kundeområde — leveranse-status
+
+Hver leveranse hos en kunde har én av tre tilstander, samme konvensjon som tidligere kunde-kokkeloren-prototype:
+
+| Status | Når brukes |
+|---|---|
+| `godkjent` | Kunden har eksplisitt godkjent — ingen åpne kommentarer |
+| `til_avsjekk` | Klar for kundegjennomgang — venter på tilbakemelding |
+| `under_utvikling` | Simpleness jobber fortsatt med innholdet (default ved opprettelse) |
+
+Parent-leveranser arver fra children: alle godkjent → godkjent, ellers → under_utvikling. "Til avsjekk" er reservert for leaf-leveranser.
+
+Datakilde i fase 1: `lib/clients-leveranser.ts`. Fase 2: Supabase med samme skjema.
+
+---
+
 ## Designsystem
 
 - **Tokens:** Simpleness tokens.css (fra `simpleness-design-system.vercel.app`)
@@ -111,10 +137,11 @@ To API-kall per uke: perioden (uke N) + kumulativt fra start til uke N.
 
 ---
 
-## Neste steg (fase 2)
+## Neste steg
 
 1. Sett opp Supabase-prosjekt → kjør migrations fra `lib/types.ts`-skjemaet
 2. Bytt ut mock-data med Supabase-queries
 3. Bygg Meta API-klient (`lib/meta-api.ts`) med rolling reach-logikk
 4. Koble til System User Token og ad account IDs
-5. Bygg Rapport-generator (skjerm 5)
+5. Bygg Rapport-generator
+6. Migrer Kokkeløren-prototype-innhold til kunde-view (kun `kunde.simpleness.no/kokkeloren` etterhvert)
