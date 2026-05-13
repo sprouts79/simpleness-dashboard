@@ -116,8 +116,9 @@
   .delta-bad { color: #b91c1c; }
   .delta-neutral { color: #737373; }
 
-  .forecast-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; border: 1.5px dashed #737373; margin-right: 6px; vertical-align: middle; }
-  .kpi-forecast { font-size: 13px; color: #525252; margin-top: 6px; font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+  .forecast-pill { display: inline-flex; align-items: center; gap: 8px; padding: 5px 11px; border-radius: 8px; background: rgba(137, 255, 88, 0.18); margin-top: 12px; }
+  .forecast-pill-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; color: #4d6e0a; }
+  .forecast-pill-value { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; font-size: 1.0625rem; font-weight: 700; color: #1f2937; letter-spacing: -0.01em; }
 
   /* Datepicker */
   .datepicker-wrap { position: relative; display: inline-block; }
@@ -647,24 +648,24 @@ function renderHovedkort(d) {
   // - active: stort = resultat hittil, forecast-rad, delta = resultat vs budsjett + forecast vs budsjett
   // - future: stort = forecast (med dot), delta = forecast vs budsjett
   function kpiBlock(label, resultatVal, forecastVal, budgetVal, higherIsBad) {
-    let valueRow, forecastRow = '', deltaRows = '';
+    let html = `<p class="hero-kpi-label">${label}</p>`;
     if (tense === 'past') {
-      valueRow = `<p class="hero-kpi-value mono mt-2">${resultatVal.display}</p>`;
+      html += `<p class="hero-kpi-value mono mt-2">${resultatVal.display}</p>`;
       const delta = budgetVal > 0 ? (resultatVal.num - budgetVal) / budgetVal : null;
-      if (delta != null) deltaRows = `<p class="hero-kpi-sub ${deltaTone(delta, higherIsBad)}">${pctSigned(delta)} vs budsjett</p>`;
+      if (delta != null) html += `<p class="hero-kpi-sub ${deltaTone(delta, higherIsBad)}">${pctSigned(delta)} vs budsjett</p>`;
     } else if (tense === 'active') {
-      valueRow = `<p class="hero-kpi-value mono mt-2">${resultatVal.display}</p>`;
-      forecastRow = `<p class="kpi-forecast"><span class="forecast-dot"></span>Forecast ${forecastVal.display}</p>`;
+      html += `<p class="hero-kpi-value mono mt-2">${resultatVal.display}</p>`;
       const dRes = budgetVal > 0 ? (resultatVal.num - budgetVal) / budgetVal : null;
+      if (dRes != null) html += `<p class="hero-kpi-sub ${deltaTone(dRes, higherIsBad)}">${pctSigned(dRes)} vs budsjett</p>`;
+      html += `<div class="forecast-pill"><span class="forecast-pill-label">Forecast</span><span class="forecast-pill-value">${forecastVal.display}</span></div>`;
       const dFor = budgetVal > 0 ? (forecastVal.num - budgetVal) / budgetVal : null;
-      if (dRes != null) deltaRows += `<p class="hero-kpi-sub ${deltaTone(dRes, higherIsBad)}">${pctSigned(dRes)} vs budsjett</p>`;
-      if (dFor != null) deltaRows += `<p class="hero-kpi-sub ${deltaTone(dFor, higherIsBad)}"><span class="forecast-dot"></span>${pctSigned(dFor)} forecast vs budsjett</p>`;
+      if (dFor != null) html += `<p class="hero-kpi-sub ${deltaTone(dFor, higherIsBad)}">${pctSigned(dFor)} vs budsjett</p>`;
     } else { // future
-      valueRow = `<p class="hero-kpi-value mono mt-2"><span class="forecast-dot"></span>${forecastVal.display}</p>`;
+      html += `<div class="forecast-pill" style="margin-top: 8px;"><span class="forecast-pill-label">Forecast</span><span class="forecast-pill-value">${forecastVal.display}</span></div>`;
       const dFor = budgetVal > 0 ? (forecastVal.num - budgetVal) / budgetVal : null;
-      if (dFor != null) deltaRows = `<p class="hero-kpi-sub ${deltaTone(dFor, higherIsBad)}">${pctSigned(dFor)} forecast vs budsjett</p>`;
+      if (dFor != null) html += `<p class="hero-kpi-sub ${deltaTone(dFor, higherIsBad)}">${pctSigned(dFor)} vs budsjett</p>`;
     }
-    return `<div><p class="hero-kpi-label">${label}</p>${valueRow}${forecastRow}${deltaRows}</div>`;
+    return `<div>${html}</div>`;
   }
 
   // Bygg resultat- og forecast-verdier
