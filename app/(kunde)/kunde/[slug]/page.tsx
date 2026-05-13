@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   hentKundeomrade,
@@ -8,6 +9,10 @@ import {
   type LeveranseStatus,
 } from "@/lib/clients-leveranser";
 import StatusPill from "@/components/kunde/StatusPill";
+
+const LEVERANSE_RUTE: Record<string, string> = {
+  tilstandsanalyse: "tilstandsanalyse",
+};
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -34,6 +39,7 @@ export default async function KundeOmradePage({ params }: PageProps) {
       </header>
 
       <LeveransListe
+        kundeSlug={slug}
         tittel="Performance"
         beskrivelse="Den faste retainerleveransen — alt vi gjør månedlig for deg."
         leveranser={PERFORMANCE_LEVERANSER.map((mal) => ({
@@ -43,6 +49,7 @@ export default async function KundeOmradePage({ params }: PageProps) {
       />
 
       <LeveransListe
+        kundeSlug={slug}
         tittel="Prosjekter"
         beskrivelse="Enkeltstående leveranser ved siden av Performance."
         leveranser={PROSJEKT_LEVERANSER.map((mal) => ({
@@ -59,6 +66,7 @@ export default async function KundeOmradePage({ params }: PageProps) {
 }
 
 interface LeveransListeProps {
+  kundeSlug: string;
   tittel: string;
   beskrivelse: string;
   leveranser: Array<{
@@ -67,7 +75,7 @@ interface LeveransListeProps {
   }>;
 }
 
-function LeveransListe({ tittel, beskrivelse, leveranser }: LeveransListeProps) {
+function LeveransListe({ kundeSlug, tittel, beskrivelse, leveranser }: LeveransListeProps) {
   return (
     <section>
       <div className="mb-5">
@@ -79,6 +87,8 @@ function LeveransListe({ tittel, beskrivelse, leveranser }: LeveransListeProps) 
         {leveranser.map(({ mal, aktiv }, idx) => (
           <LeveransRad
             key={mal.slug}
+            kundeSlug={kundeSlug}
+            slug={mal.slug}
             navn={mal.navn}
             leveranse={aktiv}
             erFørste={idx === 0}
@@ -90,18 +100,26 @@ function LeveransListe({ tittel, beskrivelse, leveranser }: LeveransListeProps) 
 }
 
 interface LeveransRadProps {
+  kundeSlug: string;
+  slug: string;
   navn: string;
   leveranse: Leveranse | null;
   erFørste: boolean;
 }
 
-function LeveransRad({ navn, leveranse, erFørste }: LeveransRadProps) {
+function LeveransRad({ kundeSlug, slug, navn, leveranse, erFørste }: LeveransRadProps) {
   const aktiv = leveranse !== null;
   const status: LeveranseStatus = aktiv ? arveStatus(leveranse) : "under_utvikling";
   const børderTopp = erFørste ? "" : "border-t border-neutral-200";
+  const subRoute = aktiv ? LEVERANSE_RUTE[slug] : undefined;
+  const href = subRoute ? `/kunde/${kundeSlug}/${subRoute}` : null;
 
-  return (
-    <div className={`flex items-center justify-between gap-4 px-5 py-4 ${børderTopp} ${aktiv ? "" : "bg-neutral-50"}`}>
+  const inner = (
+    <div
+      className={`flex items-center justify-between gap-4 px-5 py-4 ${børderTopp} ${aktiv ? "" : "bg-neutral-50"} ${
+        href ? "hover:bg-neutral-50 transition-colors" : ""
+      }`}
+    >
       <div className="min-w-0 flex-1">
         <div className={`text-sm font-medium ${aktiv ? "text-neutral-900" : "text-neutral-400"}`}>
           {navn}
@@ -121,6 +139,15 @@ function LeveransRad({ navn, leveranse, erFørste }: LeveransRadProps) {
       )}
     </div>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="block">
+        {inner}
+      </Link>
+    );
+  }
+  return inner;
 }
 
 export async function generateMetadata({ params }: PageProps) {

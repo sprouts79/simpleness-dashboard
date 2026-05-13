@@ -136,6 +136,20 @@ const KUNDEOMRADER: KundeOmrade[] = [
       },
     ],
   },
+  {
+    slug: "alfa",
+    navn: "Alfa",
+    performance: [
+      {
+        slug: "tilstandsanalyse",
+        navn: "Tilstandsanalyse",
+        kategori: "performance",
+        status: "til_avsjekk",
+        kort_beskrivelse: "Q2 2026 — sporing, produktdata, produktfeed",
+      },
+    ],
+    prosjekter: [],
+  },
 ];
 
 // ───────────────────────────────────────────────────────────────
