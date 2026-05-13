@@ -145,7 +145,6 @@ const KUNDEOMRADER: KundeOmrade[] = [
         navn: "Tilstandsanalyse",
         kategori: "performance",
         status: "til_avsjekk",
-        kort_beskrivelse: "Q2 2026 — sporing, produktdata, produktfeed",
       },
     ],
     prosjekter: [],
