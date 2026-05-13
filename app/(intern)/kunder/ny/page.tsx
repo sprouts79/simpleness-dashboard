@@ -7,7 +7,7 @@ import {
   PERFORMANCE_LEVERANSER,
   PROSJEKT_LEVERANSER,
   toSlug,
-} from "@/lib/db-kunder";
+} from "@/lib/types-kunder";
 import { opprettKundeAction } from "./actions";
 
 const SIMPLENESS_KONTAKTER = ["Jonas", "Halvard"];

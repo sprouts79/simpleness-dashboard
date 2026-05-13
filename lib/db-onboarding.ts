@@ -1,85 +1,28 @@
 /**
- * Onboarding-modul — data layer.
- * Token-basert webflyt per kunde. Server-only.
+ * Onboarding-modul — server-only data layer.
+ * Klient-trygge typer + konstanter ligger i lib/types-onboarding.ts.
  */
 
+import "server-only";
 import { randomBytes } from "crypto";
 import { supabase } from "./supabase";
+import {
+  PLATFORMS,
+  type OnboardingPlatform,
+  type OnboardingSession,
+  type OnboardingAccess,
+  type OnboardingInsights,
+  type OnboardingDocument,
+} from "./types-onboarding";
+
+// Re-export så server-kode kan importere alt fra ett sted
+export * from "./types-onboarding";
 
 // ────────────────────────────────────────────────────────────
-// Typer
-// ────────────────────────────────────────────────────────────
-
-export type OnboardingPlatform = "meta" | "ga4" | "google_ads" | "shopify" | "snapchat";
-
-export const PLATFORMS: { id: OnboardingPlatform; navn: string; required: boolean }[] = [
-  { id: "meta",       navn: "Meta Business Manager", required: true  },
-  { id: "ga4",        navn: "Google Analytics 4",    required: true  },
-  { id: "google_ads", navn: "Google Ads",            required: true  },
-  { id: "shopify",    navn: "Shopify",               required: true  },
-  { id: "snapchat",   navn: "Snapchat Ads Manager",  required: false },
-];
-
-export interface OnboardingSession {
-  id: string;
-  token: string;
-  client_id: string;
-  current_step: number;
-  insights_locked: boolean;
-  created_at: string;
-  last_active_at: string;
-  completed_at: string | null;
-}
-
-export interface OnboardingAccess {
-  id: number;
-  session_id: string;
-  platform: OnboardingPlatform;
-  required: boolean;
-  completed: boolean;
-  completed_at: string | null;
-  notes: string | null;
-}
-
-export interface OnboardingInsights {
-  id: number;
-  session_id: string;
-  forretningsmal: string | null;
-  omsetningsmal: string | null;
-  prioritet: "topplinjevekst" | "lonnsomhet" | "begge" | null;
-  utfordringer: string | null;
-  malgruppe: string | null;
-  konkurrenter: string | null;
-  forbilder_ambassadorer: string | null;
-  prioriterte_produkter: string | null;
-  snittordre_nok: number | null;
-  sesongvariasjoner: string | null;
-  rabatter_bundles: string | null;
-  manedlig_annonsebudsjett_nok: number | null;
-  kpis: string[] | null;
-  slack_medlemmer: string | null;
-  suksess_definisjon: string | null;
-  noe_mer: string | null;
-  submitted_at: string | null;
-  updated_at: string;
-}
-
-export interface OnboardingDocument {
-  id: number;
-  session_id: string;
-  filename: string;
-  storage_path: string;
-  size_bytes: number | null;
-  mime_type: string | null;
-  uploaded_at: string;
-}
-
-// ────────────────────────────────────────────────────────────
-// Hjelpere
+// Token-generering
 // ────────────────────────────────────────────────────────────
 
 function generateToken(): string {
-  // 16 bytes → 22 base64url-tegn, ikke gjettbart
   return randomBytes(16).toString("base64url");
 }
 
@@ -87,7 +30,6 @@ function generateToken(): string {
 // Mutations
 // ────────────────────────────────────────────────────────────
 
-/** Opprett ny onboarding-session for en kunde. Setter opp session, access-rader, og insight-rad. */
 export async function createOnboardingSession(clientId: string): Promise<{ token: string }> {
   const token = generateToken();
 
@@ -101,7 +43,6 @@ export async function createOnboardingSession(clientId: string): Promise<{ token
 
   const sessionId = session.id;
 
-  // Tomme access-rader for hver plattform
   const accessRows = PLATFORMS.map((p) => ({
     session_id: sessionId,
     platform: p.id,
@@ -112,7 +53,6 @@ export async function createOnboardingSession(clientId: string): Promise<{ token
   const { error: accessError } = await supabase.from("onboarding_access").insert(accessRows);
   if (accessError) throw new Error(`createOnboardingSession access: ${accessError.message}`);
 
-  // Tom insight-rad
   const { error: insightError } = await supabase
     .from("onboarding_insights")
     .insert({ session_id: sessionId });
@@ -156,7 +96,6 @@ export async function getAccess(sessionId: string): Promise<OnboardingAccess[]> 
     .eq("session_id", sessionId);
 
   if (error) throw new Error(`getAccess: ${error.message}`);
-  // Sorter i samme rekkefølge som PLATFORMS-konstanten
   const order = new Map(PLATFORMS.map((p, i) => [p.id, i]));
   return (data ?? []).sort((a, b) => (order.get(a.platform) ?? 0) - (order.get(b.platform) ?? 0)) as OnboardingAccess[];
 }
@@ -248,7 +187,7 @@ export async function lockInsights(sessionId: string): Promise<void> {
 }
 
 // ────────────────────────────────────────────────────────────
-// Storage (filer)
+// Storage
 // ────────────────────────────────────────────────────────────
 
 export async function uploadDocument(
@@ -283,25 +222,4 @@ export async function uploadDocument(
   if (error) throw new Error(`uploadDocument insert: ${error.message}`);
   await bumpLastActive(sessionId);
   return { document: data as OnboardingDocument };
-}
-
-// ────────────────────────────────────────────────────────────
-// Lifecycle-mapping (sesjon-stage → kunde-lifecycle)
-// ────────────────────────────────────────────────────────────
-
-/**
- * Mapper sessions current_step + completed_at til kundens lifecycle_stage.
- * Brukes for å holde clients.lifecycle_stage i sync med session-fremdriften.
- */
-export function lifecycleStageFor(session: OnboardingSession):
-  | "onboarding_ikke_startet"
-  | "onboarding_steg_1"
-  | "onboarding_steg_2"
-  | "onboarding_steg_3"
-  | "onboarding_fullfort" {
-  if (session.completed_at) return "onboarding_fullfort";
-  if (session.current_step >= 3) return "onboarding_steg_3";
-  if (session.current_step === 2) return "onboarding_steg_2";
-  if (session.current_step === 1) return "onboarding_steg_1";
-  return "onboarding_ikke_startet";
 }

@@ -8,7 +8,7 @@ import {
   type OnboardingInsights,
   type OnboardingDocument,
   type OnboardingPlatform,
-} from "@/lib/db-onboarding";
+} from "@/lib/types-onboarding";
 import {
   setStepAction,
   togglePlatformAction,
