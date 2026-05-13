@@ -280,22 +280,22 @@ function presetData(id) {
     const daglig = dailyForWeek(weekDays);
     const spend = daglig.reduce((s,d) => s + (d.actualSpend || d.forecastSpend), 0);
     const nye = daglig.reduce((s,d) => s + (d.actualNye || d.forecastNye), 0);
-    return { title:'Uke 20', sub:'11 – 17. mai 2026 · forecast', tense:'active', spend, nye: Math.round(nye), cac: nye > 0 ? Math.round(spend/nye) : 0, hittil: { spend: 8500, nye: 10, cac: 850 }, initialDiff: { spend:-0.08, nye:0.04, cac:-0.12 }, budget: KUNDE.weekBudget, granularitet:'dag', daglig };
+    return { title:'Uke 20', sub:'11 – 17. mai 2026', tense:'active', spend, nye: Math.round(nye), cac: nye > 0 ? Math.round(spend/nye) : 0, hittil: { spend: 8500, nye: 10, cac: 850 }, initialDiff: { spend:-0.08, nye:0.04, cac:-0.12 }, budget: KUNDE.weekBudget, granularitet:'dag', daglig };
   }
   if (id === 'last-week') {
     const weekDays = [{day:4,month:5},{day:5,month:5},{day:6,month:5},{day:7,month:5},{day:8,month:5},{day:9,month:5},{day:10,month:5}];
     const daglig = dailyForWeek(weekDays);
     const spend = daglig.reduce((s,d) => s + (d.actualSpend || 0), 0);
     const nye = daglig.reduce((s,d) => s + (d.actualNye || 0), 0);
-    return { title:'Uke 19', sub:'4 – 10. mai 2026 · resultat', tense:'past', spend, nye, cac: nye > 0 ? Math.round(spend/nye) : 0, initialDiff: { spend:-0.10, nye:0.02, cac:-0.10 }, budget: KUNDE.weekBudget, granularitet:'dag', daglig };
+    return { title:'Uke 19', sub:'4 – 10. mai 2026', tense:'past', spend, nye, cac: nye > 0 ? Math.round(spend/nye) : 0, initialDiff: { spend:-0.10, nye:0.02, cac:-0.10 }, budget: KUNDE.weekBudget, granularitet:'dag', daglig };
   }
   if (id === 'this-month') {
     const m = monthByM(5);
-    return { title:'Mai 2026', sub:'Forecast', tense:'active', spend:m.spend, nye:m.nye, cac:m.cac, hittil: { spend: 38000, nye: 42, cac: 905 }, initialDiff:m.initialDiff, budget: KUNDE.monthlyBudget, granularitet:'dag', daglig: buildDailyForMonth(5) };
+    return { title:'Mai 2026', sub:'', tense:'active', spend:m.spend, nye:m.nye, cac:m.cac, hittil: { spend: 38000, nye: 42, cac: 905 }, initialDiff:m.initialDiff, budget: KUNDE.monthlyBudget, granularitet:'dag', daglig: buildDailyForMonth(5) };
   }
   if (id === 'last-month') {
     const m = monthByM(4);
-    return { title:'April 2026', sub:'Resultat', tense:'past', spend:m.spend, nye:m.nye, cac:m.cac, initialDiff:m.initialDiff, budget: KUNDE.monthlyBudget, granularitet:'dag', daglig: buildDailyForMonth(4) };
+    return { title:'April 2026', sub:'', tense:'past', spend:m.spend, nye:m.nye, cac:m.cac, initialDiff:m.initialDiff, budget: KUNDE.monthlyBudget, granularitet:'dag', daglig: buildDailyForMonth(4) };
   }
   if (id === 'ytd') {
     const valid = MONTHS.filter(m => m.status !== 'empty');
@@ -315,7 +315,7 @@ function presetData(id) {
       const status = allDone ? 'done' : (allEmpty ? 'empty' : (allPlanned ? 'planned' : 'active'));
       return { qNum, label:`Q${qNum}`, spend:qSpend, nye:qNye, cac:qCac, status };
     });
-    return { title:'2026', sub:'Hittil – desember · forecast', tense:'active', spend, nye, cac: nye > 0 ? Math.round(spend/nye) : 0, hittil: { spend: 650000, nye: 600, cac: 1083 }, initialDiff, budget: KUNDE.yearBudget, granularitet:'maned', maaneder: valid, kvartaler };
+    return { title:'2026', sub:'Januar – desember', tense:'active', spend, nye, cac: nye > 0 ? Math.round(spend/nye) : 0, hittil: { spend: 650000, nye: 600, cac: 1083 }, initialDiff, budget: KUNDE.yearBudget, granularitet:'maned', maaneder: valid, kvartaler };
   }
   if (id === 'q1' || id === 'q2' || id === 'q3' || id === 'q4') {
     const qNum = parseInt(id.replace('q',''));
@@ -332,7 +332,7 @@ function presetData(id) {
     const stage = tense === 'past' ? 'Resultat' : 'Forecast';
     const qMonthLabels = { 1: 'Januar – mars', 2: 'April – juni', 3: 'Juli – september', 4: 'Oktober – desember' };
     const hittil = tense === 'active' ? { spend: 151000, nye: 158, cac: 956 } : null;
-    return { title:`Q${qNum} 2026`, sub:`${qMonthLabels[qNum]} · ${stage.toLowerCase()}`, tense, spend, nye, cac: nye > 0 ? Math.round(spend/nye) : 0, hittil, initialDiff, budget: KUNDE.quarterBudget, granularitet:'uke', maaneder: months, qNum };
+    return { title:`Q${qNum} 2026`, sub:qMonthLabels[qNum], tense, spend, nye, cac: nye > 0 ? Math.round(spend/nye) : 0, hittil, initialDiff, budget: KUNDE.quarterBudget, granularitet:'uke', maaneder: months, qNum };
   }
   if (id === 'custom') {
     return { title:'Velg periode', sub:'Custom date range — kommer', tense:'active', spend:0, nye:0, cac:0, initialDiff:null, budget: KUNDE.monthlyBudget, granularitet:'dag', daglig: [] };
