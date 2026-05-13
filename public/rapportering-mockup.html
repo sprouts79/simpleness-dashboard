@@ -299,7 +299,19 @@ function presetData(id) {
     const nye = valid.reduce((s,m) => s + m.nye, 0);
     const validIDs = valid.filter(m => m.initialDiff);
     const initialDiff = validIDs.length ? { spend: validIDs.reduce((s,m) => s + m.initialDiff.spend, 0)/validIDs.length, nye: validIDs.reduce((s,m) => s + m.initialDiff.nye, 0)/validIDs.length, cac: validIDs.reduce((s,m) => s + m.initialDiff.cac, 0)/validIDs.length } : null;
-    return { label:'YTD', sublabel:'2026 hittil + forecast', spend, nye, cac: nye > 0 ? Math.round(spend/nye) : 0, initialDiff, budget: KUNDE.yearBudget, stage:'Hittil + forecast', granularitet:'maned', maaneder: valid };
+    const kvartaler = [1,2,3,4].map(qNum => {
+      const qMonths = MONTHS.filter(m => Math.ceil(m.m/3) === qNum);
+      const qValid = qMonths.filter(m => m.status !== 'empty');
+      const qSpend = qValid.reduce((s,m) => s + m.spend, 0);
+      const qNye = qValid.reduce((s,m) => s + m.nye, 0);
+      const qCac = qNye > 0 ? Math.round(qSpend/qNye) : 0;
+      const allDone = qMonths.every(m => m.status === 'done');
+      const allEmpty = qMonths.every(m => m.status === 'empty');
+      const allPlanned = qMonths.every(m => m.status === 'planned');
+      const status = allDone ? 'done' : (allEmpty ? 'empty' : (allPlanned ? 'planned' : 'active'));
+      return { qNum, label:`Q${qNum}`, spend:qSpend, nye:qNye, cac:qCac, status };
+    });
+    return { label:'YTD', sublabel:'2026 hittil + forecast', spend, nye, cac: nye > 0 ? Math.round(spend/nye) : 0, initialDiff, budget: KUNDE.yearBudget, stage:'Hittil + forecast', granularitet:'maned', maaneder: valid, kvartaler };
   }
   if (id === 'q1' || id === 'q2' || id === 'q3' || id === 'q4') {
     const qNum = parseInt(id.replace('q',''));
@@ -407,7 +419,7 @@ function reachSeries(d) {
   }
 }
 
-const state = { rapport:'resultat', preset:'this-month', kanal:null, kampanje:null, grouping:'none' };
+const state = { rapport:'resultat', preset:'this-month', kanal:null, kampanje:null, grouping:'none', expandedMonths: new Set() };
 
 function fmtKr(v) { if (v == null) return '—'; if (v >= 1000) return `${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k`; return Math.round(v).toString(); }
 function pct(v) { return `${Math.round(v * 100)}%`; }
@@ -440,7 +452,14 @@ function navTo(r) {
 
 function setPreset(p) {
   state.preset = p;
+  state.expandedMonths = new Set();
   closeDatepicker();
+  render();
+}
+
+function toggleMonth(m) {
+  if (state.expandedMonths.has(m)) state.expandedMonths.delete(m);
+  else state.expandedMonths.add(m);
   render();
 }
 
@@ -695,7 +714,7 @@ function renderDaglig(daglig, useDateLabel = false) {
   `;
 }
 
-function renderManedKort(maaneder) {
+function renderManedKort(maaneder, expandable = false) {
   let html = `<p class="eyebrow mb-3">Måneder</p><div class="space-y-3">`;
   maaneder.forEach(m => {
     if (m.status === 'empty') return;
@@ -703,16 +722,52 @@ function renderManedKort(maaneder) {
     const nd = (m.nye - KUNDE.monthlyBudget.nye) / KUNDE.monthlyBudget.nye;
     const cd = m.cac > 0 ? (m.cac - KUNDE.monthlyBudget.targetCac) / KUNDE.monthlyBudget.targetCac : null;
     const stage = m.status === 'done' ? 'Resultat' : (m.status === 'active' ? 'Hittil + forecast' : 'Forecast');
+    const isExpanded = state.expandedMonths.has(m.m);
+    const hoverCls = expandable ? 'hero-clickable' : '';
+    const onClick = expandable ? `onclick="toggleMonth(${m.m})"` : '';
     html += `
-      <div class="hero hero-compact">
+      <div class="hero hero-compact ${hoverCls}" ${onClick}>
         <div class="flex items-center justify-between mb-3">
           <h1 class="hero-title">${m.label} 2026</h1>
-          <span class="text-xs text-neutral-500">${stage}</span>
+          <span class="text-xs text-neutral-500">${stage}${expandable ? ` · ${isExpanded ? 'Lukk' : 'Vis daglig'}` : ''}</span>
         </div>
         <div class="hero-kpis" style="grid-template-columns: repeat(3, 1fr);">
           <div><p class="hero-kpi-label">Spend</p><p class="hero-kpi-value mono">${fmtKr(m.spend)} kr</p><p class="hero-kpi-sub ${deltaTone(sd, true)}">${pctSigned(sd)} vs budsjett</p></div>
           <div><p class="hero-kpi-label">${KUNDE.nyeLabel}</p><p class="hero-kpi-value mono">${m.nye}</p><p class="hero-kpi-sub ${deltaTone(nd, false)}">${pctSigned(nd)} vs budsjett</p></div>
           <div><p class="hero-kpi-label">${KUNDE.merLabel}</p><p class="hero-kpi-value mono">${m.cac > 0 ? m.cac + ' kr' : '—'}</p>${cd != null ? `<p class="hero-kpi-sub ${deltaTone(cd, true)}">${pctSigned(cd)} vs target</p>` : ''}</div>
+        </div>
+      </div>
+    `;
+    if (expandable && isExpanded) {
+      const daglig = buildDailyForMonth(m.m);
+      html += `<div class="ml-6 pl-4 border-l-2 border-neutral-200">${renderDaglig(daglig)}</div>`;
+    }
+  });
+  return html + `</div>`;
+}
+
+function renderKvartalKort(kvartaler) {
+  let html = `<p class="eyebrow mb-3">Kvartaler</p><div class="space-y-3">`;
+  kvartaler.forEach(q => {
+    const disabled = q.status === 'empty';
+    if (disabled) {
+      html += `<div class="hero hero-compact hero-disabled"><h1 class="hero-title">${q.label} 2026</h1></div>`;
+      return;
+    }
+    const sd = (q.spend - KUNDE.quarterBudget.spend) / KUNDE.quarterBudget.spend;
+    const nd = (q.nye - KUNDE.quarterBudget.nye) / KUNDE.quarterBudget.nye;
+    const cd = q.cac > 0 ? (q.cac - KUNDE.quarterBudget.targetCac) / KUNDE.quarterBudget.targetCac : null;
+    const stage = q.status === 'done' ? 'Resultat' : (q.status === 'active' ? 'Hittil + forecast' : 'Forecast');
+    html += `
+      <div class="hero hero-compact hero-clickable" onclick="setPreset('q${q.qNum}')">
+        <div class="flex items-center justify-between mb-3">
+          <h1 class="hero-title">${q.label} 2026</h1>
+          <span class="text-xs text-neutral-500">${stage}</span>
+        </div>
+        <div class="hero-kpis" style="grid-template-columns: repeat(3, 1fr);">
+          <div><p class="hero-kpi-label">Spend</p><p class="hero-kpi-value mono">${fmtKr(q.spend)} kr</p><p class="hero-kpi-sub ${deltaTone(sd, true)}">${pctSigned(sd)} vs budsjett</p></div>
+          <div><p class="hero-kpi-label">${KUNDE.nyeLabel}</p><p class="hero-kpi-value mono">${q.nye}</p><p class="hero-kpi-sub ${deltaTone(nd, false)}">${pctSigned(nd)} vs budsjett</p></div>
+          <div><p class="hero-kpi-label">${KUNDE.merLabel}</p><p class="hero-kpi-value mono">${q.cac > 0 ? q.cac + ' kr' : '—'}</p>${cd != null ? `<p class="hero-kpi-sub ${deltaTone(cd, true)}">${pctSigned(cd)} vs target</p>` : ''}</div>
         </div>
       </div>
     `;
@@ -728,7 +783,11 @@ function renderResultat() {
 
   let html = renderHovedkort(d, d.label, d.sublabel);
   html += `<div class="chart-card mb-6">${spendVsMerSvg(spendMerSeries(d), KUNDE.merLabel)}</div>`;
-  if (d.maaneder) html += renderManedKort(d.maaneder);
+  if (d.kvartaler) html += renderKvartalKort(d.kvartaler);
+  else if (d.maaneder) {
+    const isQuarter = state.preset === 'q1' || state.preset === 'q2' || state.preset === 'q3' || state.preset === 'q4';
+    html += renderManedKort(d.maaneder, isQuarter);
+  }
   if (d.daglig) html += renderDaglig(d.daglig, d.granularitet === 'dag' && (state.preset === 'this-week' || state.preset === 'last-week'));
   return html;
 }
