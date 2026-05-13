@@ -136,6 +136,14 @@
   .week-tab.disabled { opacity: 0.45; pointer-events: none; }
   .week-tab-num { font-weight: 600; color: #090a08; }
   .week-tab-dates { color: #737373; font-size: 11px; margin-top: 2px; }
+
+  /* Tids-strip */
+  .time-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+  .time-tab { background: white; border: 1px solid #e5e5e5; border-radius: 10px; padding: 12px 16px; cursor: pointer; transition: border-color 80ms; text-align: left; }
+  .time-tab:hover { border-color: #a3a3a3; }
+  .time-tab.active { border-color: #090a08; border-width: 2px; padding: 11px 15px; }
+  .time-tab-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; color: #737373; }
+  .time-tab-value { font-size: 15px; font-weight: 600; color: #090a08; margin-top: 4px; font-family: 'IBM Plex Mono', monospace; }
 </style>
 </head>
 <body>
@@ -148,18 +156,19 @@
     <span class="text-sm text-neutral-700 ml-2">Rapportering · Kokkeløren · drill-down</span>
   </div>
 
-  <!-- Topp-nav -->
-  <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+  <!-- Topp-nav + datakilder -->
+  <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
     <div class="topnav">
-      <button id="nav-resultat" class="active" onclick="navTo('resultat')">Resultatrapport</button>
-      <button id="nav-kanal" onclick="navTo('kanal')">Kanalrapport</button>
+      <button id="nav-resultat" class="active" onclick="navTo('resultat')">Resultater</button>
+      <button id="nav-kanal" onclick="navTo('kanal')">Kanaler</button>
     </div>
+    <div class="flex items-center gap-2 flex-wrap" id="datakilder"></div>
   </div>
 
-  <!-- Datakilder -->
-  <div class="flex items-center gap-2 flex-wrap mb-5" id="datakilder"></div>
+  <!-- Tids-strip -->
+  <div id="time-strip"></div>
 
-  <!-- Breadcrumb -->
+  <!-- Kreativ-breadcrumb (kun Kanaler) -->
   <div id="breadcrumb"></div>
 
   <!-- Main render area -->
@@ -510,70 +519,41 @@ function setGrouping(v) { state.grouping = v; render(); }
 
 // ─── Breadcrumb ──────────────────────────────────────────────────────────
 
-function timeCrumbs() {
-  const crumbs = [];
-  // År
-  if (state.nivaa === 'ar') {
-    crumbs.push({ label: state.ar.toString(), active: true });
-  } else {
-    crumbs.push({ label: state.ar.toString(), onClick: () => setNivaa('ar') });
-  }
-  // Kvartal
-  if (state.nivaa === 'kvartal' || state.nivaa === 'maned' || state.nivaa === 'uke') {
-    const q = quarterByQ(state.kvartal);
-    if (state.nivaa === 'kvartal') crumbs.push({ label: q.label, active: true });
-    else crumbs.push({ label: q.label, onClick: () => setNivaa('kvartal') });
-  }
-  // Måned
-  if (state.nivaa === 'maned' || state.nivaa === 'uke') {
-    const m = monthByM(state.maned);
-    if (state.nivaa === 'maned') crumbs.push({ label: m.label, active: true });
-    else crumbs.push({ label: m.label, onClick: () => setNivaa('maned') });
-  }
-  // Uke
-  if (state.nivaa === 'uke') {
-    crumbs.push({ label: `Uke ${state.uke}`, active: true });
-  }
-  return crumbs;
+function renderTimeStrip() {
+  const el = document.getElementById('time-strip');
+  const tabs = [
+    { nivaa: 'ar',      label: 'År',      value: state.ar.toString() },
+    { nivaa: 'kvartal', label: 'Kvartal', value: `Q${state.kvartal}` },
+    { nivaa: 'maned',   label: 'Måned',   value: monthByM(state.maned).label },
+    { nivaa: 'uke',     label: 'Uke',     value: `Uke ${state.uke}` },
+  ];
+  el.outerHTML = `<div id="time-strip"><div class="time-strip">${tabs.map(t => `
+    <button class="time-tab ${state.nivaa === t.nivaa ? 'active' : ''}" onclick="setNivaa('${t.nivaa}')">
+      <div class="time-tab-label">${t.label}</div>
+      <div class="time-tab-value">${t.value}</div>
+    </button>
+  `).join('')}</div></div>`;
 }
 
 function renderBreadcrumb() {
   const bc = document.getElementById('breadcrumb');
-  const tCrumbs = timeCrumbs();
-
-  let html = '<div class="breadcrumb"><span class="crumb-type">Tid</span>';
-  tCrumbs.forEach((c, i) => {
-    if (i > 0) html += '<span class="sep">›</span>';
-    if (c.active) html += `<span class="active">${c.label}</span>`;
-    else html += `<a data-crumb="${i}">${c.label}</a>`;
-  });
-
-  // Kreativ-sti på Kanalrapport
-  if (state.rapport === 'kanal') {
-    html += '<span class="sep" style="margin: 0 10px;">·</span><span class="crumb-type">Kanal</span>';
-    if (!state.kanal) {
-      html += `<span class="active">Kanaler</span>`;
-    } else {
-      const k = KANALER_BASE.find(x => x.slug === state.kanal);
-      if (!state.kampanje) {
-        html += `<a data-clear-kanal="1">Kanaler</a><span class="sep">›</span><span class="active">${k.navn}</span>`;
-      } else {
-        const c = META_KAMPANJER.find(x => x.id === state.kampanje);
-        const cName = c.navn.replace(/^BAU 2026 \/ /, '');
-        html += `<a data-clear-kanal="1">Kanaler</a><span class="sep">›</span><a data-clear-kampanje="1">${k.navn}</a><span class="sep">›</span><span class="active">${cName}</span>`;
-      }
-    }
+  // Kun kreativ-breadcrumb på Kanaler-side, og kun når vi har valgt kanal
+  if (state.rapport !== 'kanal' || !state.kanal) {
+    bc.outerHTML = `<div id="breadcrumb"></div>`;
+    return;
   }
+  const k = KANALER_BASE.find(x => x.slug === state.kanal);
+  let html = `<a data-clear-kanal="1">Kanaler</a>`;
+  if (!state.kampanje) {
+    html += `<span class="sep">›</span><span class="active">${k.navn}</span>`;
+  } else {
+    const c = META_KAMPANJER.find(x => x.id === state.kampanje);
+    const cName = c.navn.replace(/^BAU 2026 \/ /, '');
+    html += `<span class="sep">›</span><a data-clear-kampanje="1">${k.navn}</a><span class="sep">›</span><span class="active">${cName}</span>`;
+  }
+  bc.outerHTML = `<div id="breadcrumb"><div class="breadcrumb">${html}</div></div>`;
 
-  html += '</div>';
-  bc.outerHTML = `<div id="breadcrumb">${html}</div>`;
-
-  // Re-attach handlers
   const bcNew = document.getElementById('breadcrumb');
-  bcNew.querySelectorAll('[data-crumb]').forEach(el => {
-    const idx = parseInt(el.dataset.crumb);
-    el.addEventListener('click', tCrumbs[idx].onClick);
-  });
   bcNew.querySelectorAll('[data-clear-kanal]').forEach(el => el.addEventListener('click', clearKanal));
   bcNew.querySelectorAll('[data-clear-kampanje]').forEach(el => el.addEventListener('click', clearKampanje));
 }
@@ -1050,7 +1030,7 @@ function scopeSpend() {
 
 function renderKanalIndeks() {
   const kanaler = kanalerForScope(scopeSpend());
-  let html = `<p class="eyebrow mb-3">Kanaler</p><div class="space-y-3">`;
+  let html = `<div class="space-y-3">`;
   kanaler.forEach(k => {
     if (k.hasPlatformData) {
       const dist = distribution(k.ads);
@@ -1224,6 +1204,7 @@ function renderKanalKampanje() {
 
 function render() {
   renderDatakilder();
+  renderTimeStrip();
   renderBreadcrumb();
   const main = document.getElementById('main-view');
   if (state.rapport === 'resultat') {
