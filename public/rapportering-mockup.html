@@ -452,7 +452,6 @@ const state = {
   kanal: null,
   kampanje: null,
   // UI
-  dailyOpen: false,
   grouping: 'none',
 };
 
@@ -499,7 +498,6 @@ function setNivaa(n, opts = {}) {
   if (opts.kvartal) state.kvartal = opts.kvartal;
   if (opts.maned) state.maned = opts.maned;
   if (opts.uke) state.uke = opts.uke;
-  state.dailyOpen = false;
   render();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -508,7 +506,6 @@ function setKanal(slug) { state.kanal = slug; state.kampanje = null; render(); w
 function setKampanje(id) { state.kampanje = id; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 function clearKanal() { state.kanal = null; state.kampanje = null; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 function clearKampanje() { state.kampanje = null; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-function toggleDaily() { state.dailyOpen = !state.dailyOpen; render(); }
 function setGrouping(v) { state.grouping = v; render(); }
 
 // ─── Breadcrumb ──────────────────────────────────────────────────────────
@@ -932,16 +929,9 @@ function renderResultatManed() {
   });
   html += `</div>`;
 
-  // Daglig toggle + tabell
-  html += `
-    <div class="flex items-center justify-between mt-6 mb-3">
-      <p class="eyebrow">Daglig</p>
-      <button class="text-xs text-neutral-500 hover:text-neutral-900" onclick="toggleDaily()">${state.dailyOpen ? 'Lukk daglig' : 'Åpne daglig'}</button>
-    </div>
-  `;
-  if (state.dailyOpen) {
-    html += renderDailyTable(buildDailyForMonth(m.m));
-  }
+  // Daglig — alltid ekspandert
+  html += `<p class="eyebrow mb-3 mt-6">Daglig</p>`;
+  html += renderDailyTable(buildDailyForMonth(m.m));
   return html;
 }
 
