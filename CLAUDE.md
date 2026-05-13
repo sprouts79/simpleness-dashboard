@@ -26,9 +26,10 @@ Begge views leser fra samme datalag. Auth bestemmer scope (på sikt). I dag: URL
 - Intern-view live med mock-data for MYYK, Kokkeløren og Far-Far
 - Kunde-view live med statisk leveranseliste per kunde (hardkodet)
 
-### Fase 2 (venter på tokens) — Ekte data
-- Supabase: database + migrations
-- Meta System User Token: datahenting via Marketing API
+### Fase 2 (pågår) — Ekte data
+- Supabase: prosjekt `simpleness-dashboard` (id `kosbrmgbhpjphzlpzjrf`, navnet er pre-rename) — performance-schema operativt med 14 kunder seedet, 4 migrations applied (`001-004`)
+- Meta System User Token: aktivt — datahenting via Marketing API kjører
+- **Pågår 2026-05-13:** Kunder-modul + Onboarding-modul bygges som migrations 005+ på samme prosjekt
 
 ### Fase 3 (senere) — Auth
 - Supabase Auth + RLS for å skille intern vs kunde-tilgang
@@ -50,15 +51,16 @@ VERCEL_TOKEN=             # vcp_... (full account)
 VERCEL_TEAM_ID=           # team_ZbyZDifI0rFPfzcaFHDYkRvm
 VERCEL_PROJECT_ID=        # prj_bbjZ6oUwbxbC3K3tCLHn6kMj3NVR
 META_APP_ID=              # 907138178810837
-META_SYSTEM_USER_TOKEN=   # Venter på BM-godkjenning
-SUPABASE_URL=             # Ikke satt opp ennå
-SUPABASE_SERVICE_ROLE_KEY= # Ikke satt opp ennå
+META_SYSTEM_USER_TOKEN=   # EAAM5...  (aktivt)
+SUPABASE_PROJECT_ID=      # kosbrmgbhpjphzlpzjrf  (navn: "simpleness-dashboard" — pre-rename)
+SUPABASE_URL=             # https://kosbrmgbhpjphzlpzjrf.supabase.co
+SUPABASE_SERVICE_ROLE_KEY= # sb_secret_... (bypasser RLS — kun server-side)
+SUPABASE_ACCESS_TOKEN=    # sbp_... (Management API — for migrations/admin)
 ```
 
-**Kunder og ad account IDs:**
-- MYYK: `act_431404084344569`
-- Kokkeløren: `act_220000000000001` (placeholder — bytt ut)
-- Far-Far: `act_330000000000002` (placeholder — bytt ut)
+Verdier ligger i `Simple Brain/.config`. Lokal `.env.local` har URL + SERVICE_ROLE_KEY + META_*. Vercel env vars synkronisert.
+
+**Kunder:** 14 stk seedet i `clients`-tabellen — `act_*`-IDer der. Hovedkunder: MYYK (`act_431404084344569`), Kokkeløren (`act_267192904748840`), Far-Far (`act_618453770153594`). Full liste via Supabase eller `SELECT id, slug, meta_account_id FROM clients ORDER BY id`.
 
 ---
 
@@ -67,25 +69,36 @@ SUPABASE_SERVICE_ROLE_KEY= # Ikke satt opp ennå
 ```
 simpleness-os/
 ├── app/
-│   ├── layout.tsx                 # Root layout — kun html/body
+│   ├── layout.tsx                       # Root layout — kun html/body
 │   ├── globals.css
-│   ├── (intern)/                  # Intern-view (Simpleness sine ansatte)
-│   │   ├── layout.tsx             # Sidebar + main chrome
-│   │   ├── page.tsx               # Puls — alle kunder
-│   │   ├── [client]/              # Per-kunde intern view
-│   │   ├── admin/
+│   ├── (intern)/                        # Intern-view (Simpleness sine ansatte)
+│   │   ├── layout.tsx                   # Sidebar + main chrome
+│   │   ├── page.tsx                     # Puls — alle kunder
+│   │   ├── [client]/                    # Per-kunde intern view
+│   │   ├── kunder/                      # Kunder-modul (Fase 2 ↑)
+│   │   │   ├── page.tsx                 # Index — alle kunder + lifecycle-stage
+│   │   │   ├── ny/page.tsx              # Opprett ny kunde + onboarding-token
+│   │   │   └── [slug]/
+│   │   │       ├── page.tsx             # Kunde-detalj
+│   │   │       └── onboarding/page.tsx  # Lese kundens onboarding-svar
+│   │   ├── admin/                       # Systemkonfig (sync, debug, Meta-konto-kobling)
 │   │   └── guide/
-│   ├── (kunde)/                   # Kunde-view (eksterne kunder)
-│   │   ├── layout.tsx             # Kunde-spesifikt chrome (ingen sidebar)
-│   │   └── kunde/
-│   │       └── [slug]/
-│   │           └── page.tsx       # Kundeområde-oversikt
-│   └── api/                       # Felles API for begge views
+│   ├── (kunde)/                         # Kunde-view (eksterne kunder)
+│   │   ├── layout.tsx                   # Kunde-spesifikt chrome (ingen sidebar)
+│   │   ├── kunde/[slug]/page.tsx        # Kundeområde-oversikt
+│   │   └── onboard/[token]/             # Onboarding-modul (Fase 2 ↑)
+│   │       ├── page.tsx                 # Wizard-shell
+│   │       └── components/              # WelcomeScreen, AccessStep, InsightStep, NextStepsScreen
+│   └── api/
+│       └── onboarding/                  # Token-generering, fil-upload (Fase 2 ↑)
 ├── components/
 ├── lib/
-│   ├── types.ts                   # Alle TypeScript-typer
-│   ├── mock-data.ts               # Mock-data for performance
-│   └── clients-leveranser.ts      # Statisk konfigurasjon per kunde (leveranser + status)
+│   ├── types.ts                         # Alle TypeScript-typer
+│   ├── mock-data.ts                     # Mock-data for performance
+│   ├── clients-leveranser.ts            # Statisk konfigurasjon per kunde (Fase 1 — flyttes til Supabase)
+│   └── supabase.ts                      # Supabase-klient (Fase 2 ↑)
+├── supabase/
+│   └── migrations/                      # SQL-migrations (Fase 2 ↑)
 └── CLAUDE.md
 ```
 
@@ -127,6 +140,80 @@ Datakilde i fase 1: `lib/clients-leveranser.ts`. Fase 2: Supabase med samme skje
 
 ---
 
+## Moduler
+
+Simpleness OS er en monolitt — alle flatene under deler kodebase, datalag og auth.
+
+| Modul | Rute | Status | Hva |
+|---|---|---|---|
+| Puls | `/` | live (mock) | Pulse over alle kunder |
+| Per-kunde dashboard | `/[client]/oversikt` osv. | live (mock) | Performance, reach, creative, budsjett |
+| **Kunder-admin** | `/kunder` | **bygges (Fase 2)** | Index over alle kunder med lifecycle-stage, opprett ny, kunde-detalj. Erstatter dagens `/admin` som Meta-konto-kobler |
+| **Onboarding (kunde)** | `/onboard/[token]` | **bygges (Fase 2)** | Token-basert wizard — Tilganger, Innsikt, Veien videre |
+| **Onboarding (intern)** | `/kunder/[slug]/onboarding` | **bygges (Fase 2)** | Lese kundens onboarding-svar |
+| Kundeområde | `/kunde/[slug]` | live (statisk) | Kundens leveranseliste med status |
+| Systemkonfig | `/admin` | live | Meta-konto-kobling, sync-status — strammes inn til kun systemkonfig |
+
+### Konvensjon: hvor lever en modul?
+
+- Modul = en flate kunden eller Simpleness bruker for én avgrenset oppgave
+- Routing under `(intern)/` for Simpleness-flater, `(kunde)/` for kunde-flater
+- Komponenter under `components/[modul-navn]/`
+- Server actions / API under `app/api/[modul-navn]/`
+- Database-tabeller med modul-prefix (`onboarding_*`, `clients`, `client_*`, `report_*`)
+
+---
+
+## Datamodell — Supabase-tabeller
+
+Alle tabeller har RLS på, med policy `"service role full access"` som gir `service_role` full tilgang. Server-side kall bruker `service_role`-keyen. Stramme policies legges på i Fase 3 når auth kommer.
+
+### Eksisterende (migrations 001–004)
+
+| Tabell | Hva |
+|---|---|
+| `clients` | Én rad per kunde. PK: `id` (slug). Felter: `name`, `slug`, `meta_account_id`, `status` (KPI: green/yellow/red), `thresholds` (jsonb), `created_at`. 14 kunder seedet. |
+| `meta_performance_daily` | Daglige Meta-metrikker per kampanje/adset |
+| `meta_reach_weekly` | Ukentlig kumulativ + net new reach per kunde + kampanje |
+| `meta_ads` | Ad-nivå metadata + livstidsmetrikker |
+| `meta_ad_weekly` | Ukentlige ad-nivå insights for kohort-analyse |
+| `notes` | Kommentarer per kunde / kampanje / ad |
+| `report_snapshots` | Genererte rapporter med share_token |
+
+### Nye (migrations 005+, pågår 2026-05-13)
+
+**Utvidelse av `clients`:**
+- `contact_name`, `contact_email` — kundens kontaktperson
+- `simpleness_contact` — hvem hos oss eier denne kunden
+- `lifecycle_stage` enum: `onboarding_ikke_startet | onboarding_steg_1 | onboarding_steg_2 | onboarding_steg_3 | onboarding_fullfort | aktiv | arkivert`
+- `archived_at` timestamptz
+
+NB: Eksisterende `status`-felt (KPI green/yellow/red) beholdes uendret. `lifecycle_stage` er separat — KPI vs onboarding-stage er ulike begreper.
+
+**Ny tabell `client_leveranser`:**
+- `client_id` FK → clients
+- `slug`: 'onboarding' | 'tilstandsanalyse' | 'kreativ-brief' | 'budsjett' | 'kampanjeplan' | 'rapportering' | 'nyhetsbrev' | 'landingssider' | 'innholdsstrategi'
+- `kategori`: 'performance' | 'prosjekter'
+- `status`: 'godkjent' | 'til_avsjekk' | 'under_utvikling' (kundeområde-konvensjonen)
+- `aktiv` boolean (false = ikke aktivert, vises grayed out)
+
+Erstatter den statiske `lib/clients-leveranser.ts`-arrayen. Migrasjonen seeder fra Kokkeløren-fixturen.
+
+**Onboarding-tabeller:**
+
+| Tabell | Hva |
+|---|---|
+| `onboarding_sessions` | Token (URL-segment, unique), client_id FK, current_step (0-3), created_at, completed_at, last_active_at |
+| `onboarding_access` | session_id FK + platform ('meta'/'ga4'/'google_ads'/'shopify'/'snapchat') + completed bool + completed_at + notes |
+| `onboarding_insights` | session_id FK + alle Innsikt-feltene (16 stk fra mockup) |
+| `onboarding_documents` | session_id FK + filename + storage_path + uploaded_at |
+
+### Storage-bucket
+
+- `onboarding-documents` (privat) — strategi-/brand-materiell fra Innsikt-uploaden
+
+---
+
 ## Designsystem
 
 - **Tokens:** Simpleness tokens.css (fra `simpleness-design-system.vercel.app`)
@@ -139,9 +226,16 @@ Datakilde i fase 1: `lib/clients-leveranser.ts`. Fase 2: Supabase med samme skje
 
 ## Neste steg
 
-1. Sett opp Supabase-prosjekt → kjør migrations fra `lib/types.ts`-skjemaet
-2. Bytt ut mock-data med Supabase-queries
-3. Bygg Meta API-klient (`lib/meta-api.ts`) med rolling reach-logikk
-4. Koble til System User Token og ad account IDs
-5. Bygg Rapport-generator
-6. Migrer Kokkeløren-prototype-innhold til kunde-view (kun `kunde.simpleness.no/kokkeloren` etterhvert)
+**Spor 1 — Kunder + Onboarding-modul (pågår, uavhengig av Meta-token):**
+1. Migrations: `clients`, `client_leveranser`, `client_meta_accounts`, `onboarding_*`-tabellene + `onboarding-documents`-bucket
+2. Bygg `(intern)/kunder/` — index, ny, [slug] (mockup: `Leveranser/Performance/Onboarding/mockup.html`)
+3. Bygg `(kunde)/onboard/[token]/` — wizard med 3 steg
+4. Migrer `lib/clients-leveranser.ts` til Supabase-queries
+5. Token-generering + e-post-trigger ved opprettelse
+
+**Spor 2 — Performance-data (venter på Meta-token):**
+6. Bygg Meta API-klient (`lib/meta-api.ts`) med rolling reach-logikk
+7. Bytt ut mock-data med Supabase-queries
+8. Koble til System User Token og ad account IDs
+9. Bygg Rapport-generator
+10. Migrer Kokkeløren-prototype-innhold til `/kunde/kokkeloren`

@@ -35,6 +35,7 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
   const isPrototype = searchParams.get("prototype") === "1";
   const isPulse = pathname === "/";
   const isGuide = pathname === "/guide";
+  const isKunder = pathname.startsWith("/kunder");
 
   // Aktiv klient = første path-segment matcher en client.slug
   const segments = pathname.split("/").filter(Boolean);
@@ -81,6 +82,7 @@ export default function Sidebar({ clients }: { clients: Client[] }) {
           <PulseIcon className="w-4 h-4 flex-shrink-0" />
           <span className="font-medium">Puls</span>
         </Link>
+        <BottomLink href="/kunder" active={isKunder} icon="kunder">Kunder</BottomLink>
         <BottomLink href="/guide" active={isGuide} icon="guide">Guide</BottomLink>
         <BottomLink href="/docs/index.html" active={false} external icon="docs">Dokumentasjon</BottomLink>
       </div>
@@ -153,7 +155,7 @@ function BottomLink({
   href: string;
   active: boolean;
   external?: boolean;
-  icon: "guide" | "docs";
+  icon: "guide" | "docs" | "kunder";
   children: React.ReactNode;
 }) {
   const className = clsx(
@@ -176,7 +178,14 @@ function BottomLink({
   return <Link href={href} className={className}>{inner}</Link>;
 }
 
-function Icon({ name }: { name: "guide" | "docs" }) {
+function Icon({ name }: { name: "guide" | "docs" | "kunder" }) {
+  if (name === "kunder") {
+    return (
+      <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    );
+  }
   if (name === "guide") {
     return (
       <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
