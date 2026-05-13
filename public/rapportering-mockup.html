@@ -277,22 +277,22 @@ function presetData(id) {
     const daglig = dailyForWeek(weekDays);
     const spend = daglig.reduce((s,d) => s + (d.actualSpend || d.forecastSpend), 0);
     const nye = daglig.reduce((s,d) => s + (d.actualNye || d.forecastNye), 0);
-    return { title:'Uke 20', sub:'11 – 17. mai 2026 · hittil + forecast', spend, nye: Math.round(nye), cac: nye > 0 ? Math.round(spend/nye) : 0, initialDiff: { spend:-0.08, nye:0.04, cac:-0.12 }, budget: KUNDE.weekBudget, stage:'Hittil + forecast', granularitet:'dag', daglig };
+    return { title:'Uke 20', sub:'11 – 17. mai 2026 · forecast', tense:'active', spend, nye: Math.round(nye), cac: nye > 0 ? Math.round(spend/nye) : 0, hittil: { spend: 8500, nye: 10, cac: 850 }, initialDiff: { spend:-0.08, nye:0.04, cac:-0.12 }, budget: KUNDE.weekBudget, granularitet:'dag', daglig };
   }
   if (id === 'last-week') {
     const weekDays = [{day:4,month:5},{day:5,month:5},{day:6,month:5},{day:7,month:5},{day:8,month:5},{day:9,month:5},{day:10,month:5}];
     const daglig = dailyForWeek(weekDays);
     const spend = daglig.reduce((s,d) => s + (d.actualSpend || 0), 0);
     const nye = daglig.reduce((s,d) => s + (d.actualNye || 0), 0);
-    return { title:'Uke 19', sub:'4 – 10. mai 2026 · resultat', spend, nye, cac: nye > 0 ? Math.round(spend/nye) : 0, initialDiff: { spend:-0.10, nye:0.02, cac:-0.10 }, budget: KUNDE.weekBudget, stage:'Resultat', granularitet:'dag', daglig };
+    return { title:'Uke 19', sub:'4 – 10. mai 2026 · resultat', tense:'past', spend, nye, cac: nye > 0 ? Math.round(spend/nye) : 0, initialDiff: { spend:-0.10, nye:0.02, cac:-0.10 }, budget: KUNDE.weekBudget, granularitet:'dag', daglig };
   }
   if (id === 'this-month') {
     const m = monthByM(5);
-    return { title:'Mai 2026', sub:'Hittil + forecast', spend:m.spend, nye:m.nye, cac:m.cac, initialDiff:m.initialDiff, budget: KUNDE.monthlyBudget, stage:'Hittil + forecast', granularitet:'dag', daglig: buildDailyForMonth(5) };
+    return { title:'Mai 2026', sub:'Forecast', tense:'active', spend:m.spend, nye:m.nye, cac:m.cac, hittil: { spend: 38000, nye: 42, cac: 905 }, initialDiff:m.initialDiff, budget: KUNDE.monthlyBudget, granularitet:'dag', daglig: buildDailyForMonth(5) };
   }
   if (id === 'last-month') {
     const m = monthByM(4);
-    return { title:'April 2026', sub:'Resultat', spend:m.spend, nye:m.nye, cac:m.cac, initialDiff:m.initialDiff, budget: KUNDE.monthlyBudget, stage:'Resultat', granularitet:'dag', daglig: buildDailyForMonth(4) };
+    return { title:'April 2026', sub:'Resultat', tense:'past', spend:m.spend, nye:m.nye, cac:m.cac, initialDiff:m.initialDiff, budget: KUNDE.monthlyBudget, granularitet:'dag', daglig: buildDailyForMonth(4) };
   }
   if (id === 'ytd') {
     const valid = MONTHS.filter(m => m.status !== 'empty');
@@ -312,7 +312,7 @@ function presetData(id) {
       const status = allDone ? 'done' : (allEmpty ? 'empty' : (allPlanned ? 'planned' : 'active'));
       return { qNum, label:`Q${qNum}`, spend:qSpend, nye:qNye, cac:qCac, status };
     });
-    return { title:'2026', sub:'Januar – mai hittil + forecast', spend, nye, cac: nye > 0 ? Math.round(spend/nye) : 0, initialDiff, budget: KUNDE.yearBudget, stage:'Hittil + forecast', granularitet:'maned', maaneder: valid, kvartaler };
+    return { title:'2026', sub:'Hittil – desember · forecast', tense:'active', spend, nye, cac: nye > 0 ? Math.round(spend/nye) : 0, hittil: { spend: 650000, nye: 600, cac: 1083 }, initialDiff, budget: KUNDE.yearBudget, granularitet:'maned', maaneder: valid, kvartaler };
   }
   if (id === 'q1' || id === 'q2' || id === 'q3' || id === 'q4') {
     const qNum = parseInt(id.replace('q',''));
@@ -325,12 +325,14 @@ function presetData(id) {
     const allDone = months.every(m => m.status === 'done');
     const allEmpty = months.every(m => m.status === 'empty');
     const allPlanned = months.every(m => m.status === 'planned');
-    const stage = allDone ? 'Resultat' : (allEmpty ? '' : (allPlanned ? 'Forecast' : 'Hittil + forecast'));
+    const tense = allDone ? 'past' : (allEmpty || allPlanned ? 'future' : 'active');
+    const stage = tense === 'past' ? 'Resultat' : 'Forecast';
     const qMonthLabels = { 1: 'Januar – mars', 2: 'April – juni', 3: 'Juli – september', 4: 'Oktober – desember' };
-    return { title:`Q${qNum} 2026`, sub:`${qMonthLabels[qNum]}${stage ? ' · ' + stage.toLowerCase() : ''}`, spend, nye, cac: nye > 0 ? Math.round(spend/nye) : 0, initialDiff, budget: KUNDE.quarterBudget, stage, granularitet:'uke', maaneder: months, qNum };
+    const hittil = tense === 'active' ? { spend: 151000, nye: 158, cac: 956 } : null;
+    return { title:`Q${qNum} 2026`, sub:`${qMonthLabels[qNum]} · ${stage.toLowerCase()}`, tense, spend, nye, cac: nye > 0 ? Math.round(spend/nye) : 0, hittil, initialDiff, budget: KUNDE.quarterBudget, granularitet:'uke', maaneder: months, qNum };
   }
   if (id === 'custom') {
-    return { title:'Velg periode', sub:'Custom date range — kommer', spend:0, nye:0, cac:0, initialDiff:null, budget: KUNDE.monthlyBudget, stage:'', granularitet:'dag', daglig: [] };
+    return { title:'Velg periode', sub:'Custom date range — kommer', tense:'active', spend:0, nye:0, cac:0, initialDiff:null, budget: KUNDE.monthlyBudget, granularitet:'dag', daglig: [] };
   }
 }
 
@@ -636,33 +638,32 @@ function renderHovedkort(d) {
   const nd = d.budget && d.budget.nye ? (d.nye - d.budget.nye) / d.budget.nye : null;
   const cd = d.budget && d.budget.targetCac && d.cac > 0 ? (d.cac - d.budget.targetCac) / d.budget.targetCac : null;
   const idiff = d.initialDiff || { spend: null, nye: null, cac: null };
+  const showInitiell = d.tense !== 'future';
+  const hittil = d.hittil;
   const showKanalMix = state.rapport === 'resultat';
   const kanalSegs = showKanalMix ? KANALMIX.map(k => `<div class="seg-${k.slug}" style="width:${k.share * 100}%"></div>`).join('') : '';
   const kanalLegend = showKanalMix ? KANALMIX.map(k => `<div><span class="stack-legend-dot seg-${k.slug}"></span><span>${k.navn} <span class="mono text-neutral-500 ml-0.5">${pct(k.share)}</span></span></div>`).join('') : '';
+
+  function kpiBlock(label, value, hittilValue, deltaBudget, deltaInit, higherIsBad) {
+    return `
+      <div>
+        <p class="hero-kpi-label">${label}</p>
+        <p class="hero-kpi-value mono mt-2">${value}</p>
+        ${hittilValue ? `<p class="hero-kpi-sub" style="color:#525252;">Hittil ${hittilValue}</p>` : ''}
+        ${deltaBudget != null ? `<p class="hero-kpi-sub ${deltaTone(deltaBudget, higherIsBad)}">${pctSigned(deltaBudget)} vs budsjett</p>` : ''}
+        ${showInitiell && deltaInit != null ? `<p class="hero-kpi-sub ${deltaTone(deltaInit, higherIsBad)}">${pctSigned(deltaInit)} vs initiell forecast</p>` : ''}
+      </div>
+    `;
+  }
 
   return `
     <div class="hero mb-6">
       <h1 class="hero-main-title">${d.title}</h1>
       ${d.sub ? `<p class="hero-sub">${d.sub}</p>` : ''}
       <div class="hero-kpis mt-6" style="grid-template-columns: repeat(3, 1fr);">
-        <div>
-          <p class="hero-kpi-label">Spend</p>
-          <p class="hero-kpi-value mono mt-2">${fmtKr(d.spend)} kr</p>
-          ${sd != null ? `<p class="hero-kpi-sub ${deltaTone(sd, true)}">${pctSigned(sd)} vs budsjett</p>` : ''}
-          ${idiff.spend != null ? `<p class="hero-kpi-sub ${deltaTone(idiff.spend, true)}">${pctSigned(idiff.spend)} vs initiell forecast</p>` : ''}
-        </div>
-        <div>
-          <p class="hero-kpi-label">${KUNDE.nyeLabel}</p>
-          <p class="hero-kpi-value mono mt-2">${d.nye}</p>
-          ${nd != null ? `<p class="hero-kpi-sub ${deltaTone(nd, false)}">${pctSigned(nd)} vs budsjett</p>` : ''}
-          ${idiff.nye != null ? `<p class="hero-kpi-sub ${deltaTone(idiff.nye, false)}">${pctSigned(idiff.nye)} vs initiell forecast</p>` : ''}
-        </div>
-        <div>
-          <p class="hero-kpi-label">${KUNDE.merLabel}</p>
-          <p class="hero-kpi-value mono mt-2">${d.cac > 0 ? d.cac + ' kr' : '—'}</p>
-          ${cd != null ? `<p class="hero-kpi-sub ${deltaTone(cd, true)}">${pctSigned(cd)} vs target</p>` : ''}
-          ${idiff.cac != null ? `<p class="hero-kpi-sub ${deltaTone(idiff.cac, true)}">${pctSigned(idiff.cac)} vs initiell forecast</p>` : ''}
-        </div>
+        ${kpiBlock('Spend', `${fmtKr(d.spend)} kr`, hittil ? `${fmtKr(hittil.spend)} kr` : null, sd, idiff.spend, true)}
+        ${kpiBlock(KUNDE.nyeLabel, d.nye, hittil ? hittil.nye : null, nd, idiff.nye, false)}
+        ${kpiBlock(KUNDE.merLabel, d.cac > 0 ? `${d.cac} kr` : '—', hittil ? `${hittil.cac} kr` : null, cd, idiff.cac, true)}
       </div>
       ${showKanalMix ? `<div class="mt-6 mb-2"><div class="stack tall">${kanalSegs}</div></div><div class="stack-legend">${kanalLegend}</div>` : ''}
     </div>
