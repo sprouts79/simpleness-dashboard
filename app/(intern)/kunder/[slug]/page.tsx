@@ -48,6 +48,14 @@ export default async function KundeDetailPage({ params }: PageProps) {
         <Row label="Meta Ad Account" value={kunde.meta_account_id ?? "—"} mono />
       </Card>
 
+      <Card title="Tilstandsanalyse">
+        <div className="px-5 py-4">
+          <Link href={`/kunder/${kunde.slug}/tilstandsanalyse`} className="text-sm text-[#515b12] hover:underline">
+            Åpne tilstandsanalyse →
+          </Link>
+        </div>
+      </Card>
+
       {session && (
         <Card title="Onboarding">
           <Row label="Token" value={session.token} mono />
