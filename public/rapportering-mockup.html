@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rapportering — mockup v0.4</title>
+<title>Rapportering — mockup v0.5</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -11,7 +11,7 @@
   .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
   .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; color: #737373; }
 
-  /* Status pills */
+  /* Pills */
   .pill { display: inline-flex; align-items: center; justify-content: center; padding: 1px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; border: 1px solid; line-height: 1.3; height: 20px; }
   .pill-test { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
   .pill-explore { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
@@ -52,17 +52,18 @@
   .hero-compact .stack.tall { height: 14px; }
   .hero-compact .stack-legend { font-size: 11px; gap: 12px; }
 
-  /* Hero clickable */
   .hero-clickable { cursor: pointer; transition: border-color 80ms; }
   .hero-clickable:hover { border-color: #a3a3a3; }
   .hero-disabled { opacity: 0.45; pointer-events: none; }
 
   /* Breadcrumb */
-  .breadcrumb { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #525252; }
-  .breadcrumb a { color: #1f2937; text-decoration: none; padding: 3px 8px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; }
+  .breadcrumb { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #525252; margin-bottom: 16px; }
+  .breadcrumb a, .breadcrumb span { padding: 3px 8px; border-radius: 6px; }
+  .breadcrumb a { color: #1f2937; text-decoration: none; border: 1px solid transparent; cursor: pointer; }
   .breadcrumb a:hover { background: white; border-color: #e5e5e5; }
-  .breadcrumb .sep { color: #a3a3a3; }
+  .breadcrumb .sep { color: #a3a3a3; padding: 0; }
   .breadcrumb .active { color: #090a08; font-weight: 600; }
+  .breadcrumb .crumb-type { color: #a3a3a3; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; padding-right: 4px; }
 
   /* Stack legend */
   .stack-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; margin-top: 12px; }
@@ -80,7 +81,6 @@
   .ad-name { display: flex; align-items: center; gap: 12px; min-width: 0; }
   .ad-thumb { width: 44px; height: 44px; border-radius: 6px; flex-shrink: 0; background: linear-gradient(135deg, #d4d4d4, #a3a3a3); }
 
-  /* Diversifisering tags */
   .dim-values { display: flex; flex-wrap: wrap; gap: 4px; }
   .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; border: 1px solid; }
   .tag-covered { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
@@ -92,12 +92,6 @@
   .cell-forecast { color: #525252; }
   .cell-actual { color: #090a08; font-weight: 600; }
   .day-table tr.today { background: #fef9c3; }
-
-  /* Period strip */
-  .period-strip { display: inline-flex; background: white; border: 1px solid #e5e5e5; border-radius: 10px; padding: 4px; gap: 2px; }
-  .period-strip button { background: transparent; border: 0; padding: 6px 14px; font-size: 13px; font-weight: 500; color: #525252; border-radius: 6px; cursor: pointer; transition: all 80ms; }
-  .period-strip button:hover { color: #090a08; }
-  .period-strip button.active { background: #090a08; color: white; }
 
   /* Topp-nav */
   .topnav { display: inline-flex; background: white; border: 1px solid #e5e5e5; border-radius: 10px; padding: 4px; gap: 4px; }
@@ -116,22 +110,32 @@
   .source-plan .dot { background: #a78bfa; }
   .source-manuell .dot { background: #94a3b8; }
 
-  /* Grouping select */
   .group-select { appearance: none; -webkit-appearance: none; background: white; border: 1px solid #d4d4d4; border-radius: 8px; padding: 6px 32px 6px 12px; font-size: 13px; color: #1f2937; cursor: pointer; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23737373' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
 
-  /* Chart container */
+  /* Chart */
   .chart-card { background: white; border: 1px solid #e5e5e5; border-radius: 14px; padding: 1.25rem 1.5rem; }
   .chart-svg { width: 100%; height: 220px; }
   .chart-y-label { font-size: 10px; fill: #737373; font-family: 'IBM Plex Mono', monospace; }
   .chart-x-label { font-size: 10px; fill: #737373; }
-  .chart-grid { stroke: #f5f5f5; stroke-width: 1; }
-  .chart-bar { fill: #cbd5e1; }
+  .chart-bar-actual { fill: #cbd5e1; }
+  .chart-bar-forecast { fill: #e5e5e5; }
   .chart-line { fill: none; stroke: #090a08; stroke-width: 2; }
+  .chart-line-forecast { fill: none; stroke: #090a08; stroke-width: 2; stroke-dasharray: 4 3; opacity: 0.6; }
   .chart-dot { fill: #090a08; }
+  .chart-dot-forecast { fill: #cbd5e1; }
 
   .delta-good { color: #15803d; }
   .delta-bad { color: #b91c1c; }
   .delta-neutral { color: #737373; }
+
+  /* Uke-strip */
+  .week-strip { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  .week-tab { background: white; border: 1px solid #e5e5e5; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 12px; transition: border-color 80ms; }
+  .week-tab:hover { border-color: #a3a3a3; }
+  .week-tab.active { border-color: #090a08; border-width: 2px; padding: 7px 13px; }
+  .week-tab.disabled { opacity: 0.45; pointer-events: none; }
+  .week-tab-num { font-weight: 600; color: #090a08; }
+  .week-tab-dates { color: #737373; font-size: 11px; margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -140,21 +144,15 @@
 
   <!-- Banner -->
   <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-3 mb-6">
-    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Mockup · v0.4</span>
-    <span class="text-sm text-neutral-700 ml-2">Rapportering · Kokkeløren</span>
+    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Mockup · v0.5</span>
+    <span class="text-sm text-neutral-700 ml-2">Rapportering · Kokkeløren · drill-down</span>
   </div>
 
-  <!-- Topp-nav + Periode-strip -->
+  <!-- Topp-nav -->
   <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
     <div class="topnav">
       <button id="nav-resultat" class="active" onclick="navTo('resultat')">Resultatrapport</button>
       <button id="nav-kanal" onclick="navTo('kanal')">Kanalrapport</button>
-    </div>
-    <div class="period-strip" id="period-strip">
-      <button data-p="uke" onclick="setPeriode('uke')">Forrige uke</button>
-      <button data-p="maned" onclick="setPeriode('maned')" class="active">Forrige måned</button>
-      <button data-p="kvartal" onclick="setPeriode('kvartal')">Forrige kvartal</button>
-      <button data-p="ar" onclick="setPeriode('ar')">Forrige år</button>
     </div>
   </div>
 
@@ -167,15 +165,11 @@
   <!-- Main render area -->
   <div id="main-view"></div>
 
-  <p class="text-xs text-neutral-400 text-center mt-12">Mockup v0.4 · Kokkeløren · MER = CAC (kunde-spesifikk effektivitets-KPI)</p>
+  <p class="text-xs text-neutral-400 text-center mt-12">Mockup v0.5 · Kokkeløren · drill-down · idag 12. mai 2026</p>
 </div>
 
 <script>
-// ─── Mock-data ───────────────────────────────────────────────────────────
-
-const STATUS_ORDER = ['test', 'explore', 'exploit', 'burnt', 'suppr'];
-const STATUS_LABELS = { test: 'Test', explore: 'Explore', exploit: 'Exploit', burnt: 'Burnt-out', suppr: 'Suppressed' };
-const STATUS_COLORS = { test: '#93c5fd', explore: '#34d399', exploit: '#fbbf24', burnt: '#f87171', suppr: '#d4d4d4' };
+// ─── KUNDE-konfig ────────────────────────────────────────────────────────
 
 const KUNDE = {
   navn: 'Kokkeløren',
@@ -183,13 +177,18 @@ const KUNDE = {
   merKpi: 'cac',
   merLabel: 'CAC',
   nyeLabel: 'Nye abo',
-  monthlyBudget: { spend: 138000, nye: 125, targetCac: 1100 },
   yearBudget:    { spend: 1656000, nye: 1500, targetCac: 1100 },
-  quarterBudget: { spend: 414000, nye: 375, targetCac: 1100 },
-  weekBudget:    { spend: 32200, nye: 29, targetCac: 1100 },
+  quarterBudget: { spend: 414000,  nye: 375,  targetCac: 1100 },
+  monthlyBudget: { spend: 138000,  nye: 125,  targetCac: 1100 },
+  weekBudget:    { spend: 32200,   nye: 29,   targetCac: 1100 },
 };
 
-// Kanalmix andeler — used i alle perioder
+const TODAY = { year: 2026, month: 5, day: 12, week: 20 };
+
+const STATUS_ORDER = ['test', 'explore', 'exploit', 'burnt', 'suppr'];
+const STATUS_LABELS = { test: 'Test', explore: 'Explore', exploit: 'Exploit', burnt: 'Burnt-out', suppr: 'Suppressed' };
+const STATUS_COLORS = { test: '#93c5fd', explore: '#34d399', exploit: '#fbbf24', burnt: '#f87171', suppr: '#d4d4d4' };
+
 const KANALMIX = [
   { slug: 'meta',   navn: 'Meta',   share: 0.61 },
   { slug: 'google', navn: 'Google', share: 0.20 },
@@ -197,136 +196,167 @@ const KANALMIX = [
   { slug: 'ohh',    navn: 'OHH',    share: 0.08 },
 ];
 
-// ─── Resultatrapport — per periode ───────────────────────────────────────
+// ─── Mock-data: per-måned for året ───────────────────────────────────────
 
-const PERIODE_DATA = {
-  uke: {
-    label: 'Forrige uke',
-    sublabel: 'Uke 18 · 4–10. mai 2026',
-    isPast: true,
-    spend: 28700, nye: 31, cac: 925,
-    budget: KUNDE.weekBudget,
-    initialDiff: { spend: -0.11, nye: 0.07, cac: -0.16 },
-    chart: {
-      granularity: 'dag',
-      points: [
-        { x: 'man', spend: 4100, mer: 920 },
-        { x: 'tir', spend: 4200, mer: 880 },
-        { x: 'ons', spend: 3900, mer: 970 },
-        { x: 'tor', spend: 4500, mer: 890 },
-        { x: 'fre', spend: 4400, mer: 920 },
-        { x: 'lør', spend: 3800, mer: 945 },
-        { x: 'søn', spend: 3800, mer: 950 },
-      ],
-    },
-  },
-  maned: {
-    label: 'Forrige måned',
-    sublabel: 'April 2026',
-    isPast: true,
-    spend: 113350, nye: 116, cac: 974,
-    budget: KUNDE.monthlyBudget,
-    initialDiff: { spend: -0.091, nye: 0.053, cac: -0.048 },
-    chart: {
-      granularity: 'dag',
-      points: buildDailySeries(30, 3800, 130, 980, 0.18),
-    },
-    daily: buildDailyCalendar('april', 30, true, null),
-  },
-  kvartal: {
-    label: 'Forrige kvartal',
-    sublabel: 'Q1 2026',
-    isPast: true,
-    spend: 405000, nye: 360, cac: 1125,
-    budget: KUNDE.quarterBudget,
-    initialDiff: { spend: -0.022, nye: -0.04, cac: 0.023 },
-    chart: {
-      granularity: 'uke',
-      points: buildWeeklySeries(13, 31000, 1100),
-    },
-    subPeriods: [
-      { id: 'jan', label: 'Januar 2026',  spend: 130000, nye: 124, cac: 1048, status: 'done',
-        initialDiff: { spend: -0.06, nye: 0.01, cac: -0.07 } },
-      { id: 'feb', label: 'Februar 2026', spend: 132000, nye: 116, cac: 1138, status: 'done',
-        initialDiff: { spend: -0.04, nye: -0.07, cac: 0.03 } },
-      { id: 'mar', label: 'Mars 2026',    spend: 143000, nye: 120, cac: 1192, status: 'done',
-        initialDiff: { spend: 0.04, nye: -0.04, cac: 0.08 } },
-    ],
-  },
-  ar: {
-    label: 'Forrige år',
-    sublabel: '2025',
-    isPast: true,
-    spend: 1485000, nye: 1380, cac: 1076,
-    budget: KUNDE.yearBudget,
-    initialDiff: { spend: -0.103, nye: -0.08, cac: -0.022 },
-    chart: {
-      granularity: 'måned',
-      points: [
-        { x: 'jan', spend: 115000, mer: 1060 },
-        { x: 'feb', spend: 118000, mer: 1090 },
-        { x: 'mar', spend: 128000, mer: 1110 },
-        { x: 'apr', spend: 130000, mer: 1050 },
-        { x: 'mai', spend: 135000, mer: 1090 },
-        { x: 'jun', spend: 140000, mer: 1080 },
-        { x: 'jul', spend: 125000, mer: 1100 },
-        { x: 'aug', spend: 115000, mer: 1120 },
-        { x: 'sep', spend: 122000, mer: 1080 },
-        { x: 'okt', spend: 130000, mer: 1060 },
-        { x: 'nov', spend: 110000, mer: 1075 },
-        { x: 'des', spend: 117000, mer: 1090 },
-      ],
-    },
-    subPeriods: [
-      { id: 'q1-2025', label: 'Q1 2025', spend: 361000, nye: 348, cac: 1037, status: 'done',
-        initialDiff: { spend: -0.12, nye: -0.05, cac: -0.07 } },
-      { id: 'q2-2025', label: 'Q2 2025', spend: 405000, nye: 372, cac: 1089, status: 'done',
-        initialDiff: { spend: -0.05, nye: -0.07, cac: 0.02 } },
-      { id: 'q3-2025', label: 'Q3 2025', spend: 362000, nye: 322, cac: 1124, status: 'done',
-        initialDiff: { spend: -0.13, nye: -0.14, cac: 0.02 } },
-      { id: 'q4-2025', label: 'Q4 2025', spend: 357000, nye: 338, cac: 1056, status: 'done',
-        initialDiff: { spend: -0.14, nye: -0.10, cac: -0.04 } },
-    ],
-  },
-};
+const MONTHS = [
+  { m: 1,  label: 'Januar',   short: 'jan', status: 'done',    spend: 130000, nye: 124, cac: 1048, initialDiff: { spend: -0.06, nye: 0.01, cac: -0.07 } },
+  { m: 2,  label: 'Februar',  short: 'feb', status: 'done',    spend: 132000, nye: 116, cac: 1138, initialDiff: { spend: -0.04, nye: -0.07, cac: 0.03 } },
+  { m: 3,  label: 'Mars',     short: 'mar', status: 'done',    spend: 143000, nye: 120, cac: 1192, initialDiff: { spend: 0.04, nye: -0.04, cac: 0.08 } },
+  { m: 4,  label: 'April',    short: 'apr', status: 'done',    spend: 113350, nye: 116, cac: 974, initialDiff: { spend: -0.091, nye: 0.053, cac: -0.048 } },
+  { m: 5,  label: 'Mai',      short: 'mai', status: 'active',  spend: 102000, nye: 114, cac: 897, initialDiff: { spend: -0.13, nye: 0.06, cac: -0.07 } },
+  { m: 6,  label: 'Juni',     short: 'jun', status: 'planned', spend: 136000, nye: 140, cac: 970, initialDiff: { spend: 0.02, nye: 0.0, cac: -0.03 } },
+  { m: 7,  label: 'Juli',     short: 'jul', status: 'planned', spend: 125000, nye: 122, cac: 1025, initialDiff: null },
+  { m: 8,  label: 'August',   short: 'aug', status: 'planned', spend: 115000, nye: 112, cac: 1027, initialDiff: null },
+  { m: 9,  label: 'September',short: 'sep', status: 'planned', spend: 130000, nye: 128, cac: 1015, initialDiff: null },
+  { m: 10, label: 'Oktober',  short: 'okt', status: 'planned', spend: 142000, nye: 138, cac: 1029, initialDiff: null },
+  { m: 11, label: 'November', short: 'nov', status: 'empty',   spend: 0,      nye: 0,   cac: 0,    initialDiff: null },
+  { m: 12, label: 'Desember', short: 'des', status: 'empty',   spend: 0,      nye: 0,   cac: 0,    initialDiff: null },
+];
 
-function buildDailySeries(days, avgSpend, avgNye, avgMer, variance) {
-  const arr = [];
-  for (let i = 1; i <= days; i++) {
-    const s = avgSpend * (1 + (Math.sin(i / 2) * variance) + (Math.random() - 0.5) * 0.15);
-    const m = avgMer * (1 + (Math.cos(i / 3) * 0.12) + (Math.random() - 0.5) * 0.10);
-    arr.push({ x: i.toString(), spend: Math.round(s), mer: Math.round(m) });
+const QUARTERS = [
+  { q: 1, label: 'Q1', monthsIds: [1, 2, 3] },
+  { q: 2, label: 'Q2', monthsIds: [4, 5, 6] },
+  { q: 3, label: 'Q3', monthsIds: [7, 8, 9] },
+  { q: 4, label: 'Q4', monthsIds: [10, 11, 12] },
+];
+
+function monthByM(m) { return MONTHS.find(x => x.m === m); }
+function quarterByQ(q) { return QUARTERS.find(x => x.q === q); }
+
+// Aggregér kvartal fra måneder
+function quarterAgg(q) {
+  const months = q.monthsIds.map(monthByM);
+  const allDone = months.every(m => m.status === 'done');
+  const allEmpty = months.every(m => m.status === 'empty');
+  const allPlanned = months.every(m => m.status === 'planned');
+  const status = allDone ? 'done' : allEmpty ? 'empty' : allPlanned ? 'planned' : 'active';
+  const spend = months.reduce((s, m) => s + m.spend, 0);
+  const nye = months.reduce((s, m) => s + m.nye, 0);
+  const cac = nye > 0 ? Math.round(spend / nye) : 0;
+  // Initiell forecast — gjennomsnitt for done/active, null for empty
+  const validMonths = months.filter(m => m.initialDiff);
+  let initialDiff = null;
+  if (validMonths.length > 0) {
+    initialDiff = {
+      spend: validMonths.reduce((s, m) => s + m.initialDiff.spend, 0) / validMonths.length,
+      nye: validMonths.reduce((s, m) => s + m.initialDiff.nye, 0) / validMonths.length,
+      cac: validMonths.reduce((s, m) => s + m.initialDiff.cac, 0) / validMonths.length,
+    };
   }
-  return arr;
+  return { spend, nye, cac, status, initialDiff, months };
 }
 
-function buildWeeklySeries(weeks, avgSpend, avgMer) {
-  const arr = [];
-  for (let i = 1; i <= weeks; i++) {
-    const s = avgSpend * (1 + (Math.sin(i / 1.5) * 0.20));
-    const m = avgMer * (1 + (Math.cos(i / 2) * 0.10));
-    arr.push({ x: `U${i}`, spend: Math.round(s), mer: Math.round(m) });
-  }
-  return arr;
+function yearAgg() {
+  const allMonths = MONTHS;
+  const spend = allMonths.reduce((s, m) => s + m.spend, 0);
+  const nye = allMonths.reduce((s, m) => s + m.nye, 0);
+  const cac = nye > 0 ? Math.round(spend / nye) : 0;
+  const validMonths = allMonths.filter(m => m.initialDiff);
+  const initialDiff = validMonths.length > 0 ? {
+    spend: validMonths.reduce((s, m) => s + m.initialDiff.spend, 0) / validMonths.length,
+    nye: validMonths.reduce((s, m) => s + m.initialDiff.nye, 0) / validMonths.length,
+    cac: validMonths.reduce((s, m) => s + m.initialDiff.cac, 0) / validMonths.length,
+  } : null;
+  return { spend, nye, cac, status: 'active', initialDiff };
 }
 
-function buildDailyCalendar(monthName, days, allPast, todayDay) {
+// Mock daglig data for en gitt måned
+function buildDailyForMonth(m) {
+  const month = monthByM(m);
+  const daysInMonth = m === 2 ? 28 : (m === 4 || m === 6 || m === 9 || m === 11 ? 30 : 31);
+  const isCurrentMonth = m === TODAY.month;
+  const isPastMonth = m < TODAY.month;
   const arr = [];
-  for (let day = 1; day <= days; day++) {
-    const isPast = allPast || (todayDay && day < todayDay);
-    const isToday = todayDay && day === todayDay;
+  for (let day = 1; day <= daysInMonth; day++) {
+    const isPast = isPastMonth || (isCurrentMonth && day < TODAY.day);
+    const isToday = isCurrentMonth && day === TODAY.day;
     const budgetSpend = 138000 / 30;
     const budgetNye = 125 / 30;
-    const forecastSpend = day <= 17 ? 4500 : 3200;
+    // Mock: planlagte aktiviteter gir varierende forecast per dag
+    let forecastSpend = 3200;
+    if (m === 5 && day >= 8 && day <= 17) forecastSpend = 4500; // 17. mai-kampanje
+    if (m === 4 && day >= 5 && day <= 18) forecastSpend = 5000; // vårkampanje
     const forecastNye = forecastSpend / 900;
-    const actualSpend = isPast ? forecastSpend * (0.85 + Math.random() * 0.3) : null;
+    const actualSpend = isPast ? Math.round(forecastSpend * (0.85 + Math.random() * 0.3)) : null;
     const actualNye = actualSpend ? Math.round(actualSpend / 850) : null;
     arr.push({ day, isPast, isToday, budgetSpend, budgetNye, forecastSpend, forecastNye, actualSpend, actualNye });
   }
   return arr;
 }
 
-// ─── Kanalrapport — mock per periode (forenklet) ─────────────────────────
+// Mock uker per måned (forenklet: 4-5 uker)
+function weeksForMonth(m) {
+  if (m === 4) return [{ w: 14, dates: '30. mar – 5. apr' }, { w: 15, dates: '6 – 12. apr' }, { w: 16, dates: '13 – 19. apr' }, { w: 17, dates: '20 – 26. apr' }, { w: 18, dates: '27. apr – 3. mai' }];
+  if (m === 5) return [{ w: 18, dates: '27. apr – 3. mai' }, { w: 19, dates: '4 – 10. mai' }, { w: 20, dates: '11 – 17. mai' }, { w: 21, dates: '18 – 24. mai' }, { w: 22, dates: '25 – 31. mai' }];
+  if (m === 6) return [{ w: 22, dates: '25 – 31. mai' }, { w: 23, dates: '1 – 7. jun' }, { w: 24, dates: '8 – 14. jun' }, { w: 25, dates: '15 – 21. jun' }, { w: 26, dates: '22 – 28. jun' }];
+  return [];
+}
+
+// Mock data for én uke (7 dager)
+function dailyForWeek(w) {
+  // Simple mock — uke 20 (11-17 mai)
+  if (w === 20) {
+    const arr = [];
+    for (let i = 0; i < 7; i++) {
+      const day = 11 + i;
+      const isPast = day < TODAY.day;
+      const isToday = day === TODAY.day;
+      const budgetSpend = 138000 / 30;
+      const budgetNye = 125 / 30;
+      const forecastSpend = day >= 8 && day <= 17 ? 4500 : 3200;
+      const forecastNye = forecastSpend / 900;
+      const actualSpend = isPast ? Math.round(forecastSpend * (0.85 + Math.random() * 0.3)) : null;
+      const actualNye = actualSpend ? Math.round(actualSpend / 850) : null;
+      const dateLabel = `${day}. mai`;
+      arr.push({ day, dateLabel, isPast, isToday, budgetSpend, budgetNye, forecastSpend, forecastNye, actualSpend, actualNye });
+    }
+    return arr;
+  }
+  // Generisk for andre uker
+  return [];
+}
+
+// Spend vs MER series — bygget fra mock-data per nivå
+function spendMerSeriesFor(level) {
+  if (level === 'ar') {
+    return MONTHS.filter(m => m.status !== 'empty').map(m => ({
+      x: m.short,
+      spend: m.spend,
+      mer: m.cac > 0 ? m.cac : null,
+      forecast: m.status !== 'done' && m.status !== 'active',
+    }));
+  }
+  if (level === 'kvartal') {
+    // 13 uker — mix av actuals + forecast
+    const arr = [];
+    const totalWeeks = 13;
+    for (let i = 1; i <= totalWeeks; i++) {
+      const weekDate = i < 7 ? 'done' : i === 7 ? 'active' : 'planned';
+      const baseSpend = 30000 + Math.sin(i / 2) * 5000;
+      const baseMer = 1100 + Math.cos(i / 2) * 80;
+      arr.push({ x: `U${i + 13}`, spend: Math.round(baseSpend), mer: Math.round(baseMer), forecast: weekDate !== 'done' && weekDate !== 'active' });
+    }
+    return arr;
+  }
+  if (level === 'maned') {
+    return buildDailyForMonth(state.maned).map(d => ({
+      x: d.day.toString(),
+      spend: d.actualSpend || d.forecastSpend,
+      mer: d.actualSpend && d.actualNye ? Math.round(d.actualSpend / d.actualNye) : 900,
+      forecast: !d.actualSpend,
+    }));
+  }
+  if (level === 'uke') {
+    return dailyForWeek(state.uke).map(d => ({
+      x: d.day.toString(),
+      spend: d.actualSpend || d.forecastSpend,
+      mer: d.actualSpend && d.actualNye ? Math.round(d.actualSpend / d.actualNye) : 900,
+      forecast: !d.actualSpend,
+    }));
+  }
+}
+
+// ─── Kanalrapport mock ──────────────────────────────────────────────────
 
 const KANALER_BASE = [
   { slug: 'meta',   navn: 'Meta',   hasPlatformData: true,  cpmr: 372, frequency: 4.2, netNewPct: 14, diversification: { covered: 4, total: 9 }, ads: { test: 9, explore: 8, exploit: 4, burnt: 5, suppr: 11 } },
@@ -335,9 +365,8 @@ const KANALER_BASE = [
   { slug: 'ohh',    navn: 'OHH',    hasPlatformData: false },
 ];
 
-function kanalerForPeriode(p) {
-  const totSpend = PERIODE_DATA[p].spend;
-  return KANALER_BASE.map(k => ({ ...k, spend: Math.round(totSpend * KANALMIX.find(m => m.slug === k.slug).share) }));
+function kanalerForScope(spend) {
+  return KANALER_BASE.map(k => ({ ...k, spend: Math.round(spend * KANALMIX.find(m => m.slug === k.slug).share) }));
 }
 
 const META_KAMPANJER = [
@@ -365,54 +394,65 @@ const DIM_LEVELS = {
   ],
 };
 
-// Rolling reach per periode (samme lookback)
-const REACH_DATA = {
-  uke:     { granularity: 'dag',    points: buildReachDaily(7, 38000, 4500) },
-  maned:   { granularity: 'dag',    points: buildReachDaily(30, 38000, 3800) },
-  kvartal: { granularity: 'uke',    points: buildReachWeekly(13, 145000, 24000) },
-  ar:      { granularity: 'måned',  points: buildReachMonthly(12, 480000, 38000) },
-};
-
-function buildReachDaily(days, baseRolling, baseNetNew) {
-  const arr = [];
-  let cum = baseRolling;
-  for (let i = 1; i <= days; i++) {
-    const nn = Math.round(baseNetNew * (0.8 + Math.random() * 0.4));
-    cum += nn;
-    arr.push({ x: i.toString(), rolling: cum, netNew: nn });
+function reachSeriesForLevel(level) {
+  if (level === 'ar') {
+    const arr = [];
+    const labels = ['jan','feb','mar','apr','mai','jun','jul','aug','sep','okt','nov','des'];
+    let cum = 480000;
+    for (let i = 0; i < 10; i++) {
+      const nn = Math.round(38000 * (0.85 + Math.random() * 0.30));
+      cum += nn;
+      arr.push({ x: labels[i], rolling: cum, netNew: nn });
+    }
+    return arr;
   }
-  return arr;
-}
-function buildReachWeekly(weeks, baseRolling, baseNetNew) {
-  const arr = [];
-  let cum = baseRolling;
-  for (let i = 1; i <= weeks; i++) {
-    const nn = Math.round(baseNetNew * (0.85 + Math.random() * 0.30));
-    cum += nn;
-    arr.push({ x: `U${i}`, rolling: cum, netNew: nn });
+  if (level === 'kvartal') {
+    const arr = [];
+    let cum = 480000;
+    for (let i = 1; i <= 13; i++) {
+      const nn = Math.round(22000 * (0.85 + Math.random() * 0.30));
+      cum += nn;
+      arr.push({ x: `U${i + 13}`, rolling: cum, netNew: nn });
+    }
+    return arr;
   }
-  return arr;
-}
-function buildReachMonthly(months, baseRolling, baseNetNew) {
-  const arr = [];
-  const labels = ['jan','feb','mar','apr','mai','jun','jul','aug','sep','okt','nov','des'];
-  let cum = baseRolling;
-  for (let i = 0; i < months; i++) {
-    const nn = Math.round(baseNetNew * (0.85 + Math.random() * 0.30));
-    cum += nn;
-    arr.push({ x: labels[i], rolling: cum, netNew: nn });
+  if (level === 'maned') {
+    const arr = [];
+    let cum = 540000;
+    const days = 31;
+    for (let i = 1; i <= days; i++) {
+      const nn = Math.round(3500 * (0.8 + Math.random() * 0.4));
+      cum += nn;
+      arr.push({ x: i.toString(), rolling: cum, netNew: nn });
+    }
+    return arr;
   }
-  return arr;
+  if (level === 'uke') {
+    const arr = [];
+    let cum = 550000;
+    for (let i = 11; i <= 17; i++) {
+      const nn = Math.round(4500 * (0.8 + Math.random() * 0.4));
+      cum += nn;
+      arr.push({ x: i.toString(), rolling: cum, netNew: nn });
+    }
+    return arr;
+  }
 }
 
 // ─── State ────────────────────────────────────────────────────────────────
 
 const state = {
   rapport: 'resultat',      // 'resultat' | 'kanal'
-  periode: 'maned',         // 'uke' | 'maned' | 'kvartal' | 'ar'
-  resDaily: false,          // når dailyKalender vises (toggle på måned)
+  nivaa: 'kvartal',         // 'ar' | 'kvartal' | 'maned' | 'uke'
+  ar: 2026,
+  kvartal: 2,
+  maned: 5,                 // Mai
+  uke: 20,                  // Uke 20
+  // Kanalrapport-drilldown
   kanal: null,
   kampanje: null,
+  // UI
+  dailyOpen: false,
   grouping: 'none',
 };
 
@@ -433,9 +473,7 @@ function distribution(ads) {
   const sum = STATUS_ORDER.reduce((s, st) => s + (ads[st] || 0), 0);
   return STATUS_ORDER.map(st => ({ status: st, share: sum > 0 ? (ads[st] || 0) / sum : 0 }));
 }
-function stackHtml(segs) {
-  return segs.filter(s => s.share > 0).map(s => `<div class="seg-${s.status}" style="width:${s.share * 100}%"></div>`).join('');
-}
+function stackHtml(segs) { return segs.filter(s => s.share > 0).map(s => `<div class="seg-${s.status}" style="width:${s.share * 100}%"></div>`).join(''); }
 function statusLegend(dist) {
   return STATUS_ORDER.map(st => {
     const seg = dist.find(s => s.status === st);
@@ -456,28 +494,99 @@ function navTo(r) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function setPeriode(p) {
-  state.periode = p;
-  document.querySelectorAll('#period-strip button').forEach(b => {
-    b.className = b.dataset.p === p ? 'active' : '';
-  });
+function setNivaa(n, opts = {}) {
+  state.nivaa = n;
+  if (opts.kvartal) state.kvartal = opts.kvartal;
+  if (opts.maned) state.maned = opts.maned;
+  if (opts.uke) state.uke = opts.uke;
+  state.dailyOpen = false;
   render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function setKanal(slug) { state.kanal = slug; state.kampanje = null; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 function setKampanje(id) { state.kampanje = id; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 function clearKanal() { state.kanal = null; state.kampanje = null; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 function clearKampanje() { state.kampanje = null; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function toggleDaily() { state.dailyOpen = !state.dailyOpen; render(); }
 function setGrouping(v) { state.grouping = v; render(); }
-function toggleDaily() { state.resDaily = !state.resDaily; render(); }
 
-// ─── Datakilder pr side ──────────────────────────────────────────────────
+// ─── Breadcrumb ──────────────────────────────────────────────────────────
+
+function timeCrumbs() {
+  const crumbs = [];
+  // År
+  if (state.nivaa === 'ar') {
+    crumbs.push({ label: state.ar.toString(), active: true });
+  } else {
+    crumbs.push({ label: state.ar.toString(), onClick: () => setNivaa('ar') });
+  }
+  // Kvartal
+  if (state.nivaa === 'kvartal' || state.nivaa === 'maned' || state.nivaa === 'uke') {
+    const q = quarterByQ(state.kvartal);
+    if (state.nivaa === 'kvartal') crumbs.push({ label: q.label, active: true });
+    else crumbs.push({ label: q.label, onClick: () => setNivaa('kvartal') });
+  }
+  // Måned
+  if (state.nivaa === 'maned' || state.nivaa === 'uke') {
+    const m = monthByM(state.maned);
+    if (state.nivaa === 'maned') crumbs.push({ label: m.label, active: true });
+    else crumbs.push({ label: m.label, onClick: () => setNivaa('maned') });
+  }
+  // Uke
+  if (state.nivaa === 'uke') {
+    crumbs.push({ label: `Uke ${state.uke}`, active: true });
+  }
+  return crumbs;
+}
+
+function renderBreadcrumb() {
+  const bc = document.getElementById('breadcrumb');
+  const tCrumbs = timeCrumbs();
+
+  let html = '<div class="breadcrumb"><span class="crumb-type">Tid</span>';
+  tCrumbs.forEach((c, i) => {
+    if (i > 0) html += '<span class="sep">›</span>';
+    if (c.active) html += `<span class="active">${c.label}</span>`;
+    else html += `<a data-crumb="${i}">${c.label}</a>`;
+  });
+
+  // Kreativ-sti på Kanalrapport
+  if (state.rapport === 'kanal') {
+    html += '<span class="sep" style="margin: 0 10px;">·</span><span class="crumb-type">Kanal</span>';
+    if (!state.kanal) {
+      html += `<span class="active">Kanaler</span>`;
+    } else {
+      const k = KANALER_BASE.find(x => x.slug === state.kanal);
+      if (!state.kampanje) {
+        html += `<a data-clear-kanal="1">Kanaler</a><span class="sep">›</span><span class="active">${k.navn}</span>`;
+      } else {
+        const c = META_KAMPANJER.find(x => x.id === state.kampanje);
+        const cName = c.navn.replace(/^BAU 2026 \/ /, '');
+        html += `<a data-clear-kanal="1">Kanaler</a><span class="sep">›</span><a data-clear-kampanje="1">${k.navn}</a><span class="sep">›</span><span class="active">${cName}</span>`;
+      }
+    }
+  }
+
+  html += '</div>';
+  bc.outerHTML = `<div id="breadcrumb">${html}</div>`;
+
+  // Re-attach handlers
+  const bcNew = document.getElementById('breadcrumb');
+  bcNew.querySelectorAll('[data-crumb]').forEach(el => {
+    const idx = parseInt(el.dataset.crumb);
+    el.addEventListener('click', tCrumbs[idx].onClick);
+  });
+  bcNew.querySelectorAll('[data-clear-kanal]').forEach(el => el.addEventListener('click', clearKanal));
+  bcNew.querySelectorAll('[data-clear-kampanje]').forEach(el => el.addEventListener('click', clearKampanje));
+}
+
+// ─── Datakilder ──────────────────────────────────────────────────────────
 
 function renderDatakilder() {
   const el = document.getElementById('datakilder');
-  const isResultat = state.rapport === 'resultat';
   let sources = [];
-  if (isResultat) {
+  if (state.rapport === 'resultat') {
     sources = [
       { slug: 'budsjett', label: 'Budsjett-app' },
       { slug: 'plan', label: 'Kampanjeplan' },
@@ -506,30 +615,6 @@ function renderDatakilder() {
   el.innerHTML = `<span class="eyebrow mr-1">Datakilder</span>` + sources.map(s => `<span class="source-pill source-${s.slug}"><span class="dot"></span>${s.label}</span>`).join('');
 }
 
-// ─── Breadcrumb ──────────────────────────────────────────────────────────
-
-function renderBreadcrumb() {
-  const bc = document.getElementById('breadcrumb');
-  bc.innerHTML = '';
-  bc.className = '';
-  if (state.rapport === 'resultat') return;
-  // Kanalrapport
-  if (!state.kanal) {
-    bc.className = 'eyebrow mb-3';
-    bc.textContent = 'Kanaler';
-  } else if (!state.kampanje) {
-    const k = KANALER_BASE.find(x => x.slug === state.kanal);
-    bc.className = 'breadcrumb mb-4';
-    bc.innerHTML = `<a onclick="clearKanal()">Kanaler</a><span class="sep">›</span><span class="active">${k.navn}</span>`;
-  } else {
-    const k = KANALER_BASE.find(x => x.slug === state.kanal);
-    const c = META_KAMPANJER.find(x => x.id === state.kampanje);
-    const cNavn = c.navn.replace(/^BAU 2026 \/ /, '');
-    bc.className = 'breadcrumb mb-4';
-    bc.innerHTML = `<a onclick="clearKanal()">Kanaler</a><span class="sep">›</span><a onclick="clearKampanje()">${k.navn}</a><span class="sep">›</span><span class="active">${cNavn}</span>`;
-  }
-}
-
 // ─── SVG-grafer ──────────────────────────────────────────────────────────
 
 function spendVsMerSvg(points, merLabel) {
@@ -538,50 +623,62 @@ function spendVsMerSvg(points, merLabel) {
   const innerW = w - padL - padR;
   const innerH = h - padT - padB;
 
-  const maxSpend = Math.max(...points.map(p => p.spend)) * 1.1;
-  const merVals = points.map(p => p.mer).filter(v => v != null);
+  const validPts = points.filter(p => p.spend != null);
+  const maxSpend = Math.max(...validPts.map(p => p.spend)) * 1.1;
+  const merVals = validPts.map(p => p.mer).filter(v => v != null);
   const minMer = Math.min(...merVals);
   const maxMer = Math.max(...merVals);
   const merRange = maxMer - minMer || 1;
-  const merMin = minMer - merRange * 0.15;
-  const merMax = maxMer + merRange * 0.15;
+  const merMin = minMer - merRange * 0.2;
+  const merMax = maxMer + merRange * 0.2;
 
   const barW = innerW / points.length * 0.7;
   const barGap = innerW / points.length * 0.3;
 
-  // Bars (spend)
   let bars = '';
   points.forEach((p, i) => {
     const x = padL + i * (innerW / points.length) + barGap / 2;
     const bh = (p.spend / maxSpend) * innerH;
     const y = padT + innerH - bh;
-    bars += `<rect class="chart-bar" x="${x}" y="${y}" width="${barW}" height="${bh}" rx="2" />`;
+    const cls = p.forecast ? 'chart-bar-forecast' : 'chart-bar-actual';
+    bars += `<rect class="${cls}" x="${x}" y="${y}" width="${barW}" height="${bh}" rx="2" />`;
   });
 
-  // Line (MER)
-  const linePoints = points.map((p, i) => {
-    const x = padL + i * (innerW / points.length) + (innerW / points.length) / 2;
-    const y = padT + innerH - ((p.mer - merMin) / (merMax - merMin)) * innerH;
-    return [x, y];
-  });
-  const linePath = `M ${linePoints[0][0]} ${linePoints[0][1]} ` + linePoints.slice(1).map(([x, y]) => `L ${x} ${y}`).join(' ');
-  const dots = linePoints.map(([x, y]) => `<circle class="chart-dot" cx="${x}" cy="${y}" r="3" />`).join('');
+  // Line: split into actual + forecast segments
+  const linePts = points.map((p, i) => ({
+    x: padL + i * (innerW / points.length) + (innerW / points.length) / 2,
+    y: p.mer != null ? padT + innerH - ((p.mer - merMin) / (merMax - merMin)) * innerH : null,
+    forecast: p.forecast,
+  })).filter(p => p.y !== null);
 
-  // Y-akse-tekst (venstre = Spend)
+  let lineActualPts = linePts.filter(p => !p.forecast);
+  let lineForecastPts = linePts.filter(p => p.forecast);
+  // Connect last actual to first forecast
+  if (lineActualPts.length > 0 && lineForecastPts.length > 0) {
+    lineForecastPts = [lineActualPts[lineActualPts.length - 1], ...lineForecastPts];
+  }
+
+  const lineActualPath = lineActualPts.length > 1
+    ? `M ${lineActualPts[0].x} ${lineActualPts[0].y} ` + lineActualPts.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')
+    : '';
+  const lineForecastPath = lineForecastPts.length > 1
+    ? `M ${lineForecastPts[0].x} ${lineForecastPts[0].y} ` + lineForecastPts.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')
+    : '';
+
+  const dots = linePts.map(p => `<circle class="${p.forecast ? 'chart-dot-forecast' : 'chart-dot'}" cx="${p.x}" cy="${p.y}" r="3" />`).join('');
+
   const spendSteps = [0, maxSpend * 0.5, maxSpend];
   const yLeftTicks = spendSteps.map(v => {
     const y = padT + innerH - (v / maxSpend) * innerH;
     return `<text x="${padL - 8}" y="${y + 3}" text-anchor="end" class="chart-y-label">${fmtKr(v)}</text>`;
   }).join('');
 
-  // Y-akse-tekst (høyre = MER)
   const merSteps = [merMin, (merMin + merMax) / 2, merMax];
   const yRightTicks = merSteps.map(v => {
     const y = padT + innerH - ((v - merMin) / (merMax - merMin)) * innerH;
     return `<text x="${w - padR + 8}" y="${y + 3}" text-anchor="start" class="chart-y-label">${Math.round(v)}</text>`;
   }).join('');
 
-  // X-labels (vise hver Nth for å unngå overlapp)
   const stride = Math.ceil(points.length / 12);
   const xLabels = points.map((p, i) => {
     if (i % stride !== 0 && i !== points.length - 1) return '';
@@ -589,18 +686,17 @@ function spendVsMerSvg(points, merLabel) {
     return `<text x="${x}" y="${h - 14}" text-anchor="middle" class="chart-x-label">${p.x}</text>`;
   }).join('');
 
-  // Header
   const header = `
     <div class="flex items-center justify-between mb-3">
       <p class="eyebrow">Spend vs ${merLabel}</p>
       <div class="flex items-center gap-4 text-xs text-neutral-500">
-        <div class="flex items-center gap-1.5"><span class="legend-bar" style="width:12px;height:8px;background:#cbd5e1;border-radius:2px;"></span> Spend</div>
-        <div class="flex items-center gap-1.5"><span style="width:12px;height:2px;background:#090a08;"></span> ${merLabel}</div>
+        <div class="flex items-center gap-1.5"><span style="width:12px;height:8px;background:#cbd5e1;border-radius:2px;"></span> Faktisk</div>
+        <div class="flex items-center gap-1.5"><span style="width:12px;height:8px;background:#e5e5e5;border-radius:2px;"></span> Forecast</div>
       </div>
     </div>
   `;
 
-  return `${header}<svg class="chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${yLeftTicks}${yRightTicks}${bars}<path class="chart-line" d="${linePath}" />${dots}${xLabels}</svg>`;
+  return `${header}<svg class="chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${yLeftTicks}${yRightTicks}${bars}<path class="chart-line" d="${lineActualPath}" /><path class="chart-line-forecast" d="${lineForecastPath}" />${dots}${xLabels}</svg>`;
 }
 
 function reachSvg(points) {
@@ -667,110 +763,208 @@ function reachSvg(points) {
   return `${header}<svg class="chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${yLeftTicks}${yRightTicks}${bars}<path class="chart-line" d="${linePath}" />${dots}${xLabels}</svg>`;
 }
 
-// ─── RESULTATRAPPORT ─────────────────────────────────────────────────────
+// ─── Hovedkort-helper ────────────────────────────────────────────────────
 
-function renderResultat() {
-  const d = PERIODE_DATA[state.periode];
-  const stage = d.isPast ? 'Resultat' : 'Forecast';
-  const spendDelta = (d.spend - d.budget.spend) / d.budget.spend;
-  const nyeDelta = (d.nye - d.budget.nye) / d.budget.nye;
-  const cacDelta = (d.cac - d.budget.targetCac) / d.budget.targetCac;
-  const init = d.initialDiff;
+function heroResultat(title, sublabel, spend, nye, cac, budget, initialDiff, stage) {
+  const sd = (spend - budget.spend) / budget.spend;
+  const nd = (nye - budget.nye) / budget.nye;
+  const cd = (cac - budget.targetCac) / budget.targetCac;
+  const id = initialDiff || { spend: null, nye: null, cac: null };
 
-  // Kanalmix
+  // Kanalmix (samme andeler — vises som visualisering)
   const kanalSegs = KANALMIX.map(k => `<div class="seg-${k.slug}" style="width:${k.share * 100}%"></div>`).join('');
   const kanalLegend = KANALMIX.map(k => `<div><span class="stack-legend-dot seg-${k.slug}"></span><span>${k.navn} <span class="mono text-neutral-500 ml-0.5">${pct(k.share)}</span></span></div>`).join('');
 
-  let html = `
-    <!-- Hovedkort -->
+  return `
     <div class="hero mb-6">
-      <p class="eyebrow">${d.sublabel}</p>
-      <div class="hero-kpis mt-4" style="grid-template-columns: repeat(3, 1fr);">
-        ${kpiBlock('Spend', stage, fmtKr(d.spend) + ' kr', `${pctSigned(spendDelta)} vs budsjett (${fmtKr(d.budget.spend)} kr)`, deltaTone(spendDelta, true), `${pctSigned(init.spend)} vs initiell forecast`, deltaTone(init.spend, true))}
-        ${kpiBlock(KUNDE.nyeLabel, stage, d.nye, `${pctSigned(nyeDelta)} vs budsjett (${d.budget.nye})`, deltaTone(nyeDelta, false), `${pctSigned(init.nye)} vs initiell forecast`, deltaTone(init.nye, false))}
-        ${kpiBlock(KUNDE.merLabel, stage, d.cac + ' kr', `${pctSigned(cacDelta)} vs target (${d.budget.targetCac} kr)`, deltaTone(cacDelta, true), `${pctSigned(init.cac)} vs initiell forecast`, deltaTone(init.cac, true))}
+      <p class="eyebrow">${sublabel}</p>
+      <h1 class="hero-title mt-1">${title}</h1>
+      <div class="hero-kpis mt-5" style="grid-template-columns: repeat(3, 1fr);">
+        <div>
+          <p class="hero-kpi-label">Spend</p>
+          <p class="hero-kpi-stage">${stage}</p>
+          <p class="hero-kpi-value mono">${fmtKr(spend)} kr</p>
+          <p class="hero-kpi-sub ${deltaTone(sd, true)}">${pctSigned(sd)} vs budsjett (${fmtKr(budget.spend)} kr)</p>
+          ${id.spend != null ? `<p class="hero-kpi-sub ${deltaTone(id.spend, true)}">${pctSigned(id.spend)} vs initiell forecast</p>` : ''}
+        </div>
+        <div>
+          <p class="hero-kpi-label">${KUNDE.nyeLabel}</p>
+          <p class="hero-kpi-stage">${stage}</p>
+          <p class="hero-kpi-value mono">${nye}</p>
+          <p class="hero-kpi-sub ${deltaTone(nd, false)}">${pctSigned(nd)} vs budsjett (${budget.nye})</p>
+          ${id.nye != null ? `<p class="hero-kpi-sub ${deltaTone(id.nye, false)}">${pctSigned(id.nye)} vs initiell forecast</p>` : ''}
+        </div>
+        <div>
+          <p class="hero-kpi-label">${KUNDE.merLabel}</p>
+          <p class="hero-kpi-stage">${stage}</p>
+          <p class="hero-kpi-value mono">${cac} kr</p>
+          <p class="hero-kpi-sub ${deltaTone(cd, true)}">${pctSigned(cd)} vs target (${budget.targetCac} kr)</p>
+          ${id.cac != null ? `<p class="hero-kpi-sub ${deltaTone(id.cac, true)}">${pctSigned(id.cac)} vs initiell forecast</p>` : ''}
+        </div>
       </div>
-
       <div class="mt-6 mb-2"><div class="stack tall">${kanalSegs}</div></div>
       <div class="stack-legend">${kanalLegend}</div>
     </div>
-
-    <!-- Spend vs MER-graf -->
-    <div class="chart-card mb-6">
-      ${spendVsMerSvg(d.chart.points, KUNDE.merLabel)}
-    </div>
   `;
+}
 
-  // Sub-periodes
-  if (d.subPeriods) {
-    html += `<p class="eyebrow mb-3">${state.periode === 'ar' ? 'Kvartaler' : 'Måneder'}</p><div class="space-y-3">`;
-    d.subPeriods.forEach(s => {
-      const ss = s.status === 'planned' || s.status === 'empty';
-      if (ss) {
-        html += `<div class="hero hero-compact hero-disabled"><h1 class="hero-title">${s.label}</h1></div>`;
-        return;
-      }
-      const sSpendDelta = (s.spend - d.budget.spend / d.subPeriods.length) / (d.budget.spend / d.subPeriods.length);
-      const sNyeDelta = (s.nye - d.budget.nye / d.subPeriods.length) / (d.budget.nye / d.subPeriods.length);
-      const sCacDelta = (s.cac - d.budget.targetCac) / d.budget.targetCac;
-      html += `
-        <div class="hero hero-compact">
-          <h1 class="hero-title mb-3">${s.label}</h1>
+// ─── Resultatrapport-rendere ─────────────────────────────────────────────
+
+function renderResultatAr() {
+  const a = yearAgg();
+  let html = heroResultat(`${state.ar}`, `År`, a.spend, a.nye, a.cac, KUNDE.yearBudget, a.initialDiff, 'Hittil + forecast');
+  html += `<div class="chart-card mb-6">${spendVsMerSvg(spendMerSeriesFor('ar'), KUNDE.merLabel)}</div>`;
+
+  html += `<p class="eyebrow mb-3">Kvartaler</p><div class="space-y-3">`;
+  QUARTERS.forEach(q => {
+    const agg = quarterAgg(q);
+    const stageLabel = agg.status === 'done' ? 'Resultat' : (agg.status === 'active' ? 'Hittil + forecast' : (agg.status === 'planned' ? 'Forecast' : 'Tom'));
+    const disabled = agg.status === 'empty';
+    const cls = disabled ? 'hero-disabled' : 'hero-clickable';
+    const sd = (agg.spend - KUNDE.quarterBudget.spend) / KUNDE.quarterBudget.spend;
+    const nd = (agg.nye - KUNDE.quarterBudget.nye) / KUNDE.quarterBudget.nye;
+    const cd = agg.cac > 0 ? (agg.cac - KUNDE.quarterBudget.targetCac) / KUNDE.quarterBudget.targetCac : null;
+    html += `
+      <div class="hero hero-compact ${cls}" ${!disabled ? `onclick="setNivaa('kvartal', {kvartal: ${q.q}})"` : ''}>
+        <div class="flex items-center justify-between mb-3">
+          <h1 class="hero-title">${q.label} ${state.ar}</h1>
+          <span class="text-xs text-neutral-500">${stageLabel}</span>
+        </div>
+        ${disabled ? '' : `
           <div class="hero-kpis" style="grid-template-columns: repeat(3, 1fr);">
             <div>
               <p class="hero-kpi-label">Spend</p>
-              <p class="hero-kpi-value mono">${fmtKr(s.spend)} kr</p>
-              <p class="hero-kpi-sub ${deltaTone(sSpendDelta, true)}">${pctSigned(sSpendDelta)} vs budsjett</p>
-              <p class="hero-kpi-sub ${deltaTone(s.initialDiff.spend, true)}">${pctSigned(s.initialDiff.spend)} vs initiell</p>
+              <p class="hero-kpi-value mono">${fmtKr(agg.spend)} kr</p>
+              <p class="hero-kpi-sub ${deltaTone(sd, true)}">${pctSigned(sd)} vs budsjett</p>
+              ${agg.initialDiff ? `<p class="hero-kpi-sub ${deltaTone(agg.initialDiff.spend, true)}">${pctSigned(agg.initialDiff.spend)} vs initiell</p>` : ''}
             </div>
             <div>
               <p class="hero-kpi-label">${KUNDE.nyeLabel}</p>
-              <p class="hero-kpi-value mono">${s.nye}</p>
-              <p class="hero-kpi-sub ${deltaTone(sNyeDelta, false)}">${pctSigned(sNyeDelta)} vs budsjett</p>
-              <p class="hero-kpi-sub ${deltaTone(s.initialDiff.nye, false)}">${pctSigned(s.initialDiff.nye)} vs initiell</p>
+              <p class="hero-kpi-value mono">${agg.nye}</p>
+              <p class="hero-kpi-sub ${deltaTone(nd, false)}">${pctSigned(nd)} vs budsjett</p>
+              ${agg.initialDiff ? `<p class="hero-kpi-sub ${deltaTone(agg.initialDiff.nye, false)}">${pctSigned(agg.initialDiff.nye)} vs initiell</p>` : ''}
             </div>
             <div>
               <p class="hero-kpi-label">${KUNDE.merLabel}</p>
-              <p class="hero-kpi-value mono">${s.cac} kr</p>
-              <p class="hero-kpi-sub ${deltaTone(sCacDelta, true)}">${pctSigned(sCacDelta)} vs target</p>
-              <p class="hero-kpi-sub ${deltaTone(s.initialDiff.cac, true)}">${pctSigned(s.initialDiff.cac)} vs initiell</p>
+              <p class="hero-kpi-value mono">${agg.cac > 0 ? agg.cac + ' kr' : '—'}</p>
+              ${cd != null ? `<p class="hero-kpi-sub ${deltaTone(cd, true)}">${pctSigned(cd)} vs target</p>` : ''}
+              ${agg.initialDiff ? `<p class="hero-kpi-sub ${deltaTone(agg.initialDiff.cac, true)}">${pctSigned(agg.initialDiff.cac)} vs initiell</p>` : ''}
             </div>
           </div>
-        </div>
-      `;
-    });
-    html += `</div>`;
-  }
-
-  // Daglig (for uke + måned)
-  if (d.daily) {
-    html += `
-      <div class="flex items-center justify-between mt-8 mb-3">
-        <p class="eyebrow">Daglig</p>
-        <button class="text-xs text-neutral-500 hover:text-neutral-900" onclick="toggleDaily()">${state.resDaily ? 'Lukk daglig' : 'Åpne daglig'}</button>
+        `}
       </div>
     `;
-    if (state.resDaily) {
-      html += renderDailyTable(d.daily, KUNDE.nyeLabel);
-    }
-  }
-
+  });
+  html += `</div>`;
   return html;
 }
 
-function kpiBlock(label, stage, value, sub1, tone1, sub2, tone2) {
-  return `
-    <div>
-      <p class="hero-kpi-label">${label}</p>
-      <p class="hero-kpi-stage">${stage}</p>
-      <p class="hero-kpi-value mono">${value}</p>
-      <p class="hero-kpi-sub ${tone1}">${sub1}</p>
-      <p class="hero-kpi-sub ${tone2}">${sub2}</p>
-    </div>
-  `;
+function renderResultatKvartal() {
+  const q = quarterByQ(state.kvartal);
+  const agg = quarterAgg(q);
+  const stage = agg.status === 'done' ? 'Resultat' : 'Hittil + forecast';
+  let html = heroResultat(`${q.label} ${state.ar}`, 'Kvartal', agg.spend, agg.nye, agg.cac, KUNDE.quarterBudget, agg.initialDiff, stage);
+  html += `<div class="chart-card mb-6">${spendVsMerSvg(spendMerSeriesFor('kvartal'), KUNDE.merLabel)}</div>`;
+
+  html += `<p class="eyebrow mb-3">Måneder</p><div class="space-y-3">`;
+  q.monthsIds.forEach(mId => {
+    const m = monthByM(mId);
+    const stageLabel = m.status === 'done' ? 'Resultat' : (m.status === 'active' ? 'Hittil + forecast' : (m.status === 'planned' ? 'Forecast' : 'Tom'));
+    const disabled = m.status === 'empty';
+    const cls = disabled ? 'hero-disabled' : 'hero-clickable';
+    const sd = (m.spend - KUNDE.monthlyBudget.spend) / KUNDE.monthlyBudget.spend;
+    const nd = (m.nye - KUNDE.monthlyBudget.nye) / KUNDE.monthlyBudget.nye;
+    const cd = m.cac > 0 ? (m.cac - KUNDE.monthlyBudget.targetCac) / KUNDE.monthlyBudget.targetCac : null;
+    html += `
+      <div class="hero hero-compact ${cls}" ${!disabled ? `onclick="setNivaa('maned', {maned: ${m.m}})"` : ''}>
+        <div class="flex items-center justify-between mb-3">
+          <h1 class="hero-title">${m.label} ${state.ar}</h1>
+          <span class="text-xs text-neutral-500">${stageLabel}</span>
+        </div>
+        ${disabled ? '' : `
+          <div class="hero-kpis" style="grid-template-columns: repeat(3, 1fr);">
+            <div>
+              <p class="hero-kpi-label">Spend</p>
+              <p class="hero-kpi-value mono">${fmtKr(m.spend)} kr</p>
+              <p class="hero-kpi-sub ${deltaTone(sd, true)}">${pctSigned(sd)} vs budsjett</p>
+              ${m.initialDiff ? `<p class="hero-kpi-sub ${deltaTone(m.initialDiff.spend, true)}">${pctSigned(m.initialDiff.spend)} vs initiell</p>` : ''}
+            </div>
+            <div>
+              <p class="hero-kpi-label">${KUNDE.nyeLabel}</p>
+              <p class="hero-kpi-value mono">${m.nye}</p>
+              <p class="hero-kpi-sub ${deltaTone(nd, false)}">${pctSigned(nd)} vs budsjett</p>
+              ${m.initialDiff ? `<p class="hero-kpi-sub ${deltaTone(m.initialDiff.nye, false)}">${pctSigned(m.initialDiff.nye)} vs initiell</p>` : ''}
+            </div>
+            <div>
+              <p class="hero-kpi-label">${KUNDE.merLabel}</p>
+              <p class="hero-kpi-value mono">${m.cac > 0 ? m.cac + ' kr' : '—'}</p>
+              ${cd != null ? `<p class="hero-kpi-sub ${deltaTone(cd, true)}">${pctSigned(cd)} vs target</p>` : ''}
+              ${m.initialDiff ? `<p class="hero-kpi-sub ${deltaTone(m.initialDiff.cac, true)}">${pctSigned(m.initialDiff.cac)} vs initiell</p>` : ''}
+            </div>
+          </div>
+        `}
+      </div>
+    `;
+  });
+  html += `</div>`;
+  return html;
 }
 
-function renderDailyTable(days, nyeLabel) {
+function renderResultatManed() {
+  const m = monthByM(state.maned);
+  const stage = m.status === 'done' ? 'Resultat' : 'Hittil + forecast';
+  let html = heroResultat(`${m.label} ${state.ar}`, 'Måned', m.spend, m.nye, m.cac, KUNDE.monthlyBudget, m.initialDiff, stage);
+  html += `<div class="chart-card mb-6">${spendVsMerSvg(spendMerSeriesFor('maned'), KUNDE.merLabel)}</div>`;
+
+  // Uke-strip
+  const weeks = weeksForMonth(m.m);
+  html += `<p class="eyebrow mb-3">Uker</p><div class="week-strip">`;
+  weeks.forEach(w => {
+    const disabled = (m.m > TODAY.month) || (m.m === TODAY.month && w.w > TODAY.week + 1);
+    const active = false; // ikke valgt fra måned-view
+    const cls = disabled ? 'disabled' : '';
+    html += `
+      <div class="week-tab ${cls}" ${!disabled ? `onclick="setNivaa('uke', {maned: ${m.m}, uke: ${w.w}})"` : ''}>
+        <div class="week-tab-num">Uke ${w.w}</div>
+        <div class="week-tab-dates">${w.dates}</div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+
+  // Daglig toggle + tabell
+  html += `
+    <div class="flex items-center justify-between mt-6 mb-3">
+      <p class="eyebrow">Daglig</p>
+      <button class="text-xs text-neutral-500 hover:text-neutral-900" onclick="toggleDaily()">${state.dailyOpen ? 'Lukk daglig' : 'Åpne daglig'}</button>
+    </div>
+  `;
+  if (state.dailyOpen) {
+    html += renderDailyTable(buildDailyForMonth(m.m));
+  }
+  return html;
+}
+
+function renderResultatUke() {
+  // Uke-data — forenklet hovedkort
+  const dailyData = dailyForWeek(state.uke);
+  if (dailyData.length === 0) {
+    return `<div class="hero text-center text-neutral-500"><p>Mock-data for uke ${state.uke} kommer.</p></div>`;
+  }
+  // Aggregér uke-tall
+  const ukeSpend = dailyData.reduce((s, d) => s + (d.actualSpend || d.forecastSpend), 0);
+  const ukeNye = dailyData.reduce((s, d) => s + (d.actualNye || d.forecastNye), 0);
+  const ukeCac = ukeNye > 0 ? Math.round(ukeSpend / ukeNye) : 0;
+  const initialDiff = { spend: -0.08, nye: 0.04, cac: -0.12 };
+
+  let html = heroResultat(`Uke ${state.uke}`, `Uke · 11 – 17. mai`, ukeSpend, ukeNye, ukeCac, KUNDE.weekBudget, initialDiff, 'Hittil + forecast');
+  html += `<div class="chart-card mb-6">${spendVsMerSvg(spendMerSeriesFor('uke'), KUNDE.merLabel)}</div>`;
+  html += `<p class="eyebrow mb-3">Daglig</p>`;
+  html += renderDailyTableForWeek(dailyData);
+  return html;
+}
+
+function renderDailyTable(days) {
   let rows = '';
   days.forEach(d => {
     const cac = d.actualSpend && d.actualNye ? d.actualSpend / d.actualNye : null;
@@ -794,7 +988,7 @@ function renderDailyTable(days, nyeLabel) {
           <tr>
             <th rowspan="2" style="vertical-align: bottom;">Dag</th>
             <th colspan="3" class="text-right border-l border-neutral-200">Spend</th>
-            <th colspan="3" class="text-right border-l border-neutral-200">${nyeLabel}</th>
+            <th colspan="3" class="text-right border-l border-neutral-200">${KUNDE.nyeLabel}</th>
             <th rowspan="2" class="text-right border-l border-neutral-200" style="vertical-align: bottom;">CAC</th>
           </tr>
           <tr style="border-bottom: 1px solid #e5e5e5;">
@@ -812,11 +1006,61 @@ function renderDailyTable(days, nyeLabel) {
   `;
 }
 
-// ─── KANALRAPPORT ────────────────────────────────────────────────────────
+function renderDailyTableForWeek(days) {
+  let rows = '';
+  days.forEach(d => {
+    const cac = d.actualSpend && d.actualNye ? d.actualSpend / d.actualNye : null;
+    rows += `
+      <tr class="${d.isToday ? 'today' : ''}">
+        <td class="${d.isPast ? '' : 'text-neutral-400'}">${d.dateLabel}</td>
+        <td class="text-right cell-budget border-l border-neutral-100">${fmtKr(d.budgetSpend)}</td>
+        <td class="text-right cell-forecast">${fmtKr(d.forecastSpend)}</td>
+        <td class="text-right ${d.actualSpend ? 'cell-actual' : 'text-neutral-300'}">${d.actualSpend ? fmtKr(d.actualSpend) : '–'}</td>
+        <td class="text-right cell-budget border-l border-neutral-100">${d.budgetNye.toFixed(1)}</td>
+        <td class="text-right cell-forecast">${d.forecastNye.toFixed(1)}</td>
+        <td class="text-right ${d.actualNye ? 'cell-actual' : 'text-neutral-300'}">${d.actualNye ? d.actualNye : '–'}</td>
+        <td class="text-right ${cac ? 'cell-actual' : 'text-neutral-300'} border-l border-neutral-100">${cac ? Math.round(cac) + ' kr' : '–'}</td>
+      </tr>
+    `;
+  });
+  return `
+    <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+      <table class="day-table">
+        <thead>
+          <tr>
+            <th rowspan="2" style="vertical-align: bottom;">Dag</th>
+            <th colspan="3" class="text-right border-l border-neutral-200">Spend</th>
+            <th colspan="3" class="text-right border-l border-neutral-200">${KUNDE.nyeLabel}</th>
+            <th rowspan="2" class="text-right border-l border-neutral-200" style="vertical-align: bottom;">CAC</th>
+          </tr>
+          <tr style="border-bottom: 1px solid #e5e5e5;">
+            <th class="text-right border-l border-neutral-200" style="font-weight: 400;">Budsjett</th>
+            <th class="text-right" style="font-weight: 400;">Forecast</th>
+            <th class="text-right" style="font-weight: 400;">Resultat</th>
+            <th class="text-right border-l border-neutral-200" style="font-weight: 400;">Budsjett</th>
+            <th class="text-right" style="font-weight: 400;">Forecast</th>
+            <th class="text-right" style="font-weight: 400;">Resultat</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
 
-function renderKanalNiva1() {
-  const kanaler = kanalerForPeriode(state.periode);
-  let html = `<p class="eyebrow mb-3">Kanaler · ${PERIODE_DATA[state.periode].sublabel}</p><div class="space-y-3">`;
+// ─── Kanalrapport-rendere ────────────────────────────────────────────────
+
+function scopeSpend() {
+  // Returnerer total spend for valgt tids-scope
+  if (state.nivaa === 'ar') return yearAgg().spend;
+  if (state.nivaa === 'kvartal') return quarterAgg(quarterByQ(state.kvartal)).spend;
+  if (state.nivaa === 'maned') return monthByM(state.maned).spend;
+  if (state.nivaa === 'uke') return 28700;
+}
+
+function renderKanalIndeks() {
+  const kanaler = kanalerForScope(scopeSpend());
+  let html = `<p class="eyebrow mb-3">Kanaler</p><div class="space-y-3">`;
   kanaler.forEach(k => {
     if (k.hasPlatformData) {
       const dist = distribution(k.ads);
@@ -852,8 +1096,8 @@ function renderKanalNiva1() {
   return html;
 }
 
-function renderKanalNiva2() {
-  const kanaler = kanalerForPeriode(state.periode);
+function renderKanalKanal() {
+  const kanaler = kanalerForScope(scopeSpend());
   const k = kanaler.find(x => x.slug === state.kanal);
   if (!k.hasPlatformData) {
     return `<div class="hero text-center text-neutral-500"><p class="font-medium">${k.navn}</p><p class="text-sm mt-2">Kun manuell spend — ingen ad-platform-data å drille i.</p></div>`;
@@ -878,8 +1122,7 @@ function renderKanalNiva2() {
   `;
 
   if (k.slug === 'meta') {
-    const reach = REACH_DATA[state.periode];
-    html += `<div class="chart-card mb-6">${reachSvg(reach.points)}</div>`;
+    html += `<div class="chart-card mb-6">${reachSvg(reachSeriesForLevel(state.nivaa))}</div>`;
   }
 
   html += `<p class="eyebrow mb-3">Kampanjer</p><div class="space-y-3">`;
@@ -911,7 +1154,7 @@ function renderKanalNiva2() {
   return html;
 }
 
-function renderKanalNiva3() {
+function renderKanalKampanje() {
   const c = META_KAMPANJER.find(x => x.id === state.kampanje);
   const dist = distribution(c.ads);
   const bar = stackHtml(dist);
@@ -994,11 +1237,14 @@ function render() {
   renderBreadcrumb();
   const main = document.getElementById('main-view');
   if (state.rapport === 'resultat') {
-    main.innerHTML = renderResultat();
+    if (state.nivaa === 'ar') main.innerHTML = renderResultatAr();
+    else if (state.nivaa === 'kvartal') main.innerHTML = renderResultatKvartal();
+    else if (state.nivaa === 'maned') main.innerHTML = renderResultatManed();
+    else if (state.nivaa === 'uke') main.innerHTML = renderResultatUke();
   } else {
-    if (!state.kanal) main.innerHTML = renderKanalNiva1();
-    else if (!state.kampanje) main.innerHTML = renderKanalNiva2();
-    else main.innerHTML = renderKanalNiva3();
+    if (!state.kanal) main.innerHTML = renderKanalIndeks();
+    else if (!state.kampanje) main.innerHTML = renderKanalKanal();
+    else main.innerHTML = renderKanalKampanje();
   }
 }
 
