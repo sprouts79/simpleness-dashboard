@@ -116,6 +116,9 @@
   .delta-bad { color: #b91c1c; }
   .delta-neutral { color: #737373; }
 
+  .forecast-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; border: 1.5px dashed #737373; margin-right: 6px; vertical-align: middle; }
+  .kpi-forecast { font-size: 13px; color: #525252; margin-top: 6px; font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+
   /* Datepicker */
   .datepicker-wrap { position: relative; display: inline-block; }
   .datepicker-btn { display: inline-flex; align-items: center; gap: 8px; background: white; border: 1px solid #d4d4d4; border-radius: 10px; padding: 9px 14px; cursor: pointer; font-size: 13px; font-weight: 500; color: #090a08; transition: border-color 80ms; }
@@ -634,36 +637,56 @@ function reachSvg(points) {
 }
 
 function renderHovedkort(d) {
-  const sd = d.budget && d.budget.spend ? (d.spend - d.budget.spend) / d.budget.spend : null;
-  const nd = d.budget && d.budget.nye ? (d.nye - d.budget.nye) / d.budget.nye : null;
-  const cd = d.budget && d.budget.targetCac && d.cac > 0 ? (d.cac - d.budget.targetCac) / d.budget.targetCac : null;
-  const idiff = d.initialDiff || { spend: null, nye: null, cac: null };
-  const showInitiell = d.tense !== 'future';
-  const hittil = d.hittil;
+  const tense = d.tense; // 'past' | 'active' | 'future'
   const showKanalMix = state.rapport === 'resultat';
   const kanalSegs = showKanalMix ? KANALMIX.map(k => `<div class="seg-${k.slug}" style="width:${k.share * 100}%"></div>`).join('') : '';
   const kanalLegend = showKanalMix ? KANALMIX.map(k => `<div><span class="stack-legend-dot seg-${k.slug}"></span><span>${k.navn} <span class="mono text-neutral-500 ml-0.5">${pct(k.share)}</span></span></div>`).join('') : '';
 
-  function kpiBlock(label, value, hittilValue, deltaBudget, deltaInit, higherIsBad) {
-    return `
-      <div>
-        <p class="hero-kpi-label">${label}</p>
-        <p class="hero-kpi-value mono mt-2">${value}</p>
-        ${hittilValue ? `<p class="hero-kpi-sub" style="color:#525252;">Hittil ${hittilValue}</p>` : ''}
-        ${deltaBudget != null ? `<p class="hero-kpi-sub ${deltaTone(deltaBudget, higherIsBad)}">${pctSigned(deltaBudget)} vs budsjett</p>` : ''}
-        ${showInitiell && deltaInit != null ? `<p class="hero-kpi-sub ${deltaTone(deltaInit, higherIsBad)}">${pctSigned(deltaInit)} vs initiell forecast</p>` : ''}
-      </div>
-    `;
+  // Per KPI: primært tall (resultat) + evt. forecast-tall + deltaer
+  // - past: stort = resultat, ingen forecast, delta = resultat vs budsjett
+  // - active: stort = resultat hittil, forecast-rad, delta = resultat vs budsjett + forecast vs budsjett
+  // - future: stort = forecast (med dot), delta = forecast vs budsjett
+  function kpiBlock(label, resultatVal, forecastVal, budgetVal, higherIsBad) {
+    let valueRow, forecastRow = '', deltaRows = '';
+    if (tense === 'past') {
+      valueRow = `<p class="hero-kpi-value mono mt-2">${resultatVal.display}</p>`;
+      const delta = budgetVal > 0 ? (resultatVal.num - budgetVal) / budgetVal : null;
+      if (delta != null) deltaRows = `<p class="hero-kpi-sub ${deltaTone(delta, higherIsBad)}">${pctSigned(delta)} vs budsjett</p>`;
+    } else if (tense === 'active') {
+      valueRow = `<p class="hero-kpi-value mono mt-2">${resultatVal.display}</p>`;
+      forecastRow = `<p class="kpi-forecast"><span class="forecast-dot"></span>Forecast ${forecastVal.display}</p>`;
+      const dRes = budgetVal > 0 ? (resultatVal.num - budgetVal) / budgetVal : null;
+      const dFor = budgetVal > 0 ? (forecastVal.num - budgetVal) / budgetVal : null;
+      if (dRes != null) deltaRows += `<p class="hero-kpi-sub ${deltaTone(dRes, higherIsBad)}">${pctSigned(dRes)} vs budsjett</p>`;
+      if (dFor != null) deltaRows += `<p class="hero-kpi-sub ${deltaTone(dFor, higherIsBad)}"><span class="forecast-dot"></span>${pctSigned(dFor)} forecast vs budsjett</p>`;
+    } else { // future
+      valueRow = `<p class="hero-kpi-value mono mt-2"><span class="forecast-dot"></span>${forecastVal.display}</p>`;
+      const dFor = budgetVal > 0 ? (forecastVal.num - budgetVal) / budgetVal : null;
+      if (dFor != null) deltaRows = `<p class="hero-kpi-sub ${deltaTone(dFor, higherIsBad)}">${pctSigned(dFor)} forecast vs budsjett</p>`;
+    }
+    return `<div><p class="hero-kpi-label">${label}</p>${valueRow}${forecastRow}${deltaRows}</div>`;
   }
+
+  // Bygg resultat- og forecast-verdier
+  const spendBudget = d.budget?.spend || 0;
+  const nyeBudget = d.budget?.nye || 0;
+  const cacTarget = d.budget?.targetCac || 0;
+
+  const spendRes = tense === 'past' ? { num: d.spend, display: `${fmtKr(d.spend)} kr` } : (d.hittil ? { num: d.hittil.spend, display: `${fmtKr(d.hittil.spend)} kr` } : { num: 0, display: '—' });
+  const spendFor = { num: d.spend, display: `${fmtKr(d.spend)} kr` };
+  const nyeRes = tense === 'past' ? { num: d.nye, display: `${d.nye}` } : (d.hittil ? { num: d.hittil.nye, display: `${d.hittil.nye}` } : { num: 0, display: '—' });
+  const nyeFor = { num: d.nye, display: `${d.nye}` };
+  const cacRes = tense === 'past' ? { num: d.cac, display: d.cac > 0 ? `${d.cac} kr` : '—' } : (d.hittil ? { num: d.hittil.cac, display: `${d.hittil.cac} kr` } : { num: 0, display: '—' });
+  const cacFor = { num: d.cac, display: d.cac > 0 ? `${d.cac} kr` : '—' };
 
   return `
     <div class="hero mb-6">
       <h1 class="hero-main-title">${d.title}</h1>
       ${d.sub ? `<p class="hero-sub">${d.sub}</p>` : ''}
       <div class="hero-kpis mt-6" style="grid-template-columns: repeat(3, 1fr);">
-        ${kpiBlock('Spend', `${fmtKr(d.spend)} kr`, hittil ? `${fmtKr(hittil.spend)} kr` : null, sd, idiff.spend, true)}
-        ${kpiBlock(KUNDE.nyeLabel, d.nye, hittil ? hittil.nye : null, nd, idiff.nye, false)}
-        ${kpiBlock(KUNDE.merLabel, d.cac > 0 ? `${d.cac} kr` : '—', hittil ? `${hittil.cac} kr` : null, cd, idiff.cac, true)}
+        ${kpiBlock('Spend', spendRes, spendFor, spendBudget, true)}
+        ${kpiBlock(KUNDE.nyeLabel, nyeRes, nyeFor, nyeBudget, false)}
+        ${kpiBlock(KUNDE.merLabel, cacRes, cacFor, cacTarget, true)}
       </div>
       ${showKanalMix ? `<div class="mt-6 mb-2"><div class="stack tall">${kanalSegs}</div></div><div class="stack-legend">${kanalLegend}</div>` : ''}
     </div>
