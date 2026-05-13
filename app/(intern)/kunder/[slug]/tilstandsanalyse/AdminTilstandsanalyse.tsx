@@ -9,11 +9,11 @@ import {
   ITEM_STATE_STYLE,
   PRIORITY_LABEL,
   stateKey,
+  stateSortRankAdmin,
   versjonLabel,
   type AuditState,
   type AuditItemRow,
   type AuditItemState,
-  type TabId,
   type Item,
 } from "@/lib/types-tilstandsanalyse";
 import {
@@ -32,11 +32,10 @@ interface Props {
   itemsById: Record<string, AuditItemRow>;
 }
 
-const ITEM_STATE_OPTIONS: AuditItemState[] = [null, "p1", "p2", "wip", "na", "ok"];
+const ITEM_STATE_OPTIONS: AuditItemState[] = [null, "p1", "p2", "wip", "avsjekk", "na", "ok"];
 
 export default function AdminTilstandsanalyse(props: Props) {
   const aktiv = props.draft ?? props.godkjent;
-  const [activeTab, setActiveTab] = useState<TabId>("sporing");
   const [pending, startTransition] = useTransition();
 
   function handleStart() {
@@ -55,13 +54,12 @@ export default function AdminTilstandsanalyse(props: Props) {
 
   function handleReopen() {
     if (!props.godkjent) return;
-    if (!confirm(`Åpne den godkjente versjonen for redigering på nytt? Den blir til en draft og forsvinner fra kundens visning.`)) return;
+    if (!confirm(`Tilbakefør godkjent versjon til draft? Den forsvinner fra kundens visning.`)) return;
     startTransition(async () => {
       await reopenAction(props.slug, props.godkjent!.id);
     });
   }
 
-  // ── Ingen state ennå ─────────────────────────────────────
   if (!aktiv) {
     return (
       <div className="rounded-xl border border-neutral-200 bg-white p-10 text-center">
@@ -80,18 +78,19 @@ export default function AdminTilstandsanalyse(props: Props) {
     );
   }
 
-  const isEditable = aktiv.versjon === "draft" || aktiv.versjon === "under_review";
+  // Godkjent er fortsatt redigerbar slik at admin lett kan flytte 'avsjekk' → 'ok' uten omveier.
+  const isEditable = true;
 
-  // Stats per fane
-  function tabStats(tab: TabId) {
-    const tabItems = ITEMS.filter((i) => i.tab === tab);
-    const opened = tabItems.filter((i) => itemsById(i.id)?.state).length;
-    return `${opened}/${tabItems.length}`;
-  }
+  // Items med state, samlet
+  const allRows = ITEMS.map((item) => ({ item, row: props.itemsById[item.id] }));
 
-  function itemsById(id: string): AuditItemRow | undefined {
-    return props.itemsById[id];
-  }
+  // Tiltaksliste — alt som ikke er OK (eller åpent uten state)
+  const tiltakItems = allRows
+    .filter(({ row }) => row?.state && row.state !== "ok")
+    .sort((a, b) => stateSortRankAdmin(a.row!.state) - stateSortRankAdmin(b.row!.state));
+
+  // "Trenger din avsjekk" — egen liten seksjon for prominent visning
+  const avsjekkItems = tiltakItems.filter((x) => x.row!.state === "avsjekk");
 
   return (
     <div>
@@ -105,7 +104,7 @@ export default function AdminTilstandsanalyse(props: Props) {
           )}
         </div>
         <div className="flex items-center gap-2">
-          {isEditable && (
+          {(aktiv.versjon === "draft" || aktiv.versjon === "under_review") && (
             <button
               onClick={handleApprove}
               disabled={pending}
@@ -114,13 +113,13 @@ export default function AdminTilstandsanalyse(props: Props) {
               Godkjenn versjon {aktiv.kvartal}
             </button>
           )}
-          {!isEditable && (
+          {aktiv.versjon === "godkjent" && (
             <button
               onClick={handleReopen}
               disabled={pending}
               className="px-4 py-2 rounded-lg border border-neutral-200 text-sm text-neutral-600 hover:bg-neutral-100 disabled:opacity-40"
             >
-              Åpne for redigering
+              Tilbakefør til draft
             </button>
           )}
           {!props.draft && props.godkjent && (
@@ -135,47 +134,74 @@ export default function AdminTilstandsanalyse(props: Props) {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 mb-5 border-b border-neutral-200">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setActiveTab(t.id)}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
-              activeTab === t.id
-                ? "border-neutral-900 text-neutral-900"
-                : "border-transparent text-neutral-500 hover:text-neutral-900"
-            }`}
-          >
-            {t.title} <span className="font-mono text-xs text-neutral-400 ml-1">{tabStats(t.id)}</span>
-          </button>
-        ))}
-      </div>
+      {/* Trenger din avsjekk */}
+      {avsjekkItems.length > 0 && (
+        <section className="mb-8">
+          <h2 className="text-lg font-semibold text-neutral-900 mb-3">
+            Trenger din avsjekk
+            <span className="font-mono text-xs text-neutral-500 ml-2">{avsjekkItems.length}</span>
+          </h2>
+          <div className="rounded-xl border border-purple-200 bg-white overflow-hidden">
+            {avsjekkItems.map(({ item, row }) => (
+              <ItemRow key={item.id} item={item} row={row} slug={props.slug} stateId={aktiv.id} editable={isEditable} />
+            ))}
+          </div>
+        </section>
+      )}
 
-      {/* Items grouped */}
-      <div className="space-y-6">
-        {GROUPS.filter((g) => g.tab === activeTab).map((group) => {
-          const items = ITEMS.filter((i) => i.tab === activeTab && i.group === group.id);
-          if (items.length === 0) return null;
-          return (
-            <section key={group.id}>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-3">{group.label}</h3>
-              <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
-                {items.map((item) => (
-                  <ItemRow
-                    key={item.id}
-                    item={item}
-                    row={itemsById(item.id)}
-                    slug={props.slug}
-                    stateId={aktiv.id}
-                    editable={isEditable}
-                  />
-                ))}
-              </div>
-            </section>
-          );
-        })}
-      </div>
+      {/* Tiltaksliste — alt øvrig som ikke er OK */}
+      {tiltakItems.filter((x) => x.row!.state !== "avsjekk").length > 0 && (
+        <section className="mb-10">
+          <h2 className="text-lg font-semibold text-neutral-900 mb-3">
+            Tiltaksliste
+            <span className="font-mono text-xs text-neutral-500 ml-2">
+              {tiltakItems.filter((x) => x.row!.state !== "avsjekk").length}
+            </span>
+          </h2>
+          <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
+            {tiltakItems
+              .filter((x) => x.row!.state !== "avsjekk")
+              .map(({ item, row }) => (
+                <ItemRow key={item.id} item={item} row={row} slug={props.slug} stateId={aktiv.id} editable={isEditable} />
+              ))}
+          </div>
+        </section>
+      )}
+
+      {/* Full liste per seksjon */}
+      {TABS.map((tab) => {
+        const tabItems = ITEMS.filter((i) => i.tab === tab.id);
+        const assessed = tabItems.filter((i) => props.itemsById[i.id]?.state).length;
+        return (
+          <section key={tab.id} className="mb-10">
+            <div className="flex items-baseline justify-between mb-4 border-b border-neutral-200 pb-2">
+              <h2 className="text-lg font-semibold text-neutral-900">{tab.title}</h2>
+              <span className="font-mono text-xs text-neutral-500">{assessed}/{tabItems.length} vurdert</span>
+            </div>
+            {GROUPS.filter((g) => g.tab === tab.id).map((group) => {
+              const items = ITEMS.filter((i) => i.tab === tab.id && i.group === group.id);
+              if (items.length === 0) return null;
+              return (
+                <div key={group.id} className="mb-5">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-2">{group.label}</h3>
+                  <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
+                    {items.map((item) => (
+                      <ItemRow
+                        key={item.id}
+                        item={item}
+                        row={props.itemsById[item.id]}
+                        slug={props.slug}
+                        stateId={aktiv.id}
+                        editable={isEditable}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </section>
+        );
+      })}
     </div>
   );
 }
@@ -230,7 +256,7 @@ function ItemRow({
     <div className="border-t border-neutral-200 first:border-t-0">
       <div
         onClick={() => setExpanded(!expanded)}
-        className={`flex items-start gap-3 px-5 py-3.5 cursor-pointer hover:bg-neutral-50 ${style.bg}`}
+        className={`flex items-start gap-3 px-5 py-3.5 cursor-pointer hover:opacity-90 ${style.bg}`}
       >
         <span className={`w-2 h-2 rounded-full mt-2 ${style.dot}`} />
         <div className="flex-1 min-w-0">

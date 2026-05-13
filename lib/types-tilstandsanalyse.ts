@@ -8,36 +8,57 @@
 // ────────────────────────────────────────────────────────────
 
 export type AuditVersjon = "draft" | "under_review" | "godkjent" | "arkivert";
-export type AuditItemState = "na" | "p1" | "p2" | "wip" | "ok" | null;
+export type AuditItemState = "na" | "p1" | "p2" | "wip" | "avsjekk" | "ok" | null;
 
 export const ITEM_STATE_LABEL: Record<NonNullable<AuditItemState> | "open", string> = {
-  open: "Åpen",
-  na:   "Mangler tilgang",
-  p1:   "Prio 1",
-  p2:   "Prio 2",
-  wip:  "Jobbes med",
-  ok:   "OK",
+  open:    "Åpen",
+  na:      "Mangler tilgang",
+  p1:      "Prio 1",
+  p2:      "Prio 2",
+  wip:     "Jobbes med",
+  avsjekk: "Til avsjekk",
+  ok:      "OK",
 };
 
 /** Visuelle styler — tailwind-klasser for dot + tekst */
 export const ITEM_STATE_STYLE: Record<NonNullable<AuditItemState> | "open", { dot: string; bg: string; fg: string }> = {
-  open: { dot: "bg-neutral-300", bg: "bg-neutral-50",  fg: "text-neutral-500" },
-  na:   { dot: "bg-neutral-400", bg: "bg-neutral-100", fg: "text-neutral-700" },
-  p1:   { dot: "bg-red-500",     bg: "bg-red-50",      fg: "text-red-900" },
-  p2:   { dot: "bg-yellow-500",  bg: "bg-yellow-50",   fg: "text-yellow-900" },
-  wip:  { dot: "bg-blue-500",    bg: "bg-blue-50",     fg: "text-blue-900" },
-  ok:   { dot: "bg-green-500",   bg: "bg-green-50",    fg: "text-green-900" },
+  open:    { dot: "bg-neutral-300", bg: "bg-neutral-50",  fg: "text-neutral-500" },
+  na:      { dot: "bg-neutral-400", bg: "bg-neutral-100", fg: "text-neutral-700" },
+  p1:      { dot: "bg-red-500",     bg: "bg-red-50",      fg: "text-red-900" },
+  p2:      { dot: "bg-yellow-500",  bg: "bg-yellow-50",   fg: "text-yellow-900" },
+  wip:     { dot: "bg-blue-500",    bg: "bg-blue-50",     fg: "text-blue-900" },
+  avsjekk: { dot: "bg-purple-500",  bg: "bg-purple-50",   fg: "text-purple-900" },
+  ok:      { dot: "bg-green-500",   bg: "bg-green-50",    fg: "text-green-900" },
 };
 
-// Sortering for "Tiltaksliste" — først kritisk, deretter forbedring, etc.
+/**
+ * Sortering for tiltaksliste i ADMIN — "Til avsjekk" øverst (action ligger på oss).
+ */
+export function stateSortRankAdmin(s: AuditItemState): number {
+  switch (s) {
+    case "avsjekk": return 1;
+    case "p1":      return 2;
+    case "p2":      return 3;
+    case "wip":     return 4;
+    case "na":      return 5;
+    case null:      return 6;
+    case "ok":      return 7;
+  }
+}
+
+/**
+ * Sortering for tiltaksliste i KUNDE-view — Prio 1 først (action ligger hos kunde).
+ * "Til avsjekk" lavt fordi kunden har gjort sin del og venter på oss.
+ */
 export function stateSortRank(s: AuditItemState): number {
   switch (s) {
-    case "p1":  return 1;
-    case "p2":  return 2;
-    case "wip": return 3;
-    case "na":  return 4;
-    case null:  return 5;
-    case "ok":  return 6;
+    case "p1":      return 1;
+    case "p2":      return 2;
+    case "wip":     return 3;
+    case "na":      return 4;
+    case null:      return 5;
+    case "avsjekk": return 6;
+    case "ok":      return 7;
   }
 }
 

@@ -13,6 +13,7 @@ import {
   type AuditItemRow,
   type Item,
 } from "@/lib/types-tilstandsanalyse";
+import MarkFullfortButton from "./MarkFullfortButton";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -71,8 +72,8 @@ export default async function KundeTilstandsanalyseKundeView({ params }: PagePro
       </header>
 
       {/* Sammendrag */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-px overflow-hidden rounded-xl border border-neutral-200 bg-neutral-200 mb-3">
-        {(["ok", "p2", "p1", "wip", "na", "open"] as const).map((k) => (
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-px overflow-hidden rounded-xl border border-neutral-200 bg-neutral-200 mb-3">
+        {(["ok", "avsjekk", "p2", "p1", "wip", "na", "open"] as const).map((k) => (
           <div key={k} className="bg-white p-4">
             <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-neutral-500 font-medium">
               <span className={`inline-block w-1.5 h-1.5 rounded-full ${ITEM_STATE_STYLE[k].dot}`} />
@@ -98,7 +99,7 @@ export default async function KundeTilstandsanalyseKundeView({ params }: PagePro
           <h2 className="text-lg font-semibold text-neutral-900 mb-4">Tiltaksliste</h2>
           <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
             {tiltak.map(({ row, item }) => (
-              <ItemDisplay key={row.item_id} item={item} row={row} compact />
+              <ItemDisplay key={row.item_id} item={item} row={row} slug={slug} compact />
             ))}
           </div>
         </section>
@@ -121,7 +122,7 @@ export default async function KundeTilstandsanalyseKundeView({ params }: PagePro
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-2">{group.label}</h3>
                   <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
                     {items.map((item) => (
-                      <ItemDisplay key={item.id} item={item} row={itemsById[item.id]} />
+                      <ItemDisplay key={item.id} item={item} row={itemsById[item.id]} slug={slug} />
                     ))}
                   </div>
                 </div>
@@ -138,7 +139,17 @@ export default async function KundeTilstandsanalyseKundeView({ params }: PagePro
   );
 }
 
-function ItemDisplay({ item, row, compact }: { item: Item; row: AuditItemRow | undefined; compact?: boolean }) {
+function ItemDisplay({
+  item,
+  row,
+  slug,
+  compact,
+}: {
+  item: Item;
+  row: AuditItemRow | undefined;
+  slug: string;
+  compact?: boolean;
+}) {
   const state = row?.state ?? null;
   const style = ITEM_STATE_STYLE[stateKey(state)];
   const note = row?.note;
@@ -166,10 +177,15 @@ function ItemDisplay({ item, row, compact }: { item: Item; row: AuditItemRow | u
         {note && (
           <div className="text-xs text-neutral-600 leading-relaxed">{note}</div>
         )}
-        {compact && hosKunde && (
-          <span className="font-mono text-[10px] uppercase tracking-wider font-semibold text-white bg-[#515b12] px-1.5 py-0.5 rounded inline-block mt-1">
-            Hos dere
-          </span>
+        {hosKunde && (
+          <div className="flex items-center gap-2 mt-1">
+            {compact && (
+              <span className="font-mono text-[10px] uppercase tracking-wider font-semibold text-white bg-[#515b12] px-1.5 py-0.5 rounded">
+                Hos dere
+              </span>
+            )}
+            <MarkFullfortButton slug={slug} itemId={item.id} state={state} />
+          </div>
         )}
       </div>
     </div>
