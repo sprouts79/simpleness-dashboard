@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rapportering — mockup v0.7</title>
+<title>Rapportering — mockup v0.8</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -46,7 +46,6 @@
   .hero-compact .hero-kpi-label { font-size: 10px; }
   .hero-compact .hero-title { font-size: 0.9375rem; }
   .hero-compact .stack.tall { height: 14px; }
-  .hero-compact .stack-legend { font-size: 11px; gap: 12px; }
 
   .hero-clickable { cursor: pointer; transition: border-color 80ms; }
   .hero-clickable:hover { border-color: #a3a3a3; }
@@ -83,6 +82,11 @@
   .cell-actual { color: #090a08; font-weight: 600; }
   .day-table tr.today { background: #fef9c3; }
 
+  .topnav { display: inline-flex; background: white; border: 1px solid #e5e5e5; border-radius: 10px; padding: 4px; gap: 4px; }
+  .topnav button { background: transparent; border: 0; padding: 8px 16px; font-size: 13px; font-weight: 500; color: #525252; border-radius: 6px; cursor: pointer; transition: all 80ms; }
+  .topnav button:hover { color: #090a08; }
+  .topnav button.active { background: #090a08; color: white; }
+
   .source-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 999px; font-size: 11px; color: #525252; background: white; border: 1px solid #e5e5e5; }
   .source-pill .dot { width: 6px; height: 6px; border-radius: 999px; }
   .source-meta .dot { background: #2563eb; }
@@ -110,20 +114,20 @@
   .delta-bad { color: #b91c1c; }
   .delta-neutral { color: #737373; }
 
-  .week-strip { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
-  .week-tab { background: white; border: 1px solid #e5e5e5; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 12px; transition: border-color 80ms; }
-  .week-tab:hover { border-color: #a3a3a3; }
-  .week-tab.active { border-color: #090a08; border-width: 2px; padding: 7px 13px; }
-  .week-tab.disabled { opacity: 0.45; pointer-events: none; }
-  .week-tab-num { font-weight: 600; color: #090a08; }
-  .week-tab-dates { color: #737373; font-size: 11px; margin-top: 2px; }
-
-  .time-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
-  .time-tab { background: white; border: 1px solid #e5e5e5; border-radius: 10px; padding: 12px 16px; cursor: pointer; transition: border-color 80ms; text-align: left; }
-  .time-tab:hover { border-color: #a3a3a3; }
-  .time-tab.active { border-color: #090a08; border-width: 2px; padding: 11px 15px; }
-  .time-tab-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; color: #737373; }
-  .time-tab-value { font-size: 15px; font-weight: 600; color: #090a08; margin-top: 4px; font-family: 'IBM Plex Mono', monospace; }
+  /* Datepicker */
+  .datepicker-wrap { position: relative; display: inline-block; }
+  .datepicker-btn { display: inline-flex; align-items: center; gap: 8px; background: white; border: 1px solid #d4d4d4; border-radius: 10px; padding: 9px 14px; cursor: pointer; font-size: 13px; font-weight: 500; color: #090a08; transition: border-color 80ms; }
+  .datepicker-btn:hover { border-color: #a3a3a3; }
+  .datepicker-btn .calendar-icon { width: 14px; height: 14px; opacity: 0.6; }
+  .datepicker-btn .chevron { width: 12px; height: 12px; opacity: 0.5; margin-left: 4px; }
+  .datepicker-panel { position: absolute; top: calc(100% + 6px); right: 0; background: white; border: 1px solid #e5e5e5; border-radius: 10px; box-shadow: 0 4px 18px rgba(0,0,0,0.06); padding: 6px; z-index: 50; min-width: 240px; display: none; }
+  .datepicker-panel.open { display: block; }
+  .datepicker-group { padding: 4px 0; }
+  .datepicker-group + .datepicker-group { border-top: 1px solid #f0f0f0; margin-top: 4px; padding-top: 8px; }
+  .datepicker-group-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; color: #a3a3a3; padding: 4px 12px; }
+  .datepicker-item { display: block; width: 100%; text-align: left; background: transparent; border: 0; padding: 7px 12px; font-size: 13px; color: #1f2937; cursor: pointer; border-radius: 6px; }
+  .datepicker-item:hover { background: #f5f5f5; }
+  .datepicker-item.active { background: #090a08; color: white; }
 </style>
 </head>
 <body>
@@ -131,137 +135,96 @@
 <div class="max-w-[1100px] mx-auto px-6 py-8">
 
   <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-3 mb-5">
-    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Mockup · v0.7</span>
-    <span class="text-sm text-neutral-700 ml-2">Rapportering · Kokkeløren · én flate, dual-akse drilldown</span>
+    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 uppercase tracking-wider">Mockup · v0.8</span>
+    <span class="text-sm text-neutral-700 ml-2">Rapportering · Kokkeløren · to faner + datepicker</span>
   </div>
 
-  <div class="flex items-center justify-between gap-2 flex-wrap mb-4" id="header"></div>
+  <!-- Topp-nav + datepicker -->
+  <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
+    <div class="topnav">
+      <button id="nav-resultat" class="active" onclick="navTo('resultat')">Resultatrapport</button>
+      <button id="nav-kanal" onclick="navTo('kanal')">Kanalrapport</button>
+    </div>
+    <div class="datepicker-wrap">
+      <button class="datepicker-btn" onclick="toggleDatepicker(event)">
+        <svg class="calendar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span id="datepicker-label"></span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="datepicker-panel" id="datepicker-panel">
+        <div class="datepicker-group">
+          <button class="datepicker-item" data-preset="this-week">Denne uken</button>
+          <button class="datepicker-item" data-preset="last-week">Forrige uke</button>
+          <button class="datepicker-item" data-preset="this-month">Denne måneden</button>
+          <button class="datepicker-item" data-preset="last-month">Forrige måned</button>
+        </div>
+        <div class="datepicker-group">
+          <div class="datepicker-group-label">2026</div>
+          <button class="datepicker-item" data-preset="ytd">YTD</button>
+          <button class="datepicker-item" data-preset="q1">Q1</button>
+          <button class="datepicker-item" data-preset="q2">Q2</button>
+          <button class="datepicker-item" data-preset="q3">Q3</button>
+          <button class="datepicker-item" data-preset="q4">Q4</button>
+        </div>
+        <div class="datepicker-group">
+          <button class="datepicker-item" data-preset="custom">Velg periode…</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <div id="time-strip"></div>
+  <div class="flex items-center gap-2 flex-wrap mb-5" id="datakilder"></div>
 
   <div id="breadcrumb"></div>
 
   <div id="main-view"></div>
 
-  <p class="text-xs text-neutral-400 text-center mt-12">Mockup v0.7 · idag 12. mai 2026</p>
+  <p class="text-xs text-neutral-400 text-center mt-12">Mockup v0.8 · idag 12. mai 2026</p>
 </div>
 
 <script>
 const KUNDE = {
-  navn: 'Kokkeløren', type: 'abonnement', merKpi: 'cac', merLabel: 'CAC', nyeLabel: 'Nye abo',
-  yearBudget:    { spend: 1656000, nye: 1500, targetCac: 1100 },
-  quarterBudget: { spend: 414000,  nye: 375,  targetCac: 1100 },
-  monthlyBudget: { spend: 138000,  nye: 125,  targetCac: 1100 },
-  weekBudget:    { spend: 32200,   nye: 29,   targetCac: 1100 },
+  navn: 'Kokkeløren', merLabel: 'CAC', nyeLabel: 'Nye abo',
+  yearBudget: { spend: 1656000, nye: 1500, targetCac: 1100 },
+  quarterBudget: { spend: 414000, nye: 375, targetCac: 1100 },
+  monthlyBudget: { spend: 138000, nye: 125, targetCac: 1100 },
+  weekBudget: { spend: 32200, nye: 29, targetCac: 1100 },
 };
-
 const TODAY = { year: 2026, month: 5, day: 12, week: 20 };
-const STATUS_ORDER = ['test', 'explore', 'exploit', 'burnt', 'suppr'];
-const STATUS_LABELS = { test: 'Test', explore: 'Explore', exploit: 'Exploit', burnt: 'Burnt-out', suppr: 'Suppressed' };
-const STATUS_COLORS = { test: '#93c5fd', explore: '#34d399', exploit: '#fbbf24', burnt: '#f87171', suppr: '#d4d4d4' };
-
+const STATUS_ORDER = ['test','explore','exploit','burnt','suppr'];
+const STATUS_LABELS = { test:'Test', explore:'Explore', exploit:'Exploit', burnt:'Burnt-out', suppr:'Suppressed' };
+const STATUS_COLORS = { test:'#93c5fd', explore:'#34d399', exploit:'#fbbf24', burnt:'#f87171', suppr:'#d4d4d4' };
 const KANALMIX = [
-  { slug: 'meta',   navn: 'Meta',   share: 0.61 },
-  { slug: 'google', navn: 'Google', share: 0.20 },
-  { slug: 'snap',   navn: 'Snap',   share: 0.11 },
-  { slug: 'ohh',    navn: 'OHH',    share: 0.08 },
+  { slug:'meta', navn:'Meta', share:0.61 },
+  { slug:'google', navn:'Google', share:0.20 },
+  { slug:'snap', navn:'Snap', share:0.11 },
+  { slug:'ohh', navn:'OHH', share:0.08 },
 ];
 
 const MONTHS = [
-  { m: 1, label: 'Januar', short: 'jan', status: 'done', spend: 130000, nye: 124, cac: 1048, initialDiff: { spend: -0.06, nye: 0.01, cac: -0.07 } },
-  { m: 2, label: 'Februar', short: 'feb', status: 'done', spend: 132000, nye: 116, cac: 1138, initialDiff: { spend: -0.04, nye: -0.07, cac: 0.03 } },
-  { m: 3, label: 'Mars', short: 'mar', status: 'done', spend: 143000, nye: 120, cac: 1192, initialDiff: { spend: 0.04, nye: -0.04, cac: 0.08 } },
-  { m: 4, label: 'April', short: 'apr', status: 'done', spend: 113350, nye: 116, cac: 974, initialDiff: { spend: -0.091, nye: 0.053, cac: -0.048 } },
-  { m: 5, label: 'Mai', short: 'mai', status: 'active', spend: 102000, nye: 114, cac: 897, initialDiff: { spend: -0.13, nye: 0.06, cac: -0.07 } },
-  { m: 6, label: 'Juni', short: 'jun', status: 'planned', spend: 136000, nye: 140, cac: 970, initialDiff: { spend: 0.02, nye: 0.0, cac: -0.03 } },
-  { m: 7, label: 'Juli', short: 'jul', status: 'planned', spend: 125000, nye: 122, cac: 1025, initialDiff: null },
-  { m: 8, label: 'August', short: 'aug', status: 'planned', spend: 115000, nye: 112, cac: 1027, initialDiff: null },
-  { m: 9, label: 'September', short: 'sep', status: 'planned', spend: 130000, nye: 128, cac: 1015, initialDiff: null },
-  { m: 10, label: 'Oktober', short: 'okt', status: 'planned', spend: 142000, nye: 138, cac: 1029, initialDiff: null },
-  { m: 11, label: 'November', short: 'nov', status: 'empty', spend: 0, nye: 0, cac: 0, initialDiff: null },
-  { m: 12, label: 'Desember', short: 'des', status: 'empty', spend: 0, nye: 0, cac: 0, initialDiff: null },
-];
-
-const QUARTERS = [
-  { q: 1, label: 'Q1', monthsIds: [1, 2, 3] },
-  { q: 2, label: 'Q2', monthsIds: [4, 5, 6] },
-  { q: 3, label: 'Q3', monthsIds: [7, 8, 9] },
-  { q: 4, label: 'Q4', monthsIds: [10, 11, 12] },
+  { m:1, label:'Januar', short:'jan', status:'done', spend:130000, nye:124, cac:1048, initialDiff:{ spend:-0.06, nye:0.01, cac:-0.07 } },
+  { m:2, label:'Februar', short:'feb', status:'done', spend:132000, nye:116, cac:1138, initialDiff:{ spend:-0.04, nye:-0.07, cac:0.03 } },
+  { m:3, label:'Mars', short:'mar', status:'done', spend:143000, nye:120, cac:1192, initialDiff:{ spend:0.04, nye:-0.04, cac:0.08 } },
+  { m:4, label:'April', short:'apr', status:'done', spend:113350, nye:116, cac:974, initialDiff:{ spend:-0.091, nye:0.053, cac:-0.048 } },
+  { m:5, label:'Mai', short:'mai', status:'active', spend:102000, nye:114, cac:897, initialDiff:{ spend:-0.13, nye:0.06, cac:-0.07 } },
+  { m:6, label:'Juni', short:'jun', status:'planned', spend:136000, nye:140, cac:970, initialDiff:{ spend:0.02, nye:0, cac:-0.03 } },
+  { m:7, label:'Juli', short:'jul', status:'planned', spend:125000, nye:122, cac:1025, initialDiff:null },
+  { m:8, label:'August', short:'aug', status:'planned', spend:115000, nye:112, cac:1027, initialDiff:null },
+  { m:9, label:'September', short:'sep', status:'planned', spend:130000, nye:128, cac:1015, initialDiff:null },
+  { m:10, label:'Oktober', short:'okt', status:'planned', spend:142000, nye:138, cac:1029, initialDiff:null },
+  { m:11, label:'November', short:'nov', status:'empty', spend:0, nye:0, cac:0, initialDiff:null },
+  { m:12, label:'Desember', short:'des', status:'empty', spend:0, nye:0, cac:0, initialDiff:null },
 ];
 
 function monthByM(m) { return MONTHS.find(x => x.m === m); }
-function quarterByQ(q) { return QUARTERS.find(x => x.q === q); }
-
-function quarterAgg(q) {
-  const months = q.monthsIds.map(monthByM);
-  const allDone = months.every(m => m.status === 'done');
-  const allEmpty = months.every(m => m.status === 'empty');
-  const allPlanned = months.every(m => m.status === 'planned');
-  const status = allDone ? 'done' : allEmpty ? 'empty' : allPlanned ? 'planned' : 'active';
-  const spend = months.reduce((s, m) => s + m.spend, 0);
-  const nye = months.reduce((s, m) => s + m.nye, 0);
-  const cac = nye > 0 ? Math.round(spend / nye) : 0;
-  const valid = months.filter(m => m.initialDiff);
-  let initialDiff = null;
-  if (valid.length > 0) initialDiff = {
-    spend: valid.reduce((s, m) => s + m.initialDiff.spend, 0) / valid.length,
-    nye: valid.reduce((s, m) => s + m.initialDiff.nye, 0) / valid.length,
-    cac: valid.reduce((s, m) => s + m.initialDiff.cac, 0) / valid.length,
-  };
-  return { spend, nye, cac, status, initialDiff };
-}
-
-function yearAgg() {
-  const spend = MONTHS.reduce((s, m) => s + m.spend, 0);
-  const nye = MONTHS.reduce((s, m) => s + m.nye, 0);
-  const cac = nye > 0 ? Math.round(spend / nye) : 0;
-  const valid = MONTHS.filter(m => m.initialDiff);
-  const initialDiff = valid.length > 0 ? {
-    spend: valid.reduce((s, m) => s + m.initialDiff.spend, 0) / valid.length,
-    nye: valid.reduce((s, m) => s + m.initialDiff.nye, 0) / valid.length,
-    cac: valid.reduce((s, m) => s + m.initialDiff.cac, 0) / valid.length,
-  } : null;
-  return { spend, nye, cac, status: 'active', initialDiff };
-}
-
-function weekAgg() {
-  return { spend: 28700, nye: 31, cac: 925, status: 'active', initialDiff: { spend: -0.08, nye: 0.04, cac: -0.12 } };
-}
-
-function scopeAgg() {
-  if (state.nivaa === 'ar') return yearAgg();
-  if (state.nivaa === 'kvartal') return quarterAgg(quarterByQ(state.kvartal));
-  if (state.nivaa === 'maned') return monthByM(state.maned);
-  if (state.nivaa === 'uke') return weekAgg();
-}
-
-function scopeBudget() {
-  if (state.nivaa === 'ar') return KUNDE.yearBudget;
-  if (state.nivaa === 'kvartal') return KUNDE.quarterBudget;
-  if (state.nivaa === 'maned') return KUNDE.monthlyBudget;
-  if (state.nivaa === 'uke') return KUNDE.weekBudget;
-}
-
-function scopeLabel() {
-  if (state.nivaa === 'ar') return `${state.ar}`;
-  if (state.nivaa === 'kvartal') return `Q${state.kvartal} ${state.ar}`;
-  if (state.nivaa === 'maned') return `${monthByM(state.maned).label} ${state.ar}`;
-  if (state.nivaa === 'uke') return `Uke ${state.uke}`;
-}
-
-function scopeSublabel() {
-  if (state.nivaa === 'ar') return 'År';
-  if (state.nivaa === 'kvartal') return 'Kvartal';
-  if (state.nivaa === 'maned') return 'Måned';
-  if (state.nivaa === 'uke') return 'Uke · 11 – 17. mai';
-}
+function dayInMonth(m) { return m===2?28:(m===4||m===6||m===9||m===11?30:31); }
 
 function buildDailyForMonth(m) {
-  const daysInMonth = m === 2 ? 28 : (m === 4 || m === 6 || m === 9 || m === 11 ? 30 : 31);
+  const days = dayInMonth(m);
   const isCurrentMonth = m === TODAY.month;
   const isPastMonth = m < TODAY.month;
   const arr = [];
-  for (let day = 1; day <= daysInMonth; day++) {
+  for (let day = 1; day <= days; day++) {
     const isPast = isPastMonth || (isCurrentMonth && day < TODAY.day);
     const isToday = isCurrentMonth && day === TODAY.day;
     const budgetSpend = 138000 / 30;
@@ -277,129 +240,182 @@ function buildDailyForMonth(m) {
   return arr;
 }
 
-function weeksForMonth(m) {
-  if (m === 4) return [{ w: 14, dates: '30. mar – 5. apr' }, { w: 15, dates: '6 – 12. apr' }, { w: 16, dates: '13 – 19. apr' }, { w: 17, dates: '20 – 26. apr' }, { w: 18, dates: '27. apr – 3. mai' }];
-  if (m === 5) return [{ w: 18, dates: '27. apr – 3. mai' }, { w: 19, dates: '4 – 10. mai' }, { w: 20, dates: '11 – 17. mai' }, { w: 21, dates: '18 – 24. mai' }, { w: 22, dates: '25 – 31. mai' }];
-  if (m === 6) return [{ w: 22, dates: '25 – 31. mai' }, { w: 23, dates: '1 – 7. jun' }, { w: 24, dates: '8 – 14. jun' }, { w: 25, dates: '15 – 21. jun' }, { w: 26, dates: '22 – 28. jun' }];
-  return [];
+function dailyForWeek(weekDays) {
+  return weekDays.map(d => {
+    const isPast = d.month < TODAY.month || (d.month === TODAY.month && d.day < TODAY.day);
+    const isToday = d.month === TODAY.month && d.day === TODAY.day;
+    const budgetSpend = 138000 / 30;
+    const budgetNye = 125 / 30;
+    let forecastSpend = 3200;
+    if (d.month === 5 && d.day >= 8 && d.day <= 17) forecastSpend = 4500;
+    if (d.month === 4 && d.day >= 5 && d.day <= 18) forecastSpend = 5000;
+    const forecastNye = forecastSpend / 900;
+    const actualSpend = isPast ? Math.round(forecastSpend * (0.85 + Math.random() * 0.3)) : null;
+    const actualNye = actualSpend ? Math.round(actualSpend / 850) : null;
+    return { day: d.day, dateLabel: `${d.day}. ${MONTHS[d.month-1].short}`, isPast, isToday, budgetSpend, budgetNye, forecastSpend, forecastNye, actualSpend, actualNye };
+  });
 }
 
-function dailyForWeek(w) {
-  if (w === 20) {
-    const arr = [];
-    for (let i = 0; i < 7; i++) {
-      const day = 11 + i;
-      const isPast = day < TODAY.day;
-      const isToday = day === TODAY.day;
-      const budgetSpend = 138000 / 30;
-      const budgetNye = 125 / 30;
-      const forecastSpend = day >= 8 && day <= 17 ? 4500 : 3200;
-      const forecastNye = forecastSpend / 900;
-      const actualSpend = isPast ? Math.round(forecastSpend * (0.85 + Math.random() * 0.3)) : null;
-      const actualNye = actualSpend ? Math.round(actualSpend / 850) : null;
-      arr.push({ day, dateLabel: `${day}. mai`, isPast, isToday, budgetSpend, budgetNye, forecastSpend, forecastNye, actualSpend, actualNye });
-    }
-    return arr;
+const PRESETS = [
+  { id:'this-week', label:'Denne uken' },
+  { id:'last-week', label:'Forrige uke' },
+  { id:'this-month', label:'Denne måneden' },
+  { id:'last-month', label:'Forrige måned' },
+  { id:'ytd', label:'YTD' },
+  { id:'q1', label:'Q1 2026' },
+  { id:'q2', label:'Q2 2026' },
+  { id:'q3', label:'Q3 2026' },
+  { id:'q4', label:'Q4 2026' },
+  { id:'custom', label:'Velg periode…' },
+];
+
+function presetData(id) {
+  // Returns { label, sublabel, spend, nye, cac, initialDiff, budget, stage, granularitet, daglig?, maaneder? }
+  if (id === 'this-week') {
+    const weekDays = [{day:11,month:5},{day:12,month:5},{day:13,month:5},{day:14,month:5},{day:15,month:5},{day:16,month:5},{day:17,month:5}];
+    const daglig = dailyForWeek(weekDays);
+    const spend = daglig.reduce((s,d) => s + (d.actualSpend || d.forecastSpend), 0);
+    const nye = daglig.reduce((s,d) => s + (d.actualNye || d.forecastNye), 0);
+    return { label:'Denne uken', sublabel:'11 – 17. mai · uke 20', spend, nye: Math.round(nye), cac: nye > 0 ? Math.round(spend/nye) : 0, initialDiff: { spend:-0.08, nye:0.04, cac:-0.12 }, budget: KUNDE.weekBudget, stage:'Hittil + forecast', granularitet:'dag', daglig };
   }
-  return [];
+  if (id === 'last-week') {
+    const weekDays = [{day:4,month:5},{day:5,month:5},{day:6,month:5},{day:7,month:5},{day:8,month:5},{day:9,month:5},{day:10,month:5}];
+    const daglig = dailyForWeek(weekDays);
+    const spend = daglig.reduce((s,d) => s + (d.actualSpend || 0), 0);
+    const nye = daglig.reduce((s,d) => s + (d.actualNye || 0), 0);
+    return { label:'Forrige uke', sublabel:'4 – 10. mai · uke 19', spend, nye, cac: nye > 0 ? Math.round(spend/nye) : 0, initialDiff: { spend:-0.10, nye:0.02, cac:-0.10 }, budget: KUNDE.weekBudget, stage:'Resultat', granularitet:'dag', daglig };
+  }
+  if (id === 'this-month') {
+    const m = monthByM(5);
+    return { label:'Denne måneden', sublabel:'Mai 2026', spend:m.spend, nye:m.nye, cac:m.cac, initialDiff:m.initialDiff, budget: KUNDE.monthlyBudget, stage:'Hittil + forecast', granularitet:'dag', daglig: buildDailyForMonth(5) };
+  }
+  if (id === 'last-month') {
+    const m = monthByM(4);
+    return { label:'Forrige måned', sublabel:'April 2026', spend:m.spend, nye:m.nye, cac:m.cac, initialDiff:m.initialDiff, budget: KUNDE.monthlyBudget, stage:'Resultat', granularitet:'dag', daglig: buildDailyForMonth(4) };
+  }
+  if (id === 'ytd') {
+    const valid = MONTHS.filter(m => m.status !== 'empty');
+    const spend = valid.reduce((s,m) => s + m.spend, 0);
+    const nye = valid.reduce((s,m) => s + m.nye, 0);
+    const validIDs = valid.filter(m => m.initialDiff);
+    const initialDiff = validIDs.length ? { spend: validIDs.reduce((s,m) => s + m.initialDiff.spend, 0)/validIDs.length, nye: validIDs.reduce((s,m) => s + m.initialDiff.nye, 0)/validIDs.length, cac: validIDs.reduce((s,m) => s + m.initialDiff.cac, 0)/validIDs.length } : null;
+    return { label:'YTD', sublabel:'2026 hittil + forecast', spend, nye, cac: nye > 0 ? Math.round(spend/nye) : 0, initialDiff, budget: KUNDE.yearBudget, stage:'Hittil + forecast', granularitet:'maned', maaneder: valid };
+  }
+  if (id === 'q1' || id === 'q2' || id === 'q3' || id === 'q4') {
+    const qNum = parseInt(id.replace('q',''));
+    const months = MONTHS.filter(m => Math.ceil(m.m/3) === qNum);
+    const valid = months.filter(m => m.status !== 'empty');
+    const spend = valid.reduce((s,m) => s + m.spend, 0);
+    const nye = valid.reduce((s,m) => s + m.nye, 0);
+    const validIDs = valid.filter(m => m.initialDiff);
+    const initialDiff = validIDs.length ? { spend: validIDs.reduce((s,m) => s + m.initialDiff.spend, 0)/validIDs.length, nye: validIDs.reduce((s,m) => s + m.initialDiff.nye, 0)/validIDs.length, cac: validIDs.reduce((s,m) => s + m.initialDiff.cac, 0)/validIDs.length } : null;
+    const allDone = months.every(m => m.status === 'done');
+    const allEmpty = months.every(m => m.status === 'empty');
+    const allPlanned = months.every(m => m.status === 'planned');
+    const stage = allDone ? 'Resultat' : (allEmpty ? '' : (allPlanned ? 'Forecast' : 'Hittil + forecast'));
+    return { label:`Q${qNum} 2026`, sublabel:`Kvartal`, spend, nye, cac: nye > 0 ? Math.round(spend/nye) : 0, initialDiff, budget: KUNDE.quarterBudget, stage, granularitet:'uke', maaneder: months, qNum };
+  }
+  if (id === 'custom') {
+    return { label:'Velg periode…', sublabel:'Custom date range — kommer', spend:0, nye:0, cac:0, initialDiff:null, budget: KUNDE.monthlyBudget, stage:'', granularitet:'dag', daglig: [] };
+  }
 }
 
-function spendMerSeriesFor(level) {
-  if (level === 'ar') {
-    return MONTHS.filter(m => m.status !== 'empty').map(m => ({ x: m.short, spend: m.spend, mer: m.cac > 0 ? m.cac : null, forecast: m.status !== 'done' && m.status !== 'active' }));
+function spendMerSeries(d) {
+  if (d.granularitet === 'dag') {
+    return (d.daglig || []).map(day => ({
+      x: day.day.toString(),
+      spend: day.actualSpend || day.forecastSpend,
+      mer: day.actualSpend && day.actualNye ? Math.round(day.actualSpend / day.actualNye) : 900,
+      forecast: !day.actualSpend,
+    }));
   }
-  if (level === 'kvartal') {
+  if (d.granularitet === 'uke') {
     const arr = [];
-    for (let i = 1; i <= 13; i++) {
-      const isForecast = i > 7;
+    const monthMins = d.maaneder.map(m => m.m);
+    const baseWeek = (monthMins[0] - 1) * 4 + 1;
+    for (let i = 0; i < 13; i++) {
+      const isPast = (d.qNum < Math.ceil(TODAY.month / 3)) || (d.qNum === Math.ceil(TODAY.month / 3) && i < 6);
       const baseSpend = 30000 + Math.sin(i / 2) * 5000;
       const baseMer = 1100 + Math.cos(i / 2) * 80;
-      arr.push({ x: `U${i + 13}`, spend: Math.round(baseSpend), mer: Math.round(baseMer), forecast: isForecast });
+      arr.push({ x: `U${baseWeek + i}`, spend: Math.round(baseSpend), mer: Math.round(baseMer), forecast: !isPast });
     }
     return arr;
   }
-  if (level === 'maned') {
-    return buildDailyForMonth(state.maned).map(d => ({ x: d.day.toString(), spend: d.actualSpend || d.forecastSpend, mer: d.actualSpend && d.actualNye ? Math.round(d.actualSpend / d.actualNye) : 900, forecast: !d.actualSpend }));
+  if (d.granularitet === 'maned') {
+    return d.maaneder.map(m => ({
+      x: m.short, spend: m.spend, mer: m.cac > 0 ? m.cac : null,
+      forecast: m.status !== 'done' && m.status !== 'active',
+    }));
   }
-  if (level === 'uke') {
-    return dailyForWeek(state.uke).map(d => ({ x: d.day.toString(), spend: d.actualSpend || d.forecastSpend, mer: d.actualSpend && d.actualNye ? Math.round(d.actualSpend / d.actualNye) : 900, forecast: !d.actualSpend }));
-  }
+  return [];
 }
 
 const KANALER_BASE = [
-  { slug: 'meta', navn: 'Meta', hasPlatformData: true, cpmr: 372, frequency: 4.2, netNewPct: 14, diversification: { covered: 4, total: 9 }, ads: { test: 9, explore: 8, exploit: 4, burnt: 5, suppr: 11 } },
-  { slug: 'google', navn: 'Google', hasPlatformData: false },
-  { slug: 'snap', navn: 'Snap', hasPlatformData: true, cpmr: 218, frequency: 3.1, netNewPct: 22, diversification: { covered: 2, total: 6 }, ads: { test: 2, explore: 3, exploit: 2, burnt: 1, suppr: 3 } },
-  { slug: 'ohh', navn: 'OHH', hasPlatformData: false },
+  { slug:'meta', navn:'Meta', hasPlatformData:true, cpmr:372, frequency:4.2, netNewPct:14, diversification:{covered:4,total:9}, ads:{test:9,explore:8,exploit:4,burnt:5,suppr:11} },
+  { slug:'google', navn:'Google', hasPlatformData:false },
+  { slug:'snap', navn:'Snap', hasPlatformData:true, cpmr:218, frequency:3.1, netNewPct:22, diversification:{covered:2,total:6}, ads:{test:2,explore:3,exploit:2,burnt:1,suppr:3} },
+  { slug:'ohh', navn:'OHH', hasPlatformData:false },
 ];
 
-function kanalerForScope() {
-  const total = scopeAgg().spend;
-  return KANALER_BASE.map(k => ({ ...k, spend: Math.round(total * KANALMIX.find(m => m.slug === k.slug).share) }));
+function kanalerForScope(totalSpend) {
+  return KANALER_BASE.map(k => ({ ...k, spend: Math.round(totalSpend * KANALMIX.find(m => m.slug === k.slug).share) }));
 }
 
 const META_KAMPANJER = [
-  { id: 'c1', navn: 'BAU 2026 / Vårsalg-Bestselgere', spend: 52000, cpmr: 285, frequency: 3.4, netNewPct: 22, diversification: { covered: 4, total: 12 }, ads: { test: 1, explore: 1, exploit: 1, burnt: 0, suppr: 5 } },
-  { id: 'c2', navn: 'BAU 2026 / Konvertering-Warm', spend: 42000, cpmr: 462, frequency: 5.6, netNewPct: 4, diversification: { covered: 2, total: 12 }, ads: { test: 0, explore: 0, exploit: 4, burnt: 4, suppr: 6 } },
-  { id: 'c3', navn: 'BAU 2026 / TOF Q2', spend: 22000, cpmr: 318, frequency: 2.9, netNewPct: 78, diversification: { covered: 4, total: 12 }, ads: { test: 8, explore: 4, exploit: 1, burnt: 0, suppr: 2 } },
+  { id:'c1', navn:'BAU 2026 / Vårsalg-Bestselgere', spend:52000, cpmr:285, frequency:3.4, netNewPct:22, diversification:{covered:4,total:12}, ads:{test:1,explore:1,exploit:1,burnt:0,suppr:5} },
+  { id:'c2', navn:'BAU 2026 / Konvertering-Warm', spend:42000, cpmr:462, frequency:5.6, netNewPct:4, diversification:{covered:2,total:12}, ads:{test:0,explore:0,exploit:4,burnt:4,suppr:6} },
+  { id:'c3', navn:'BAU 2026 / TOF Q2', spend:22000, cpmr:318, frequency:2.9, netNewPct:78, diversification:{covered:4,total:12}, ads:{test:8,explore:4,exploit:1,burnt:0,suppr:2} },
 ];
 
 const META_ANNONSER = [
-  { name: 'Video-Vårsalg-Perlemor', adset: 'Lookalike-1pct', format: 'Video', spend: 28000, cpm: 312, freq: 4.2, roas: 3.8, status: 'exploit' },
-  { name: 'Bilde-Vårsalg-Produkt-Due', adset: 'Bredt-25-55', format: 'Bilde', spend: 9800, cpm: 218, freq: 2.4, roas: 1.6, status: 'explore' },
-  { name: 'Karusell-Vårsalg-Alle-farger', adset: 'Lookalike-1pct', format: 'Karusell', spend: 3200, cpm: null, freq: null, roas: 2.1, status: 'test' },
-  { name: 'Video-Unboxing-Sengetøy', adset: 'Lookalike-1pct', format: 'Video', spend: 2800, cpm: null, freq: null, roas: 1.2, status: 'test' },
-  { name: 'Bilde-Vårsalg-Lifestyle-1', adset: 'Retargeting-7d', format: 'Bilde', spend: 600, cpm: 410, freq: 3.2, roas: 0.9, status: 'suppr' },
+  { name:'Video-Vårsalg-Perlemor', adset:'Lookalike-1pct', format:'Video', spend:28000, cpm:312, freq:4.2, roas:3.8, status:'exploit' },
+  { name:'Bilde-Vårsalg-Produkt-Due', adset:'Bredt-25-55', format:'Bilde', spend:9800, cpm:218, freq:2.4, roas:1.6, status:'explore' },
+  { name:'Karusell-Vårsalg-Alle-farger', adset:'Lookalike-1pct', format:'Karusell', spend:3200, cpm:null, freq:null, roas:2.1, status:'test' },
+  { name:'Video-Unboxing-Sengetøy', adset:'Lookalike-1pct', format:'Video', spend:2800, cpm:null, freq:null, roas:1.2, status:'test' },
+  { name:'Bilde-Vårsalg-Lifestyle-1', adset:'Retargeting-7d', format:'Bilde', spend:600, cpm:410, freq:3.2, roas:0.9, status:'suppr' },
 ];
 
 const DIM_LEVELS = {
   meta: [
-    { name: 'Annonsetype', covered: ['PROD','DEMO','CRT','LIST'], missing: ['VOX','FND','BEFAFT','COMP','PROBSOL','EDU'], activeAds: 21 },
-    { name: 'Avsender', covered: ['BRD'], missing: ['CRT','CST','FND','EXP','EMP'], activeAds: 21 },
-    { name: 'Format', covered: ['Bilde','Video','Karusell'], missing: ['UGC','GIF'], activeAds: 21 },
-    { name: 'Tone', covered: ['EMO','FUN'], missing: ['HUM'], activeAds: 21 },
-    { name: 'Persona', covered: ['BRAND','BROAD'], missing: ['SLEEPER','GAVE'], activeAds: 21 },
-    { name: 'Kvalitet', covered: ['HIFI'], missing: ['LOFI'], activeAds: 21 },
+    { name:'Annonsetype', covered:['PROD','DEMO','CRT','LIST'], missing:['VOX','FND','BEFAFT','COMP','PROBSOL','EDU'], activeAds:21 },
+    { name:'Avsender', covered:['BRD'], missing:['CRT','CST','FND','EXP','EMP'], activeAds:21 },
+    { name:'Format', covered:['Bilde','Video','Karusell'], missing:['UGC','GIF'], activeAds:21 },
+    { name:'Tone', covered:['EMO','FUN'], missing:['HUM'], activeAds:21 },
+    { name:'Persona', covered:['BRAND','BROAD'], missing:['SLEEPER','GAVE'], activeAds:21 },
+    { name:'Kvalitet', covered:['HIFI'], missing:['LOFI'], activeAds:21 },
   ],
 };
 
-function reachSeriesForLevel(level) {
-  const labels = ['jan','feb','mar','apr','mai','jun','jul','aug','sep','okt','nov','des'];
-  if (level === 'ar') {
-    const arr = []; let cum = 480000;
-    for (let i = 0; i < 10; i++) { const nn = Math.round(38000 * (0.85 + Math.random() * 0.30)); cum += nn; arr.push({ x: labels[i], rolling: cum, netNew: nn }); }
-    return arr;
-  }
-  if (level === 'kvartal') {
-    const arr = []; let cum = 480000;
-    for (let i = 1; i <= 13; i++) { const nn = Math.round(22000 * (0.85 + Math.random() * 0.30)); cum += nn; arr.push({ x: `U${i + 13}`, rolling: cum, netNew: nn }); }
-    return arr;
-  }
-  if (level === 'maned') {
+function reachSeries(d) {
+  if (d.granularitet === 'dag') {
     const arr = []; let cum = 540000;
-    for (let i = 1; i <= 31; i++) { const nn = Math.round(3500 * (0.8 + Math.random() * 0.4)); cum += nn; arr.push({ x: i.toString(), rolling: cum, netNew: nn }); }
+    const n = d.daglig ? d.daglig.length : 7;
+    for (let i = 0; i < n; i++) { const nn = Math.round(4000 * (0.8 + Math.random() * 0.4)); cum += nn; arr.push({ x: (i+1).toString(), rolling: cum, netNew: nn }); }
     return arr;
   }
-  if (level === 'uke') {
-    const arr = []; let cum = 550000;
-    for (let i = 11; i <= 17; i++) { const nn = Math.round(4500 * (0.8 + Math.random() * 0.4)); cum += nn; arr.push({ x: i.toString(), rolling: cum, netNew: nn }); }
+  if (d.granularitet === 'uke') {
+    const arr = []; let cum = 480000;
+    for (let i = 1; i <= 13; i++) { const nn = Math.round(22000 * (0.85 + Math.random() * 0.30)); cum += nn; arr.push({ x: `U${i}`, rolling: cum, netNew: nn }); }
+    return arr;
+  }
+  if (d.granularitet === 'maned') {
+    const arr = []; let cum = 480000;
+    const labels = ['jan','feb','mar','apr','mai','jun','jul','aug','sep','okt','nov','des'];
+    const n = d.maaneder ? d.maaneder.length : 12;
+    for (let i = 0; i < n; i++) { const nn = Math.round(38000 * (0.85 + Math.random() * 0.30)); cum += nn; arr.push({ x: labels[i], rolling: cum, netNew: nn }); }
     return arr;
   }
 }
 
-const state = { nivaa: 'kvartal', ar: 2026, kvartal: 2, maned: 5, uke: 20, kanal: null, kampanje: null, grouping: 'none' };
+const state = { rapport:'resultat', preset:'this-month', kanal:null, kampanje:null, grouping:'none' };
 
 function fmtKr(v) { if (v == null) return '—'; if (v >= 1000) return `${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k`; return Math.round(v).toString(); }
 function pct(v) { return `${Math.round(v * 100)}%`; }
-function pctSigned(v, d=1) { if (v == null) return '—'; return `${v > 0 ? '+' : ''}${(v * 100).toFixed(d)} %`; }
-
+function pctSigned(v, dec=1) { if (v == null) return '—'; return `${v > 0 ? '+' : ''}${(v * 100).toFixed(dec)} %`; }
 function deltaTone(d, higherIsBad) {
-  if (d == null) return 'delta-neutral';
-  if (Math.abs(d) < 0.005) return 'delta-neutral';
-  const good = higherIsBad ? d < 0 : d > 0;
-  return good ? 'delta-good' : 'delta-bad';
+  if (d == null || Math.abs(d) < 0.005) return 'delta-neutral';
+  return (higherIsBad ? d < 0 : d > 0) ? 'delta-good' : 'delta-bad';
 }
-
 function distribution(ads) {
   const sum = STATUS_ORDER.reduce((s, st) => s + (ads[st] || 0), 0);
   return STATUS_ORDER.map(st => ({ status: st, share: sum > 0 ? (ads[st] || 0) / sum : 0 }));
@@ -413,112 +429,111 @@ function statusLegend(dist) {
   }).filter(Boolean).join('');
 }
 
-function setNivaa(n, opts = {}) {
-  state.nivaa = n;
-  if (opts.kvartal) state.kvartal = opts.kvartal;
-  if (opts.maned) state.maned = opts.maned;
-  if (opts.uke) state.uke = opts.uke;
+function navTo(r) {
+  state.rapport = r;
+  state.kanal = null; state.kampanje = null;
+  document.getElementById('nav-resultat').className = r === 'resultat' ? 'active' : '';
+  document.getElementById('nav-kanal').className = r === 'kanal' ? 'active' : '';
   render();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+function setPreset(p) {
+  state.preset = p;
+  closeDatepicker();
+  render();
+}
+
+function toggleDatepicker(ev) {
+  ev.stopPropagation();
+  document.getElementById('datepicker-panel').classList.toggle('open');
+}
+function closeDatepicker() { document.getElementById('datepicker-panel').classList.remove('open'); }
+document.addEventListener('click', closeDatepicker);
+document.getElementById('datepicker-panel').addEventListener('click', e => e.stopPropagation());
+document.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('click', () => setPreset(b.dataset.preset)));
+
 function setKanal(slug) { state.kanal = slug; state.kampanje = null; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 function setKampanje(id) { state.kampanje = id; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 function clearKanal() { state.kanal = null; state.kampanje = null; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 function clearKampanje() { state.kampanje = null; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 function setGrouping(v) { state.grouping = v; render(); }
 
-function renderHeader() {
-  let sources = [];
-  if (!state.kanal) {
-    sources = [
-      { slug: 'budsjett', label: 'Budsjett' }, { slug: 'plan', label: 'Kampanjeplan' },
-      { slug: 'meta', label: 'Meta' }, { slug: 'google', label: 'Google' }, { slug: 'snap', label: 'Snap' },
-      { slug: 'shopify', label: 'Shopify' }, { slug: 'manuell', label: 'OHH (manuell)' },
-    ];
-  } else if (state.kanal === 'meta') sources = [{ slug: 'meta', label: 'Meta Ad Insights' }];
-  else if (state.kanal === 'google') sources = [{ slug: 'google', label: 'Google Ads' }];
-  else if (state.kanal === 'snap') sources = [{ slug: 'snap', label: 'Snap Ads' }];
-  else sources = [{ slug: 'manuell', label: 'Manuell registrert' }];
-
-  document.getElementById('header').innerHTML = `
-    <div class="flex items-center gap-2 flex-wrap">
-      <span class="eyebrow">Kokkeløren</span>
-      <span class="text-xs text-neutral-400">·</span>
-      <span class="eyebrow">Rapportering</span>
-    </div>
-    <div class="flex items-center gap-2 flex-wrap">
-      <span class="eyebrow mr-1">Datakilder</span>
-      ${sources.map(s => `<span class="source-pill source-${s.slug}"><span class="dot"></span>${s.label}</span>`).join('')}
-    </div>
-  `;
+function renderDatepickerLabel() {
+  const preset = PRESETS.find(p => p.id === state.preset);
+  document.getElementById('datepicker-label').textContent = preset ? preset.label : 'Velg periode';
+  document.querySelectorAll('.datepicker-item').forEach(b => {
+    b.classList.toggle('active', b.dataset.preset === state.preset);
+  });
 }
 
-function renderTimeStrip() {
-  const tabs = [
-    { nivaa: 'ar', label: 'År', value: state.ar.toString() },
-    { nivaa: 'kvartal', label: 'Kvartal', value: `Q${state.kvartal}` },
-    { nivaa: 'maned', label: 'Måned', value: monthByM(state.maned).label },
-    { nivaa: 'uke', label: 'Uke', value: `Uke ${state.uke}` },
-  ];
-  document.getElementById('time-strip').outerHTML = `<div id="time-strip"><div class="time-strip">${tabs.map(t => `
-    <button class="time-tab ${state.nivaa === t.nivaa ? 'active' : ''}" onclick="setNivaa('${t.nivaa}')">
-      <div class="time-tab-label">${t.label}</div>
-      <div class="time-tab-value">${t.value}</div>
-    </button>
-  `).join('')}</div></div>`;
+function renderDatakilder() {
+  const el = document.getElementById('datakilder');
+  let sources = [];
+  if (state.rapport === 'resultat') {
+    sources = [
+      { slug:'budsjett', label:'Budsjett' }, { slug:'plan', label:'Kampanjeplan' },
+      { slug:'meta', label:'Meta' }, { slug:'google', label:'Google' }, { slug:'snap', label:'Snap' },
+      { slug:'shopify', label:'Shopify' }, { slug:'manuell', label:'OHH (manuell)' },
+    ];
+  } else if (!state.kanal) {
+    sources = [{ slug:'meta', label:'Meta' }, { slug:'google', label:'Google' }, { slug:'snap', label:'Snap' }, { slug:'manuell', label:'OHH (manuell)' }];
+  } else if (state.kanal === 'meta') sources = [{ slug:'meta', label:'Meta Ad Insights' }];
+  else if (state.kanal === 'google') sources = [{ slug:'google', label:'Google Ads' }];
+  else if (state.kanal === 'snap') sources = [{ slug:'snap', label:'Snap Ads' }];
+  else sources = [{ slug:'manuell', label:'Manuell registrert' }];
+  el.innerHTML = `<span class="eyebrow mr-1">Datakilder</span>` + sources.map(s => `<span class="source-pill source-${s.slug}"><span class="dot"></span>${s.label}</span>`).join('');
 }
 
 function renderBreadcrumb() {
   const el = document.getElementById('breadcrumb');
-  if (!state.kanal) { el.outerHTML = `<div id="breadcrumb"></div>`; return; }
+  if (state.rapport === 'resultat' || !state.kanal) { el.outerHTML = `<div id="breadcrumb"></div>`; return; }
   const k = KANALER_BASE.find(x => x.slug === state.kanal);
-  let html = `<a data-clear-kanal="1">${scopeLabel()}</a>`;
-  if (!state.kampanje) {
-    html += `<span class="sep">›</span><span class="active">${k.navn}</span>`;
-  } else {
+  let html = `<a data-clear-kanal="1">Kanaler</a>`;
+  if (!state.kampanje) html += `<span class="sep">›</span><span class="active">${k.navn}</span>`;
+  else {
     const c = META_KAMPANJER.find(x => x.id === state.kampanje);
     const cName = c.navn.replace(/^BAU 2026 \/ /, '');
     html += `<span class="sep">›</span><a data-clear-kampanje="1">${k.navn}</a><span class="sep">›</span><span class="active">${cName}</span>`;
   }
   el.outerHTML = `<div id="breadcrumb"><div class="breadcrumb">${html}</div></div>`;
-  const bcNew = document.getElementById('breadcrumb');
-  bcNew.querySelectorAll('[data-clear-kanal]').forEach(el => el.addEventListener('click', clearKanal));
-  bcNew.querySelectorAll('[data-clear-kampanje]').forEach(el => el.addEventListener('click', clearKampanje));
+  document.getElementById('breadcrumb').querySelectorAll('[data-clear-kanal]').forEach(el => el.addEventListener('click', clearKanal));
+  document.getElementById('breadcrumb').querySelectorAll('[data-clear-kampanje]').forEach(el => el.addEventListener('click', clearKampanje));
 }
 
 function spendVsMerSvg(points, merLabel) {
+  if (!points || points.length === 0) return '';
   const w = 700, h = 220, padL = 50, padR = 50, padT = 16, padB = 36;
   const innerW = w - padL - padR, innerH = h - padT - padB;
-  const validPts = points.filter(p => p.spend != null);
+  const validPts = points.filter(p => p.spend != null && p.spend > 0);
+  if (validPts.length === 0) return '<p class="text-sm text-neutral-500">Ingen data.</p>';
   const maxSpend = Math.max(...validPts.map(p => p.spend)) * 1.1;
   const merVals = validPts.map(p => p.mer).filter(v => v != null);
-  const minMer = Math.min(...merVals), maxMer = Math.max(...merVals);
+  const minMer = merVals.length ? Math.min(...merVals) : 0;
+  const maxMer = merVals.length ? Math.max(...merVals) : 1;
   const merRange = maxMer - minMer || 1;
   const merMin = minMer - merRange * 0.2, merMax = maxMer + merRange * 0.2;
   const barW = innerW / points.length * 0.7;
   const barGap = innerW / points.length * 0.3;
-
   let bars = '';
   points.forEach((p, i) => {
+    if (!p.spend) return;
     const x = padL + i * (innerW / points.length) + barGap / 2;
     const bh = (p.spend / maxSpend) * innerH;
     const y = padT + innerH - bh;
     bars += `<rect class="${p.forecast ? 'chart-bar-forecast' : 'chart-bar-actual'}" x="${x}" y="${y}" width="${barW}" height="${bh}" rx="2" />`;
   });
-
   const linePts = points.map((p, i) => ({
     x: padL + i * (innerW / points.length) + (innerW / points.length) / 2,
     y: p.mer != null ? padT + innerH - ((p.mer - merMin) / (merMax - merMin)) * innerH : null,
     forecast: p.forecast,
   })).filter(p => p.y !== null);
-
   let lineActualPts = linePts.filter(p => !p.forecast);
   let lineForecastPts = linePts.filter(p => p.forecast);
   if (lineActualPts.length > 0 && lineForecastPts.length > 0) lineForecastPts = [lineActualPts[lineActualPts.length - 1], ...lineForecastPts];
   const lineActualPath = lineActualPts.length > 1 ? `M ${lineActualPts[0].x} ${lineActualPts[0].y} ` + lineActualPts.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ') : '';
   const lineForecastPath = lineForecastPts.length > 1 ? `M ${lineForecastPts[0].x} ${lineForecastPts[0].y} ` + lineForecastPts.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ') : '';
   const dots = linePts.map(p => `<circle class="${p.forecast ? 'chart-dot-forecast' : 'chart-dot'}" cx="${p.x}" cy="${p.y}" r="3" />`).join('');
-
   const yLeftTicks = [0, maxSpend * 0.5, maxSpend].map(v => {
     const y = padT + innerH - (v / maxSpend) * innerH;
     return `<text x="${padL - 8}" y="${y + 3}" text-anchor="end" class="chart-y-label">${fmtKr(v)}</text>`;
@@ -533,7 +548,6 @@ function spendVsMerSvg(points, merLabel) {
     const x = padL + i * (innerW / points.length) + (innerW / points.length) / 2;
     return `<text x="${x}" y="${h - 14}" text-anchor="middle" class="chart-x-label">${p.x}</text>`;
   }).join('');
-
   return `
     <div class="flex items-center justify-between mb-3">
       <p class="eyebrow">Spend vs ${merLabel}</p>
@@ -547,6 +561,7 @@ function spendVsMerSvg(points, merLabel) {
 }
 
 function reachSvg(points) {
+  if (!points || points.length === 0) return '';
   const w = 700, h = 220, padL = 50, padR = 50, padT = 16, padB = 36;
   const innerW = w - padL - padR, innerH = h - padT - padB;
   const maxNetNew = Math.max(...points.map(p => p.netNew)) * 1.15;
@@ -555,7 +570,6 @@ function reachSvg(points) {
   const rMin = minRolling - rRange * 0.15, rMax = maxRolling + rRange * 0.1;
   const barW = innerW / points.length * 0.7;
   const barGap = innerW / points.length * 0.3;
-
   let bars = '';
   points.forEach((p, i) => {
     const x = padL + i * (innerW / points.length) + barGap / 2;
@@ -584,7 +598,6 @@ function reachSvg(points) {
     const x = padL + i * (innerW / points.length) + (innerW / points.length) / 2;
     return `<text x="${x}" y="${h - 14}" text-anchor="middle" class="chart-x-label">${p.x}</text>`;
   }).join('');
-
   return `
     <div class="flex items-center justify-between mb-3">
       <p class="eyebrow">Rolling reach + Net new</p>
@@ -597,41 +610,14 @@ function reachSvg(points) {
   `;
 }
 
-function renderHovedkort() {
-  let title, sublabel, spend, nye, cac, initialDiff, stage, budget = scopeBudget();
-
-  if (!state.kanal) {
-    const agg = scopeAgg();
-    title = scopeLabel(); sublabel = scopeSublabel();
-    spend = agg.spend; nye = agg.nye; cac = agg.cac;
-    initialDiff = agg.initialDiff;
-    stage = agg.status === 'done' ? 'Resultat' : (agg.status === 'planned' ? 'Forecast' : 'Hittil + forecast');
-  } else if (!state.kampanje) {
-    const k = kanalerForScope().find(x => x.slug === state.kanal);
-    title = k.navn; sublabel = `${scopeSublabel()} · ${scopeLabel()}`;
-    spend = k.spend;
-    nye = Math.round(scopeAgg().nye * KANALMIX.find(m => m.slug === k.slug).share);
-    cac = nye > 0 ? Math.round(spend / nye) : 0;
-    initialDiff = null;
-    stage = 'Hittil + forecast';
-  } else {
-    const c = META_KAMPANJER.find(x => x.id === state.kampanje);
-    title = c.navn.replace(/^BAU 2026 \/ /, '');
-    sublabel = `Kampanje · ${scopeLabel()}`;
-    spend = c.spend;
-    nye = Math.round(spend / 1050);
-    cac = nye > 0 ? Math.round(spend / nye) : 0;
-    initialDiff = null;
-    stage = 'Hittil + forecast';
-  }
-
-  const sd = (spend - budget.spend) / budget.spend;
-  const nd = (nye - budget.nye) / budget.nye;
-  const cd = budget.targetCac > 0 ? (cac - budget.targetCac) / budget.targetCac : null;
-  const id = initialDiff || { spend: null, nye: null, cac: null };
-
-  const kanalSegs = !state.kanal ? KANALMIX.map(k => `<div class="seg-${k.slug}" style="width:${k.share * 100}%"></div>`).join('') : '';
-  const kanalLegend = !state.kanal ? KANALMIX.map(k => `<div><span class="stack-legend-dot seg-${k.slug}"></span><span>${k.navn} <span class="mono text-neutral-500 ml-0.5">${pct(k.share)}</span></span></div>`).join('') : '';
+function renderHovedkort(d, title, sublabel) {
+  const sd = d.budget && d.budget.spend ? (d.spend - d.budget.spend) / d.budget.spend : null;
+  const nd = d.budget && d.budget.nye ? (d.nye - d.budget.nye) / d.budget.nye : null;
+  const cd = d.budget && d.budget.targetCac && d.cac > 0 ? (d.cac - d.budget.targetCac) / d.budget.targetCac : null;
+  const id = d.initialDiff || { spend: null, nye: null, cac: null };
+  const showKanalMix = state.rapport === 'resultat';
+  const kanalSegs = showKanalMix ? KANALMIX.map(k => `<div class="seg-${k.slug}" style="width:${k.share * 100}%"></div>`).join('') : '';
+  const kanalLegend = showKanalMix ? KANALMIX.map(k => `<div><span class="stack-legend-dot seg-${k.slug}"></span><span>${k.navn} <span class="mono text-neutral-500 ml-0.5">${pct(k.share)}</span></span></div>`).join('') : '';
 
   return `
     <div class="hero mb-6">
@@ -640,113 +626,35 @@ function renderHovedkort() {
       <div class="hero-kpis mt-5" style="grid-template-columns: repeat(3, 1fr);">
         <div>
           <p class="hero-kpi-label">Spend</p>
-          <p class="hero-kpi-stage">${stage}</p>
-          <p class="hero-kpi-value mono">${fmtKr(spend)} kr</p>
-          <p class="hero-kpi-sub ${deltaTone(sd, true)}">${pctSigned(sd)} vs budsjett (${fmtKr(budget.spend)} kr)</p>
+          <p class="hero-kpi-stage">${d.stage}</p>
+          <p class="hero-kpi-value mono">${fmtKr(d.spend)} kr</p>
+          ${sd != null ? `<p class="hero-kpi-sub ${deltaTone(sd, true)}">${pctSigned(sd)} vs budsjett (${fmtKr(d.budget.spend)} kr)</p>` : ''}
           ${id.spend != null ? `<p class="hero-kpi-sub ${deltaTone(id.spend, true)}">${pctSigned(id.spend)} vs initiell forecast</p>` : ''}
         </div>
         <div>
           <p class="hero-kpi-label">${KUNDE.nyeLabel}</p>
-          <p class="hero-kpi-stage">${stage}</p>
-          <p class="hero-kpi-value mono">${nye}</p>
-          <p class="hero-kpi-sub ${deltaTone(nd, false)}">${pctSigned(nd)} vs budsjett (${budget.nye})</p>
+          <p class="hero-kpi-stage">${d.stage}</p>
+          <p class="hero-kpi-value mono">${d.nye}</p>
+          ${nd != null ? `<p class="hero-kpi-sub ${deltaTone(nd, false)}">${pctSigned(nd)} vs budsjett (${d.budget.nye})</p>` : ''}
           ${id.nye != null ? `<p class="hero-kpi-sub ${deltaTone(id.nye, false)}">${pctSigned(id.nye)} vs initiell forecast</p>` : ''}
         </div>
         <div>
           <p class="hero-kpi-label">${KUNDE.merLabel}</p>
-          <p class="hero-kpi-stage">${stage}</p>
-          <p class="hero-kpi-value mono">${cac} kr</p>
-          ${cd != null ? `<p class="hero-kpi-sub ${deltaTone(cd, true)}">${pctSigned(cd)} vs target (${budget.targetCac} kr)</p>` : ''}
+          <p class="hero-kpi-stage">${d.stage}</p>
+          <p class="hero-kpi-value mono">${d.cac > 0 ? d.cac + ' kr' : '—'}</p>
+          ${cd != null ? `<p class="hero-kpi-sub ${deltaTone(cd, true)}">${pctSigned(cd)} vs target (${d.budget.targetCac} kr)</p>` : ''}
           ${id.cac != null ? `<p class="hero-kpi-sub ${deltaTone(id.cac, true)}">${pctSigned(id.cac)} vs initiell forecast</p>` : ''}
         </div>
       </div>
-      ${!state.kanal ? `<div class="mt-6 mb-2"><div class="stack tall">${kanalSegs}</div></div><div class="stack-legend">${kanalLegend}</div>` : ''}
+      ${showKanalMix ? `<div class="mt-6 mb-2"><div class="stack tall">${kanalSegs}</div></div><div class="stack-legend">${kanalLegend}</div>` : ''}
     </div>
   `;
 }
 
-function renderTidsSubKort() {
-  if (state.nivaa === 'ar') {
-    let html = `<p class="eyebrow mb-3">Kvartaler</p><div class="space-y-3">`;
-    QUARTERS.forEach(q => {
-      const agg = quarterAgg(q);
-      const disabled = agg.status === 'empty';
-      const cls = disabled ? 'hero-disabled' : 'hero-clickable';
-      const sd = (agg.spend - KUNDE.quarterBudget.spend) / KUNDE.quarterBudget.spend;
-      const nd = (agg.nye - KUNDE.quarterBudget.nye) / KUNDE.quarterBudget.nye;
-      const cd = agg.cac > 0 ? (agg.cac - KUNDE.quarterBudget.targetCac) / KUNDE.quarterBudget.targetCac : null;
-      const stage = agg.status === 'done' ? 'Resultat' : (agg.status === 'active' ? 'Hittil + forecast' : (agg.status === 'planned' ? 'Forecast' : ''));
-      html += `
-        <div class="hero hero-compact ${cls}" ${!disabled ? `onclick="setNivaa('kvartal', {kvartal: ${q.q}})"` : ''}>
-          <div class="flex items-center justify-between mb-3">
-            <h1 class="hero-title">${q.label} ${state.ar}</h1>
-            ${!disabled ? `<span class="text-xs text-neutral-500">${stage}</span>` : ''}
-          </div>
-          ${!disabled ? `
-            <div class="hero-kpis" style="grid-template-columns: repeat(3, 1fr);">
-              <div><p class="hero-kpi-label">Spend</p><p class="hero-kpi-value mono">${fmtKr(agg.spend)} kr</p><p class="hero-kpi-sub ${deltaTone(sd, true)}">${pctSigned(sd)} vs budsjett</p></div>
-              <div><p class="hero-kpi-label">${KUNDE.nyeLabel}</p><p class="hero-kpi-value mono">${agg.nye}</p><p class="hero-kpi-sub ${deltaTone(nd, false)}">${pctSigned(nd)} vs budsjett</p></div>
-              <div><p class="hero-kpi-label">${KUNDE.merLabel}</p><p class="hero-kpi-value mono">${agg.cac > 0 ? agg.cac + ' kr' : '—'}</p>${cd != null ? `<p class="hero-kpi-sub ${deltaTone(cd, true)}">${pctSigned(cd)} vs target</p>` : ''}</div>
-            </div>
-          ` : ''}
-        </div>
-      `;
-    });
-    return html + `</div>`;
-  }
-  if (state.nivaa === 'kvartal') {
-    const q = quarterByQ(state.kvartal);
-    let html = `<p class="eyebrow mb-3">Måneder</p><div class="space-y-3">`;
-    q.monthsIds.forEach(mId => {
-      const m = monthByM(mId);
-      const disabled = m.status === 'empty';
-      const cls = disabled ? 'hero-disabled' : 'hero-clickable';
-      const sd = (m.spend - KUNDE.monthlyBudget.spend) / KUNDE.monthlyBudget.spend;
-      const nd = (m.nye - KUNDE.monthlyBudget.nye) / KUNDE.monthlyBudget.nye;
-      const cd = m.cac > 0 ? (m.cac - KUNDE.monthlyBudget.targetCac) / KUNDE.monthlyBudget.targetCac : null;
-      const stage = m.status === 'done' ? 'Resultat' : (m.status === 'active' ? 'Hittil + forecast' : (m.status === 'planned' ? 'Forecast' : ''));
-      html += `
-        <div class="hero hero-compact ${cls}" ${!disabled ? `onclick="setNivaa('maned', {maned: ${m.m}})"` : ''}>
-          <div class="flex items-center justify-between mb-3">
-            <h1 class="hero-title">${m.label} ${state.ar}</h1>
-            ${!disabled ? `<span class="text-xs text-neutral-500">${stage}</span>` : ''}
-          </div>
-          ${!disabled ? `
-            <div class="hero-kpis" style="grid-template-columns: repeat(3, 1fr);">
-              <div><p class="hero-kpi-label">Spend</p><p class="hero-kpi-value mono">${fmtKr(m.spend)} kr</p><p class="hero-kpi-sub ${deltaTone(sd, true)}">${pctSigned(sd)} vs budsjett</p></div>
-              <div><p class="hero-kpi-label">${KUNDE.nyeLabel}</p><p class="hero-kpi-value mono">${m.nye}</p><p class="hero-kpi-sub ${deltaTone(nd, false)}">${pctSigned(nd)} vs budsjett</p></div>
-              <div><p class="hero-kpi-label">${KUNDE.merLabel}</p><p class="hero-kpi-value mono">${m.cac > 0 ? m.cac + ' kr' : '—'}</p>${cd != null ? `<p class="hero-kpi-sub ${deltaTone(cd, true)}">${pctSigned(cd)} vs target</p>` : ''}</div>
-            </div>
-          ` : ''}
-        </div>
-      `;
-    });
-    return html + `</div>`;
-  }
-  if (state.nivaa === 'maned') {
-    const weeks = weeksForMonth(state.maned);
-    let html = `<p class="eyebrow mb-3">Uker</p><div class="week-strip">`;
-    weeks.forEach(w => {
-      const disabled = (state.maned > TODAY.month) || (state.maned === TODAY.month && w.w > TODAY.week + 1);
-      html += `
-        <div class="week-tab ${disabled ? 'disabled' : ''}" ${!disabled ? `onclick="setNivaa('uke', {maned: ${state.maned}, uke: ${w.w}})"` : ''}>
-          <div class="week-tab-num">Uke ${w.w}</div>
-          <div class="week-tab-dates">${w.dates}</div>
-        </div>
-      `;
-    });
-    return html + `</div>`;
-  }
-  return '';
-}
-
-function renderDaglig() {
-  if (state.nivaa !== 'maned' && state.nivaa !== 'uke') return '';
-  const days = state.nivaa === 'maned' ? buildDailyForMonth(state.maned) : dailyForWeek(state.uke);
-  if (days.length === 0) return '';
-  const useDateLabel = state.nivaa === 'uke';
+function renderDaglig(daglig, useDateLabel = false) {
+  if (!daglig || daglig.length === 0) return '';
   let rows = '';
-  days.forEach(d => {
+  daglig.forEach(d => {
     const cac = d.actualSpend && d.actualNye ? d.actualSpend / d.actualNye : null;
     rows += `
       <tr class="${d.isToday ? 'today' : ''}">
@@ -787,9 +695,47 @@ function renderDaglig() {
   `;
 }
 
-function renderKanalKort() {
-  const kanaler = kanalerForScope();
-  let html = `<p class="eyebrow mb-3 mt-6">Kanaler</p><div class="space-y-3">`;
+function renderManedKort(maaneder) {
+  let html = `<p class="eyebrow mb-3">Måneder</p><div class="space-y-3">`;
+  maaneder.forEach(m => {
+    if (m.status === 'empty') return;
+    const sd = (m.spend - KUNDE.monthlyBudget.spend) / KUNDE.monthlyBudget.spend;
+    const nd = (m.nye - KUNDE.monthlyBudget.nye) / KUNDE.monthlyBudget.nye;
+    const cd = m.cac > 0 ? (m.cac - KUNDE.monthlyBudget.targetCac) / KUNDE.monthlyBudget.targetCac : null;
+    const stage = m.status === 'done' ? 'Resultat' : (m.status === 'active' ? 'Hittil + forecast' : 'Forecast');
+    html += `
+      <div class="hero hero-compact">
+        <div class="flex items-center justify-between mb-3">
+          <h1 class="hero-title">${m.label} 2026</h1>
+          <span class="text-xs text-neutral-500">${stage}</span>
+        </div>
+        <div class="hero-kpis" style="grid-template-columns: repeat(3, 1fr);">
+          <div><p class="hero-kpi-label">Spend</p><p class="hero-kpi-value mono">${fmtKr(m.spend)} kr</p><p class="hero-kpi-sub ${deltaTone(sd, true)}">${pctSigned(sd)} vs budsjett</p></div>
+          <div><p class="hero-kpi-label">${KUNDE.nyeLabel}</p><p class="hero-kpi-value mono">${m.nye}</p><p class="hero-kpi-sub ${deltaTone(nd, false)}">${pctSigned(nd)} vs budsjett</p></div>
+          <div><p class="hero-kpi-label">${KUNDE.merLabel}</p><p class="hero-kpi-value mono">${m.cac > 0 ? m.cac + ' kr' : '—'}</p>${cd != null ? `<p class="hero-kpi-sub ${deltaTone(cd, true)}">${pctSigned(cd)} vs target</p>` : ''}</div>
+        </div>
+      </div>
+    `;
+  });
+  return html + `</div>`;
+}
+
+function renderResultat() {
+  const d = presetData(state.preset);
+  if (state.preset === 'custom') {
+    return `<div class="hero text-center text-neutral-500"><p class="font-medium">${d.label}</p><p class="text-sm mt-2">Custom datovalg kommer.</p></div>`;
+  }
+
+  let html = renderHovedkort(d, d.label, d.sublabel);
+  html += `<div class="chart-card mb-6">${spendVsMerSvg(spendMerSeries(d), KUNDE.merLabel)}</div>`;
+  if (d.maaneder) html += renderManedKort(d.maaneder);
+  if (d.daglig) html += renderDaglig(d.daglig, d.granularitet === 'dag' && (state.preset === 'this-week' || state.preset === 'last-week'));
+  return html;
+}
+
+function renderKanalIndeks(d) {
+  const kanaler = kanalerForScope(d.spend);
+  let html = `<p class="eyebrow mb-3">Kanaler</p><div class="space-y-3">`;
   kanaler.forEach(k => {
     if (k.hasPlatformData) {
       const dist = distribution(k.ads);
@@ -822,34 +768,72 @@ function renderKanalKort() {
   return html + `</div>`;
 }
 
-function renderKampanjeKort() {
-  if (state.kanal !== 'meta') return `<p class="eyebrow mb-3 mt-6">Kampanjer</p><div class="text-sm text-neutral-500 px-1">Mock-data for ${state.kanal} kommer.</div>`;
-  let html = `<p class="eyebrow mb-3 mt-6">Kampanjer</p><div class="space-y-3">`;
-  META_KAMPANJER.forEach(c => {
-    const dist = distribution(c.ads);
-    const navn = c.navn.replace(/^BAU 2026 \/ /, '');
-    html += `
-      <div class="hero hero-compact hero-clickable" onclick="setKampanje('${c.id}')">
-        <h1 class="hero-title mb-3">${navn}</h1>
-        <div class="hero-kpis">
-          <div><p class="hero-kpi-label">Spend</p><p class="hero-kpi-value mono">${fmtKr(c.spend)} kr</p></div>
-          <div><p class="hero-kpi-label">CPMr</p><p class="hero-kpi-value mono">${c.cpmr}</p></div>
-          <div><p class="hero-kpi-label">Frekvens</p><p class="hero-kpi-value mono">${c.frequency.toFixed(1)}</p></div>
-          <div><p class="hero-kpi-label">Net new %</p><p class="hero-kpi-value mono">${c.netNewPct}%</p></div>
-          <div><p class="hero-kpi-label">Diversifisering</p><p class="hero-kpi-value mono">${c.diversification.covered}<span class="text-neutral-400">/${c.diversification.total}</span></p></div>
-        </div>
-        <div class="mt-5 mb-2"><div class="stack tall">${stackHtml(dist)}</div></div>
-        <div class="stack-legend">${statusLegend(dist)}</div>
+function renderKanalDetalj(d) {
+  const kanaler = kanalerForScope(d.spend);
+  const k = kanaler.find(x => x.slug === state.kanal);
+  if (!k.hasPlatformData) return `<div class="hero text-center text-neutral-500"><p class="font-medium">${k.navn}</p><p class="text-sm mt-2">Kun manuell spend — ingen ad-platform-data å drille i.</p></div>`;
+  const dist = distribution(k.ads);
+  let html = `
+    <div class="hero mb-6">
+      <h1 class="hero-title mb-5">${k.navn}</h1>
+      <div class="hero-kpis">
+        <div><p class="hero-kpi-label">Spend</p><p class="hero-kpi-value mono">${fmtKr(k.spend)} kr</p></div>
+        <div><p class="hero-kpi-label">CPMr</p><p class="hero-kpi-value mono">${k.cpmr}</p></div>
+        <div><p class="hero-kpi-label">Frekvens</p><p class="hero-kpi-value mono">${k.frequency.toFixed(1)}</p></div>
+        <div><p class="hero-kpi-label">Net new %</p><p class="hero-kpi-value mono">${k.netNewPct}%</p></div>
+        <div><p class="hero-kpi-label">Diversifisering</p><p class="hero-kpi-value mono">${k.diversification.covered}<span class="text-neutral-400">/${k.diversification.total}</span></p></div>
       </div>
-    `;
-  });
+      <div class="mt-6 mb-2"><div class="stack tall">${stackHtml(dist)}</div></div>
+      <div class="stack-legend">${statusLegend(dist)}</div>
+    </div>
+  `;
+  if (k.slug === 'meta') html += `<div class="chart-card mb-6">${reachSvg(reachSeries(d))}</div>`;
+  html += `<p class="eyebrow mb-3">Kampanjer</p><div class="space-y-3">`;
+  if (k.slug === 'meta') {
+    META_KAMPANJER.forEach(c => {
+      const cDist = distribution(c.ads);
+      const navn = c.navn.replace(/^BAU 2026 \/ /, '');
+      html += `
+        <div class="hero hero-compact hero-clickable" onclick="setKampanje('${c.id}')">
+          <h1 class="hero-title mb-3">${navn}</h1>
+          <div class="hero-kpis">
+            <div><p class="hero-kpi-label">Spend</p><p class="hero-kpi-value mono">${fmtKr(c.spend)} kr</p></div>
+            <div><p class="hero-kpi-label">CPMr</p><p class="hero-kpi-value mono">${c.cpmr}</p></div>
+            <div><p class="hero-kpi-label">Frekvens</p><p class="hero-kpi-value mono">${c.frequency.toFixed(1)}</p></div>
+            <div><p class="hero-kpi-label">Net new %</p><p class="hero-kpi-value mono">${c.netNewPct}%</p></div>
+            <div><p class="hero-kpi-label">Diversifisering</p><p class="hero-kpi-value mono">${c.diversification.covered}<span class="text-neutral-400">/${c.diversification.total}</span></p></div>
+          </div>
+          <div class="mt-5 mb-2"><div class="stack tall">${stackHtml(cDist)}</div></div>
+          <div class="stack-legend">${statusLegend(cDist)}</div>
+        </div>
+      `;
+    });
+  } else html += `<div class="text-sm text-neutral-500 px-1">Mock-data for ${k.navn} kommer.</div>`;
   return html + `</div>`;
 }
 
-function renderKampanjeDetalj() {
+function renderKampanje() {
+  const c = META_KAMPANJER.find(x => x.id === state.kampanje);
+  const dist = distribution(c.ads);
+  const navn = c.navn.replace(/^BAU 2026 \/ /, '');
+  const adCount = Object.values(c.ads).reduce((s, n) => s + n, 0);
   const dims = DIM_LEVELS.meta;
   return `
-    <section class="mb-6 mt-6">
+    <div class="hero mb-6">
+      <h1 class="hero-title mb-5">${navn}</h1>
+      <div class="hero-kpis">
+        <div><p class="hero-kpi-label">Spend</p><p class="hero-kpi-value mono">${fmtKr(c.spend)} kr</p></div>
+        <div><p class="hero-kpi-label">CPMr</p><p class="hero-kpi-value mono">${c.cpmr}</p></div>
+        <div><p class="hero-kpi-label">Frekvens</p><p class="hero-kpi-value mono">${c.frequency.toFixed(1)}</p></div>
+        <div><p class="hero-kpi-label">Net new %</p><p class="hero-kpi-value mono">${c.netNewPct}%</p></div>
+        <div><p class="hero-kpi-label">Diversifisering</p><p class="hero-kpi-value mono">${c.diversification.covered}<span class="text-neutral-400">/${c.diversification.total}</span></p></div>
+      </div>
+      <div class="mt-6 mb-2"><div class="stack tall">${stackHtml(dist)}</div></div>
+      <div class="stack-legend">${statusLegend(dist)}</div>
+      <p class="hero-meta mt-4">${adCount} aktive annonser</p>
+    </div>
+
+    <section class="mb-6">
       <div class="flex items-center justify-between mb-3">
         <p class="eyebrow">Annonser</p>
         <select class="group-select" onchange="setGrouping(this.value)">
@@ -900,28 +884,19 @@ function renderKampanjeDetalj() {
   `;
 }
 
+function renderKanal() {
+  const d = presetData(state.preset);
+  if (!state.kanal) return renderKanalIndeks(d);
+  if (!state.kampanje) return renderKanalDetalj(d);
+  return renderKampanje();
+}
+
 function render() {
-  renderHeader();
-  renderTimeStrip();
+  renderDatepickerLabel();
+  renderDatakilder();
   renderBreadcrumb();
   const main = document.getElementById('main-view');
-
-  let html = '';
-  html += renderHovedkort();
-  html += `<div class="chart-card mb-6">${spendVsMerSvg(spendMerSeriesFor(state.nivaa), KUNDE.merLabel)}</div>`;
-
-  if (state.kanal === 'meta' && !state.kampanje) {
-    html += `<div class="chart-card mb-6">${reachSvg(reachSeriesForLevel(state.nivaa))}</div>`;
-  }
-
-  html += renderTidsSubKort();
-  html += renderDaglig();
-
-  if (!state.kanal) html += renderKanalKort();
-  else if (!state.kampanje) html += renderKampanjeKort();
-  else html += renderKampanjeDetalj();
-
-  main.innerHTML = html;
+  main.innerHTML = state.rapport === 'resultat' ? renderResultat() : renderKanal();
 }
 
 render();
