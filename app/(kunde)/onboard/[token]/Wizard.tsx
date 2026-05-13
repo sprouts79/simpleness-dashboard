@@ -14,6 +14,7 @@ import {
   togglePlatformAction,
   saveInsightsAction,
   submitInsightsAction,
+  unlockInsightsAction,
   uploadDocumentAction,
 } from "./actions";
 
@@ -57,7 +58,7 @@ export default function Wizard(props: Props) {
   return (
     <div>
       <Topbar kundeNavn={props.kundeNavn} step={step} />
-      <Progress step={step} />
+      <Progress step={step} onJump={(s) => goTo(s)} />
 
       {step === 1 && (
         <AccessStep
@@ -79,8 +80,11 @@ export default function Wizard(props: Props) {
       )}
       {step === 3 && (
         <NextStepsScreen
+          token={props.token}
           simplenessKontakt={props.simplenessKontakt}
           completed={Boolean(props.session.completed_at)}
+          locked={props.session.insights_locked}
+          onBack={() => goTo(2)}
         />
       )}
     </div>
@@ -155,8 +159,8 @@ function Topbar({ kundeNavn, step }: { kundeNavn: string; step: number }) {
   );
 }
 
-function Progress({ step }: { step: number }) {
-  const steps = [
+function Progress({ step, onJump }: { step: number; onJump: (s: StepKey) => void }) {
+  const steps: { num: StepKey; name: string }[] = [
     { num: 1, name: "Tilganger" },
     { num: 2, name: "Innsikt" },
     { num: 3, name: "Veien videre" },
@@ -168,7 +172,11 @@ function Progress({ step }: { step: number }) {
         const state = s.num < step ? "done" : s.num === step ? "active" : "upcoming";
         return (
           <div key={s.num} className="flex items-center" style={{ flex: i < steps.length - 1 ? "0 0 auto" : "0 0 auto" }}>
-            <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => onJump(s.num)}
+              className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
+            >
               <span className={`w-2 h-2 rounded-full ${
                 state === "done" ? "bg-green-500" :
                 state === "active" ? "bg-neutral-900" :
@@ -179,7 +187,7 @@ function Progress({ step }: { step: number }) {
                 state === "active" ? "text-neutral-900 font-medium" :
                 "text-neutral-400"
               }`}>{s.name}</span>
-            </div>
+            </button>
             {i < steps.length - 1 && (
               <span className={`flex-1 h-px mx-3.5 w-12 sm:w-24 ${state === "done" ? "bg-green-500/40" : "bg-neutral-200"}`} />
             )}
@@ -601,7 +609,28 @@ function InsightStep({
 // STEP 3 — VEIEN VIDERE
 // ════════════════════════════════════════════════════════════
 
-function NextStepsScreen({ simplenessKontakt, completed }: { simplenessKontakt: string; completed: boolean }) {
+function NextStepsScreen({
+  token,
+  simplenessKontakt,
+  completed,
+  locked,
+  onBack,
+}: {
+  token: string;
+  simplenessKontakt: string;
+  completed: boolean;
+  locked: boolean;
+  onBack: () => void;
+}) {
+  const [unlocking, setUnlocking] = useState(false);
+
+  async function handleUnlock() {
+    setUnlocking(true);
+    await unlockInsightsAction(token);
+    setUnlocking(false);
+    onBack();
+  }
+
   return (
     <div className="max-w-[720px] mx-auto">
       {completed && (
@@ -633,6 +662,25 @@ function NextStepsScreen({ simplenessKontakt, completed }: { simplenessKontakt: 
 
       <div className="pt-6 border-t border-neutral-200 text-[13px] text-neutral-500">
         Kontaktperson: <strong className="font-medium text-neutral-700">{simplenessKontakt}</strong>
+      </div>
+
+      <div className="flex items-center justify-between mt-8 pt-6 border-t border-neutral-200">
+        <button
+          onClick={onBack}
+          className="px-4 py-2 rounded-lg border border-neutral-200 text-sm text-neutral-600 hover:bg-neutral-100"
+        >
+          ← Innsikt
+        </button>
+        {locked && (
+          <button
+            onClick={handleUnlock}
+            disabled={unlocking}
+            className="px-4 py-2 rounded-lg border border-neutral-200 text-sm text-neutral-600 hover:bg-neutral-100 disabled:opacity-40"
+            title="Åpner Innsikt for redigering på nytt — for testing"
+          >
+            {unlocking ? "Låser opp …" : "Lås opp og rediger"}
+          </button>
+        )}
       </div>
     </div>
   );

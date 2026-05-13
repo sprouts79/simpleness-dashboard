@@ -7,6 +7,7 @@ import {
   togglePlatformDone,
   saveInsights,
   lockInsights,
+  unlockInsights,
   uploadDocument,
   lifecycleStageFor,
   type OnboardingPlatform,
@@ -58,6 +59,18 @@ export async function submitInsightsAction(token: string) {
   // Advance lifecycle to fullført
   await updateKundeLifecycle(session.client_id, "onboarding_fullfort");
 
+  revalidatePath(`/onboard/${token}`);
+}
+
+/**
+ * Test-mode: åpne en allerede innsendt onboarding for redigering.
+ * Tilbakefører kunden til Steg 2 og fjerner submitted_at.
+ * Brukes under utvikling; vil senere være intern admin-funksjon.
+ */
+export async function unlockInsightsAction(token: string) {
+  const session = await sessionByToken(token);
+  await unlockInsights(session.id);
+  await updateKundeLifecycle(session.client_id, "onboarding_steg_2");
   revalidatePath(`/onboard/${token}`);
 }
 

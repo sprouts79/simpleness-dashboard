@@ -170,6 +170,23 @@ export async function saveInsights(
   await bumpLastActive(sessionId);
 }
 
+/** Reverse av lockInsights — for testing / redigering. */
+export async function unlockInsights(sessionId: string): Promise<void> {
+  const now = new Date().toISOString();
+
+  const { error: insErr } = await supabase
+    .from("onboarding_insights")
+    .update({ submitted_at: null })
+    .eq("session_id", sessionId);
+  if (insErr) throw new Error(`unlockInsights: ${insErr.message}`);
+
+  const { error: sesErr } = await supabase
+    .from("onboarding_sessions")
+    .update({ insights_locked: false, current_step: 2, completed_at: null, last_active_at: now })
+    .eq("id", sessionId);
+  if (sesErr) throw new Error(`unlockInsights session: ${sesErr.message}`);
+}
+
 export async function lockInsights(sessionId: string): Promise<void> {
   const now = new Date().toISOString();
 
