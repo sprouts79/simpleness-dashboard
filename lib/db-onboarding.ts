@@ -212,6 +212,7 @@ export async function uploadDocument(
   filename: string,
   fileData: ArrayBuffer | Blob,
   mimeType: string,
+  category: "strategy" | "budget" = "strategy",
 ): Promise<{ document: OnboardingDocument }> {
   const safeName = filename.replace(/[^\w.\-]/g, "_");
   const storagePath = `${sessionId}/${Date.now()}-${safeName}`;
@@ -232,6 +233,7 @@ export async function uploadDocument(
       storage_path: storagePath,
       size_bytes: sizeBytes,
       mime_type: mimeType,
+      category,
     })
     .select("*")
     .single();
@@ -245,6 +247,7 @@ export async function addDocumentLink(
   sessionId: string,
   url: string,
   label?: string | null,
+  category: "strategy" | "budget" = "strategy",
 ): Promise<{ document: OnboardingDocument }> {
   const trimmed = url.trim();
   if (!trimmed) throw new Error("Tom lenke");
@@ -267,6 +270,7 @@ export async function addDocumentLink(
       filename,
       link_url: trimmed,
       storage_path: null,
+      category,
     })
     .select("*")
     .single();

@@ -76,7 +76,11 @@ export async function unlockInsightsAction(token: string) {
   revalidatePath(`/onboard/${token}`);
 }
 
-export async function uploadDocumentAction(token: string, formData: FormData) {
+export async function uploadDocumentAction(
+  token: string,
+  formData: FormData,
+  category: "strategy" | "budget" = "strategy",
+) {
   const session = await sessionByToken(token);
   if (session.insights_locked) throw new Error("Onboarding er låst");
 
@@ -84,14 +88,18 @@ export async function uploadDocumentAction(token: string, formData: FormData) {
   if (!file) throw new Error("Ingen fil");
 
   const buf = await file.arrayBuffer();
-  await uploadDocument(session.id, file.name, buf, file.type || "application/octet-stream");
+  await uploadDocument(session.id, file.name, buf, file.type || "application/octet-stream", category);
   revalidatePath(`/onboard/${token}`);
 }
 
-export async function addLinkAction(token: string, url: string) {
+export async function addLinkAction(
+  token: string,
+  url: string,
+  category: "strategy" | "budget" = "strategy",
+) {
   const session = await sessionByToken(token);
   if (session.insights_locked) throw new Error("Onboarding er låst");
-  await addDocumentLink(session.id, url);
+  await addDocumentLink(session.id, url, null, category);
   revalidatePath(`/onboard/${token}`);
 }
 

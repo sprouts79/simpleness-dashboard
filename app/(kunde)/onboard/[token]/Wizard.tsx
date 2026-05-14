@@ -568,6 +568,18 @@ function InsightStep({
     };
   }, []);
 
+  // Auto-derive vekstmål from fjoråret + salgsmål i år, only when vekstmål is empty
+  useEffect(() => {
+    if (locked) return;
+    const fj = data.salgsmal_fjoraret_nok;
+    const iar = data.salgsmal_iar_nok;
+    if (fj && iar && (data.salgsmal_vekstmal_pct === null || data.salgsmal_vekstmal_pct === undefined)) {
+      const pct = Math.round(((iar / fj) - 1) * 1000) / 10;
+      if (Number.isFinite(pct)) patch("salgsmal_vekstmal_pct", pct);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.salgsmal_fjoraret_nok, data.salgsmal_iar_nok]);
+
   async function handleSubmit() {
     if (locked) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -619,9 +631,12 @@ function InsightStep({
     <div>
       <header className="mb-6">
         <h2 className="text-2xl font-semibold text-neutral-900 tracking-tight">Innsikt</h2>
+        <p className="mt-2 text-[14px] text-neutral-500 leading-relaxed">
+          Fyll inn det du kan og synes er relevant — resten finner vi ut av sammen på oppstartsmøtet.
+        </p>
       </header>
 
-      <Card title="Salgsmål og enhetsøkonomi" hint="alle tall ekskl. mva — fyll inn det dere har og vil dele">
+      <Card title="Salgsmål og enhetsøkonomi" hint="alle tall ekskl. mva og etter returer">
         <SubSection title="Salgsmål">
           <Row2>
             <Field label="Fjoråret">
@@ -650,13 +665,13 @@ function InsightStep({
         <SubSection title="Omsetning per kunde" tooltip="Legg inn akkumulert snittomsetning per kunde ved første ordre, etter 6 og 12 måneder.">
           <Row3>
             <Field label="Første ordre">
-              <NumberInput suffix="kr" value={data.omsetning_forste_ordre_nok} onChange={(v) => patch("omsetning_forste_ordre_nok", v)} placeholder="1 290" disabled={locked} />
+              <NumberInput suffix="kr" value={data.omsetning_forste_ordre_nok} onChange={(v) => patch("omsetning_forste_ordre_nok", v)} placeholder="1 000" disabled={locked} />
             </Field>
             <Field label="6 mndr">
-              <NumberInput suffix="kr" value={data.omsetning_6mnd_nok} onChange={(v) => patch("omsetning_6mnd_nok", v)} placeholder="1 290" disabled={locked} />
+              <NumberInput suffix="kr" value={data.omsetning_6mnd_nok} onChange={(v) => patch("omsetning_6mnd_nok", v)} placeholder="1 300" disabled={locked} />
             </Field>
             <Field label="12 mndr">
-              <NumberInput suffix="kr" value={data.omsetning_12mnd_nok} onChange={(v) => patch("omsetning_12mnd_nok", v)} placeholder="1 290" disabled={locked} />
+              <NumberInput suffix="kr" value={data.omsetning_12mnd_nok} onChange={(v) => patch("omsetning_12mnd_nok", v)} placeholder="1 600" disabled={locked} />
             </Field>
           </Row3>
           <Field label="Andel nye kunder">
@@ -669,7 +684,7 @@ function InsightStep({
             <Field label="Varekost">
               <NumberInput suffix="%" decimals value={data.varekost_pct} onChange={(v) => patch("varekost_pct", v)} placeholder="40" disabled={locked} />
             </Field>
-            <Field label="Frakt (plukk + pakk + frakt + retur)">
+            <Field label="Frakt (plukk, pakk og frakt)">
               <NumberInput suffix="%" decimals value={data.frakt_pct} onChange={(v) => patch("frakt_pct", v)} placeholder="10,1" disabled={locked} />
             </Field>
             <Field label="Transaksjonsgebyr">
@@ -688,23 +703,27 @@ function InsightStep({
             </Field>
           </Row2>
         </SubSection>
+
+        <SubSection title="Prioritet">
+          <Field label="Hva er viktigst de neste 12 månedene?">
+            <ChipGroup>
+              {(["topplinjevekst", "lonnsomhet", "begge"] as const).map((p) => (
+                <Chip key={p} active={data.prioritet === p} onClick={() => patch("prioritet", p)} disabled={locked}>
+                  {p === "topplinjevekst" ? "Topplinje" : p === "lonnsomhet" ? "Lønnsomhet" : "Begge deler"}
+                </Chip>
+              ))}
+            </ChipGroup>
+          </Field>
+        </SubSection>
+
+        <SubSection title="Budsjetter" tooltip="Salgsbudsjetter, mediekjøpsplaner eller lignende — last opp filer eller lim inn lenker.">
+          <Upload token={token} documents={documents} category="budget" disabled={locked} uploadLabel="Klikk her for å laste opp salgsbudsjetter eller lignende" />
+        </SubSection>
       </Card>
 
       <Card title="Forretning og mål">
         <Field label="Forretnings- og markedsmål neste 12 måneder">
           <Textarea value={data.forretningsmal ?? ""} onChange={(v) => patch("forretningsmal", v)} placeholder="Hva skal vi sammen oppnå?" disabled={locked} />
-        </Field>
-        <Field label="Omsetningsmål neste 12 måneder">
-          <Input value={data.omsetningsmal ?? ""} onChange={(v) => patch("omsetningsmal", v)} placeholder="f.eks. 12 MNOK" disabled={locked} />
-        </Field>
-        <Field label="Hva er viktigst akkurat nå?">
-          <ChipGroup>
-            {(["topplinjevekst", "lonnsomhet", "begge"] as const).map((p) => (
-              <Chip key={p} active={data.prioritet === p} onClick={() => patch("prioritet", p)} disabled={locked}>
-                {p === "topplinjevekst" ? "Topplinjevekst" : p === "lonnsomhet" ? "Lønnsomhet" : "Begge deler"}
-              </Chip>
-            ))}
-          </ChipGroup>
         </Field>
         <Field label="Største utfordringer i vekst- og markedsarbeidet">
           <Textarea value={data.utfordringer ?? ""} onChange={(v) => patch("utfordringer", v)} placeholder="Det som står i veien i dag" disabled={locked} />
@@ -927,18 +946,38 @@ function SubSection({ title, tooltip, children }: { title: string; tooltip?: str
     <div className="mb-7 last:mb-0">
       <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-neutral-500 mb-3">
         <span>{title}</span>
-        {tooltip && (
-          <span
-            tabIndex={0}
-            title={tooltip}
-            className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border border-neutral-300 text-neutral-400 text-[9px] leading-none cursor-help"
-          >
-            i
-          </span>
-        )}
+        {tooltip && <InfoTooltip text={tooltip} />}
       </div>
       {children}
     </div>
+  );
+}
+
+function InfoTooltip({ text }: { text: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span
+      className="relative inline-flex"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center justify-center w-4 h-4 rounded-full border border-neutral-300 text-neutral-500 text-[10px] leading-none font-mono normal-case tracking-normal hover:border-neutral-500 hover:text-neutral-700"
+        aria-label="Forklaring"
+      >
+        i
+      </button>
+      {open && (
+        <span
+          role="tooltip"
+          className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 z-10 w-64 px-3 py-2 rounded-lg bg-neutral-900 text-white text-[12px] leading-snug normal-case tracking-normal font-normal shadow-lg"
+        >
+          {text}
+        </span>
+      )}
+    </span>
   );
 }
 
@@ -1135,10 +1174,14 @@ function Chip({
 function Upload({
   token,
   documents,
+  category = "strategy",
+  uploadLabel,
   disabled,
 }: {
   token: string;
   documents: OnboardingDocument[];
+  category?: "strategy" | "budget";
+  uploadLabel?: string;
   disabled?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -1147,6 +1190,11 @@ function Upload({
   const [linkUrl, setLinkUrl] = useState("");
   const [linkPending, startLinkTransition] = useTransition();
   const [linkError, setLinkError] = useState<string | null>(null);
+
+  const own = documents.filter((d) => (d.category ?? "strategy") === category);
+  const defaultUploadLabel = category === "budget"
+    ? "Klikk her for å laste opp salgsbudsjetter eller lignende"
+    : "Klikk for å laste opp filer";
 
   function pick() {
     if (disabled || pending) return;
@@ -1162,7 +1210,7 @@ function Upload({
         const fd = new FormData();
         fd.set("file", f);
         try {
-          await uploadDocumentAction(token, fd);
+          await uploadDocumentAction(token, fd, category);
         } catch {
           // swallow — visning oppdateres ved revalidate
         }
@@ -1185,7 +1233,7 @@ function Upload({
     }
     startLinkTransition(async () => {
       try {
-        await addLinkAction(token, url);
+        await addLinkAction(token, url, category);
         setLinkUrl("");
       } catch (e) {
         setLinkError(e instanceof Error ? e.message : "Kunne ikke lagre lenken");
@@ -1218,8 +1266,8 @@ function Upload({
           </div>
         ) : (
           <>
-            <div className="text-sm font-medium text-neutral-700 mb-1">Klikk for å laste opp filer</div>
-            <div className="text-xs text-neutral-500">Strategidokumenter, brand-guide · maks 25 MB per fil</div>
+            <div className="text-sm font-medium text-neutral-700 mb-1">{uploadLabel ?? defaultUploadLabel}</div>
+            <div className="text-xs text-neutral-500">maks 25 MB per fil</div>
           </>
         )}
       </div>
@@ -1248,9 +1296,9 @@ function Upload({
         {linkError && <div className="mt-1.5 text-xs text-red-700">{linkError}</div>}
       </div>
 
-      {(documents.length > 0 || uploadingNames.length > 0) && (
+      {(own.length > 0 || uploadingNames.length > 0) && (
         <ul className="mt-4 space-y-1.5">
-          {documents.map((d) => (
+          {own.map((d) => (
             <li key={d.id} className="flex items-center gap-2 text-[13px] text-neutral-700 group">
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
               {d.link_url ? (

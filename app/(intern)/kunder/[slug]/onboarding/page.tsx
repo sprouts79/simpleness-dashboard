@@ -70,7 +70,7 @@ export default async function KundeOnboardingPage({ params }: PageProps) {
           <div className="px-5 py-6 text-sm text-neutral-500">Ikke sendt inn ennå</div>
         ) : (
           <div className="px-5 py-5 space-y-5 text-sm">
-            <Section title="Salgsmål og enhetsøkonomi" hint="ekskl. mva">
+            <Section title="Salgsmål og enhetsøkonomi" hint="ekskl. mva og etter returer">
               <Field label="Fjoråret" value={fmtKr(insights.salgsmal_fjoraret_nok)} />
               <Field label="Vekstmål" value={fmtPct(insights.salgsmal_vekstmal_pct)} />
               <Field label="Salgsmål i år" value={fmtKr(insights.salgsmal_iar_nok)} />
@@ -83,11 +83,11 @@ export default async function KundeOnboardingPage({ params }: PageProps) {
               <Field label="Transaksjonsgebyr" value={fmtPct(insights.transaksjonsgebyr_pct)} />
               <Field label="Mkt-spend årlig" value={fmtKr(insights.mkt_spend_arlig_nok)} />
               <Field label="Mkt-produksjon årlig" value={fmtKr(insights.mkt_produksjon_arlig_nok)} />
+              <Field label="Hva er viktigst de neste 12 månedene" value={insights.prioritet} />
             </Section>
             <Section title="Forretning og mål">
               <Field label="Forretnings- og markedsmål" value={insights.forretningsmal} />
               <Field label="Omsetningsmål" value={insights.omsetningsmal} />
-              <Field label="Hva er viktigst" value={insights.prioritet} />
               <Field label="Største utfordringer" value={insights.utfordringer} />
             </Section>
             <Section title="Målgruppe og posisjonering">
@@ -122,6 +122,7 @@ export default async function KundeOnboardingPage({ params }: PageProps) {
           documents.map((d) => {
             const isLink = Boolean(d.link_url);
             const href = isLink ? d.link_url! : `/api/onboarding/document/${d.id}`;
+            const category = d.category ?? "strategy";
             return (
               <div key={d.id} className="flex items-center justify-between gap-4 px-5 py-3 border-t border-neutral-200 first:border-t-0 text-sm">
                 <a
@@ -134,6 +135,9 @@ export default async function KundeOnboardingPage({ params }: PageProps) {
                     {isLink ? "Lenke" : "Fil"}
                   </span>
                   <span className="truncate">{d.filename}</span>
+                  <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded ${category === "budget" ? "bg-amber-100 text-amber-900" : "bg-neutral-100 text-neutral-600"}`}>
+                    {category === "budget" ? "Budsjett" : "Brand"}
+                  </span>
                 </a>
                 <span className="text-xs text-neutral-500 font-mono whitespace-nowrap">
                   {isLink ? "↗" : d.size_bytes ? `${Math.round(d.size_bytes / 1024)} KB ↓` : "↓"}

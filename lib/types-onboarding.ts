@@ -75,6 +75,8 @@ export interface OnboardingInsights {
   updated_at: string;
 }
 
+export type DocumentCategory = "strategy" | "budget";
+
 export interface OnboardingDocument {
   id: number;
   session_id: string;
@@ -83,6 +85,7 @@ export interface OnboardingDocument {
   link_url: string | null;
   size_bytes: number | null;
   mime_type: string | null;
+  category: DocumentCategory;
   uploaded_at: string;
 }
 
