@@ -289,10 +289,11 @@ function PlatformGuide({ platform }: { platform: OnboardingPlatform }) {
       <Guide
         steps={[
           "Gå til business.facebook.com",
+          "Velg riktig Business Manager (øverst til venstre)",
           "Innstillinger → Brukere → Partnere",
           "Legg til → Gi partner tilgang til aktiver",
           "Skriv inn Simpleness byrå-ID (under)",
-          "Velg aktiver: Side, Annonsekonto, Instagram, Pixel, Catalog, Domain",
+          "Velg aktiver: Facebook-side, Annonsekonto, Instagram-konto, Pixel, Catalog, Domain",
           "Tilgangsnivå: Full tilgang",
         ]}
         copyValue="1757731204238112"
@@ -308,7 +309,7 @@ function PlatformGuide({ platform }: { platform: OnboardingPlatform }) {
           "Gå til analytics.google.com",
           "Velg riktig konto og eiendom (property)",
           "Admin (⚙️ nederst til venstre)",
-          "Eiendomstilgang → Legg til bruker",
+          "Konto- eller Eiendomstilgang → Legg til bruker",
           "E-post: performance@simpleness.no",
           "Tilgangsnivå: Administrator",
         ]}
@@ -322,9 +323,10 @@ function PlatformGuide({ platform }: { platform: OnboardingPlatform }) {
       <Guide
         steps={[
           "Gå til ads.google.com",
-          "Finn konto-ID øverst til høyre (format: 123-456-7890)",
+          "Finn konto-ID (format: 123-456-7890) — vises flere steder i grensesnittet",
           "Send konto-ID til kontaktpersonen din i Slack",
-          "Godkjenn forespørselen når den dukker opp i kontoen",
+          "Vi sender en tilgangsforespørsel til kontoen din",
+          "Godkjenn forespørselen når den dukker opp",
         ]}
       />
     );
@@ -352,6 +354,7 @@ function PlatformGuide({ platform }: { platform: OnboardingPlatform }) {
           "Business Settings → Members → Invite Members",
           "Legg til performance@simpleness.no, rolle: Business Admin",
           "Account Membership: Legg til alle aktuelle ad accounts (Account Admin)",
+          "Catalog Memberships: Legg til alle aktuelle cataloger",
         ]}
         copyValue="performance@simpleness.no"
         copyLabel="Simpleness e-post"
