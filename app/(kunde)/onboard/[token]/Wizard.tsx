@@ -545,6 +545,13 @@ function InsightStep({
     transaksjonsgebyr_pct: toNumOrNull(insights?.transaksjonsgebyr_pct),
     mkt_spend_arlig_nok: toNumOrNull(insights?.mkt_spend_arlig_nok),
     mkt_produksjon_arlig_nok: toNumOrNull(insights?.mkt_produksjon_arlig_nok),
+    nyhetsbrev_liste_antall: toNumOrNull(insights?.nyhetsbrev_liste_antall),
+    sms_liste_antall: toNumOrNull(insights?.sms_liste_antall),
+    nyhetsbrev_frekvens: insights?.nyhetsbrev_frekvens ?? null,
+    automatiske_eposter_aktivert: insights?.automatiske_eposter_aktivert ?? null,
+    automatiske_eposter_typer: insights?.automatiske_eposter_typer ?? [],
+    marketingsaktiviteter_fungerte: insights?.marketingsaktiviteter_fungerte ?? null,
+    marketingsaktiviteter_ikke_fungerte: insights?.marketingsaktiviteter_ikke_fungerte ?? null,
     submitted_at: insights?.submitted_at ?? null,
     updated_at: insights?.updated_at ?? "",
   }));
@@ -586,8 +593,6 @@ function InsightStep({
     setSubmitting(true);
     // Final save with full data, then lock
     await saveInsightsAction(token, {
-      forretningsmal: data.forretningsmal,
-      omsetningsmal: data.omsetningsmal,
       prioritet: data.prioritet,
       utfordringer: data.utfordringer,
       malgruppe: data.malgruppe,
@@ -595,12 +600,8 @@ function InsightStep({
       referanser_anti: data.referanser_anti,
       ambassadorer_kreatorer: data.ambassadorer_kreatorer,
       prioriterte_produkter: data.prioriterte_produkter,
-      snittordre_nok: data.snittordre_nok,
       sesongvariasjoner: data.sesongvariasjoner,
       rabatter_bundles: data.rabatter_bundles,
-      manedlig_annonsebudsjett_nok: data.manedlig_annonsebudsjett_nok,
-      kpis: data.kpis,
-      slack_medlemmer: data.slack_medlemmer,
       suksess_definisjon: data.suksess_definisjon,
       noe_mer: data.noe_mer,
       salgsmal_fjoraret_nok: data.salgsmal_fjoraret_nok,
@@ -615,16 +616,17 @@ function InsightStep({
       transaksjonsgebyr_pct: data.transaksjonsgebyr_pct,
       mkt_spend_arlig_nok: data.mkt_spend_arlig_nok,
       mkt_produksjon_arlig_nok: data.mkt_produksjon_arlig_nok,
+      nyhetsbrev_liste_antall: data.nyhetsbrev_liste_antall,
+      sms_liste_antall: data.sms_liste_antall,
+      nyhetsbrev_frekvens: data.nyhetsbrev_frekvens,
+      automatiske_eposter_aktivert: data.automatiske_eposter_aktivert,
+      automatiske_eposter_typer: data.automatiske_eposter_typer,
+      marketingsaktiviteter_fungerte: data.marketingsaktiviteter_fungerte,
+      marketingsaktiviteter_ikke_fungerte: data.marketingsaktiviteter_ikke_fungerte,
     });
     await submitInsightsAction(token);
     setSubmitting(false);
     onSubmit();
-  }
-
-  function toggleKpi(kpi: string) {
-    const arr = data.kpis ?? [];
-    const next = arr.includes(kpi) ? arr.filter((k) => k !== kpi) : [...arr, kpi];
-    patch("kpis", next);
   }
 
   return (
@@ -693,7 +695,7 @@ function InsightStep({
           </Row3>
         </SubSection>
 
-        <SubSection title="Marketing">
+        <SubSection title="Marketingbudsjett">
           <Row2>
             <Field label="Mkt-spend årlig">
               <NumberInput suffix="kr" value={data.mkt_spend_arlig_nok} onChange={(v) => patch("mkt_spend_arlig_nok", v)} placeholder="4 158 000" disabled={locked} />
@@ -721,16 +723,58 @@ function InsightStep({
         </SubSection>
       </Card>
 
-      <Card title="Forretning og mål">
-        <Field label="Forretnings- og markedsmål neste 12 måneder">
-          <Textarea value={data.forretningsmal ?? ""} onChange={(v) => patch("forretningsmal", v)} placeholder="Hva skal vi sammen oppnå?" disabled={locked} />
+      <Card title="Marketing">
+        <Row2>
+          <Field label="Hvor mange har dere på nyhetsbrevliste?">
+            <NumberInput suffix="personer" value={data.nyhetsbrev_liste_antall} onChange={(v) => patch("nyhetsbrev_liste_antall", v)} placeholder="12 000" disabled={locked} />
+          </Field>
+          <Field label="Hvor mange har dere på SMS-liste?">
+            <NumberInput suffix="personer" value={data.sms_liste_antall} onChange={(v) => patch("sms_liste_antall", v)} placeholder="3 000" disabled={locked} />
+          </Field>
+        </Row2>
+        <Field label="Hvor ofte sender dere ut nyhetsbrev?">
+          <Input value={data.nyhetsbrev_frekvens ?? ""} onChange={(v) => patch("nyhetsbrev_frekvens", v)} placeholder="f.eks. én gang per uke" disabled={locked} />
+        </Field>
+
+        <Field label="Har dere satt opp automatiske e-poster?">
+          <ChipGroup>
+            <Chip active={data.automatiske_eposter_aktivert === true} onClick={() => patch("automatiske_eposter_aktivert", true)} disabled={locked}>Ja</Chip>
+            <Chip active={data.automatiske_eposter_aktivert === false} onClick={() => { patch("automatiske_eposter_aktivert", false); patch("automatiske_eposter_typer", []); }} disabled={locked}>Nei</Chip>
+          </ChipGroup>
+        </Field>
+        {data.automatiske_eposter_aktivert === true && (
+          <Field label="Hvilke?">
+            <ChipGroup>
+              {["Velkomstserie", "Forlatt handlekurv", "E-poster knyttet til omsetning per kunde", "Annet"].map((opt) => {
+                const arr = data.automatiske_eposter_typer ?? [];
+                const active = arr.includes(opt);
+                return (
+                  <Chip
+                    key={opt}
+                    active={active}
+                    onClick={() => patch("automatiske_eposter_typer", active ? arr.filter((x) => x !== opt) : [...arr, opt])}
+                    disabled={locked}
+                  >
+                    {opt}
+                  </Chip>
+                );
+              })}
+            </ChipGroup>
+          </Field>
+        )}
+
+        <Field label="Hvilke markedsaktiviteter har fungert bra siste 24 mndr?">
+          <Textarea value={data.marketingsaktiviteter_fungerte ?? ""} onChange={(v) => patch("marketingsaktiviteter_fungerte", v)} placeholder="Kampanjer, kanaler, samarbeid, lanseringer — det som har gitt resultater." disabled={locked} />
+        </Field>
+        <Field label="Hvilke markedsaktiviteter har ikke fungert?">
+          <Textarea value={data.marketingsaktiviteter_ikke_fungerte ?? ""} onChange={(v) => patch("marketingsaktiviteter_ikke_fungerte", v)} placeholder="Det dere har prøvd som ikke ga ønsket effekt." disabled={locked} />
         </Field>
         <Field label="Største utfordringer i vekst- og markedsarbeidet">
-          <Textarea value={data.utfordringer ?? ""} onChange={(v) => patch("utfordringer", v)} placeholder="Det som står i veien i dag" disabled={locked} />
+          <Textarea value={data.utfordringer ?? ""} onChange={(v) => patch("utfordringer", v)} placeholder="Det som står i veien i dag." disabled={locked} />
         </Field>
       </Card>
 
-      <Card title="Målgruppe og posisjonering">
+      <Card title="Merkevare og posisjonering">
         <Field label="Målgruppe(r) og kundeinnsikt">
           <Textarea value={data.malgruppe ?? ""} onChange={(v) => patch("malgruppe", v)} placeholder="Hvem er kundene? Segmenter, demografi, behov." disabled={locked} />
         </Field>
@@ -744,44 +788,23 @@ function InsightStep({
           <Textarea value={data.ambassadorer_kreatorer ?? ""} onChange={(v) => patch("ambassadorer_kreatorer", v)} placeholder="Talspersoner og innholdsskapere dere bruker eller vurderer." disabled={locked} />
         </Field>
         <Field label="Strategi- og brand-materiell" optional>
-          <Upload token={token} documents={documents} disabled={locked} />
+          <Upload token={token} documents={documents} category="strategy" disabled={locked} />
         </Field>
       </Card>
 
-      <Card title="Produkt og pris">
-        <Field label="Hvilke produkter er prioritet å selge mer av?">
-          <Textarea value={data.prioriterte_produkter ?? ""} onChange={(v) => patch("prioriterte_produkter", v)} placeholder="Bestselgere, nyheter, varer dere har mye av, eller produkter som er strategisk viktige å fremme." disabled={locked} />
+      <Card title="Produkt og salg">
+        <Field label="Fortell litt om produktsortimentet" hint="Hvor ofte har dere nyheter? Hva er bestselgere? Har dere nye kategorier eller produkter som er strategisk viktige?">
+          <Textarea value={data.prioriterte_produkter ?? ""} onChange={(v) => patch("prioriterte_produkter", v)} placeholder="" disabled={locked} />
         </Field>
-        <Field label="Snittordre">
-          <InputSuffix value={data.snittordre_nok?.toString() ?? ""} suffix="NOK" onChange={(v) => patch("snittordre_nok", v ? parseInt(v.replace(/\D/g, ""), 10) || null : null)} placeholder="850" disabled={locked} />
+        <Field label="Sesongvariasjoner og største salgsperioder" hint="Hvordan spiller sesong inn for dere? I hvilke perioder har dere mest salg?">
+          <Textarea value={data.sesongvariasjoner ?? ""} onChange={(v) => patch("sesongvariasjoner", v)} placeholder="" disabled={locked} />
         </Field>
-        <Field label="Sesongvariasjoner og største salgsperioder">
-          <Textarea value={data.sesongvariasjoner ?? ""} onChange={(v) => patch("sesongvariasjoner", v)} disabled={locked} />
-        </Field>
-        <Field label="Rabatter, bundles og kampanjer">
-          <Textarea value={data.rabatter_bundles ?? ""} onChange={(v) => patch("rabatter_bundles", v)} placeholder="Hva dere bruker eller kan bruke — medlemspriser, pakketilbud, sesongkampanjer." disabled={locked} />
-        </Field>
-      </Card>
-
-      <Card title="Økonomi og nøkkeltall">
-        <Field label="Månedlig annonsebudsjett">
-          <InputSuffix value={data.manedlig_annonsebudsjett_nok?.toString() ?? ""} suffix="NOK / mnd" onChange={(v) => patch("manedlig_annonsebudsjett_nok", v ? parseInt(v.replace(/\D/g, ""), 10) || null : null)} placeholder="50 000" disabled={locked} />
-        </Field>
-        <Field label="Hvilke KPI-er styrer dere etter?">
-          <ChipGroup>
-            {["Topplinje", "Dekningsbidrag", "CAC", "LTV", "ROAS", "MER", "aMER"].map((kpi) => (
-              <Chip key={kpi} active={(data.kpis ?? []).includes(kpi)} onClick={() => toggleKpi(kpi)} disabled={locked}>
-                {kpi}
-              </Chip>
-            ))}
-          </ChipGroup>
+        <Field label="Salgsutløsende budskap" hint="Hva dere bruker eller kan bruke — medlemspriser, pakketilbud, sesongkampanjer etc.">
+          <Textarea value={data.rabatter_bundles ?? ""} onChange={(v) => patch("rabatter_bundles", v)} placeholder="" disabled={locked} />
         </Field>
       </Card>
 
       <Card title="Avslutning">
-        <Field label="Hvem skal være med i Slack-kanalen?">
-          <Textarea value={data.slack_medlemmer ?? ""} onChange={(v) => patch("slack_medlemmer", v)} placeholder="Navn og e-post på dem som skal med fra deres side." disabled={locked} />
-        </Field>
         <Field label="Hvordan ser suksess ut for dere?" optional>
           <Textarea value={data.suksess_definisjon ?? ""} onChange={(v) => patch("suksess_definisjon", v)} placeholder="Hvis vi ser tilbake om 12 måneder — hva må ha skjedd for at dere er fornøyd?" disabled={locked} />
         </Field>
@@ -1005,16 +1028,16 @@ function NumberInput({
 }: {
   value: number | null;
   onChange: (v: number | null) => void;
-  suffix: "kr" | "%";
+  suffix: string;
   placeholder?: string;
   decimals?: boolean;
   disabled?: boolean;
 }) {
-  // Format display: kr → grouped thousands (1 290 000), % with decimals → as-is
+  // Format display: grouped thousands for integer counts, % with decimals → as-is
   function display(n: number | null): string {
     if (n === null) return "";
-    if (suffix === "kr") return n.toLocaleString("nb-NO").replace(/,/g, " ");
-    return decimals ? String(n).replace(".", ",") : String(n);
+    if (!decimals) return n.toLocaleString("nb-NO").replace(/,/g, " ");
+    return String(n).replace(".", ",");
   }
   const [raw, setRaw] = useState<string>(display(value));
 
@@ -1055,13 +1078,15 @@ function NumberInput({
   );
 }
 
-function Field({ label, optional, children }: { label: string; optional?: boolean; children: React.ReactNode }) {
+function Field({ label, hint, optional, children }: { label: string; hint?: string; optional?: boolean; children: React.ReactNode }) {
   return (
     <div className="mb-6 last:mb-0">
-      <label className="block text-sm font-medium text-neutral-900 mb-2">
+      <label className="block text-sm font-medium text-neutral-900 mb-1">
         {label}
         {optional && <span className="ml-1.5 text-xs font-normal text-neutral-400">valgfritt</span>}
       </label>
+      {hint && <p className="text-[13px] text-neutral-500 mb-2 leading-snug">{hint}</p>}
+      {!hint && <div className="mb-1" />}
       {children}
     </div>
   );
@@ -1109,34 +1134,6 @@ function Textarea({
       disabled={disabled}
       className="w-full min-h-[80px] resize-y rounded-lg border border-neutral-200 px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-neutral-400 disabled:bg-neutral-50 disabled:text-neutral-500"
     />
-  );
-}
-
-function InputSuffix({
-  value,
-  onChange,
-  placeholder,
-  suffix,
-  disabled,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  suffix: string;
-  disabled?: boolean;
-}) {
-  return (
-    <div className="inline-flex items-center bg-white border border-neutral-200 rounded-lg overflow-hidden max-w-[220px]">
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        disabled={disabled}
-        className="flex-1 min-w-0 border-0 bg-transparent px-3 py-2 text-sm text-right font-mono focus:outline-none disabled:text-neutral-500"
-      />
-      <span className="px-3 py-2 bg-neutral-50 border-l border-neutral-200 font-mono text-[13px] text-neutral-500">{suffix}</span>
-    </div>
   );
 }
 

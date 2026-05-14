@@ -71,6 +71,15 @@ export interface OnboardingInsights {
   mkt_spend_arlig_nok: number | null;
   mkt_produksjon_arlig_nok: number | null;
 
+  // Marketing
+  nyhetsbrev_liste_antall: number | null;
+  sms_liste_antall: number | null;
+  nyhetsbrev_frekvens: string | null;
+  automatiske_eposter_aktivert: boolean | null;
+  automatiske_eposter_typer: string[] | null;
+  marketingsaktiviteter_fungerte: string | null;
+  marketingsaktiviteter_ikke_fungerte: string | null;
+
   submitted_at: string | null;
   updated_at: string;
 }

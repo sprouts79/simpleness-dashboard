@@ -85,29 +85,27 @@ export default async function KundeOnboardingPage({ params }: PageProps) {
               <Field label="Mkt-produksjon årlig" value={fmtKr(insights.mkt_produksjon_arlig_nok)} />
               <Field label="Hva er viktigst de neste 12 månedene" value={insights.prioritet} />
             </Section>
-            <Section title="Forretning og mål">
-              <Field label="Forretnings- og markedsmål" value={insights.forretningsmal} />
-              <Field label="Omsetningsmål" value={insights.omsetningsmal} />
+            <Section title="Marketing">
+              <Field label="Nyhetsbrevliste" value={fmtCount(insights.nyhetsbrev_liste_antall)} />
+              <Field label="SMS-liste" value={fmtCount(insights.sms_liste_antall)} />
+              <Field label="Nyhetsbrev-frekvens" value={insights.nyhetsbrev_frekvens} />
+              <Field label="Automatiske e-poster" value={fmtAutoEposter(insights.automatiske_eposter_aktivert, insights.automatiske_eposter_typer)} />
+              <Field label="Hva har fungert (siste 24 mndr)" value={insights.marketingsaktiviteter_fungerte} />
+              <Field label="Hva har ikke fungert" value={insights.marketingsaktiviteter_ikke_fungerte} />
               <Field label="Største utfordringer" value={insights.utfordringer} />
             </Section>
-            <Section title="Målgruppe og posisjonering">
+            <Section title="Merkevare og posisjonering">
               <Field label="Målgruppe og kundeinnsikt" value={insights.malgruppe} />
               <Field label="Konkurrenter" value={insights.konkurrenter} />
               <Field label="Referanser og anti-referanser" value={insights.referanser_anti} />
               <Field label="Ambassadører og kreatører" value={insights.ambassadorer_kreatorer} />
             </Section>
-            <Section title="Produkt og pris">
-              <Field label="Prioriterte produkter" value={insights.prioriterte_produkter} />
-              <Field label="Snittordre" value={insights.snittordre_nok ? `${insights.snittordre_nok} NOK` : null} />
+            <Section title="Produkt og salg">
+              <Field label="Produktsortimentet" value={insights.prioriterte_produkter} />
               <Field label="Sesongvariasjoner" value={insights.sesongvariasjoner} />
-              <Field label="Rabatter, bundles, kampanjer" value={insights.rabatter_bundles} />
-            </Section>
-            <Section title="Økonomi og nøkkeltall">
-              <Field label="Månedlig annonsebudsjett" value={insights.manedlig_annonsebudsjett_nok ? `${insights.manedlig_annonsebudsjett_nok} NOK / mnd` : null} />
-              <Field label="KPI-er" value={insights.kpis?.join(", ") ?? null} />
+              <Field label="Salgsutløsende budskap" value={insights.rabatter_bundles} />
             </Section>
             <Section title="Avslutning">
-              <Field label="Slack-medlemmer" value={insights.slack_medlemmer} />
               <Field label="Hvordan ser suksess ut" value={insights.suksess_definisjon} />
               <Field label="Noe mer" value={insights.noe_mer} />
             </Section>
@@ -186,6 +184,18 @@ function fmtPct(n: number | string | null | undefined): string | null {
   const num = typeof n === "number" ? n : parseFloat(String(n));
   if (!Number.isFinite(num)) return null;
   return `${String(num).replace(".", ",")} %`;
+}
+
+function fmtCount(n: number | null | undefined): string | null {
+  if (n === null || n === undefined) return null;
+  return `${n.toLocaleString("nb-NO").replace(/,/g, " ")} personer`;
+}
+
+function fmtAutoEposter(aktivert: boolean | null, typer: string[] | null): string | null {
+  if (aktivert === null || aktivert === undefined) return null;
+  if (aktivert === false) return "Nei";
+  if (!typer || typer.length === 0) return "Ja";
+  return `Ja — ${typer.join(", ")}`;
 }
 
 function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
