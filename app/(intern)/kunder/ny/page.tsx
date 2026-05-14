@@ -25,6 +25,7 @@ export default function NyKundePage() {
   );
   const [projActive, setProjActive] = useState<Set<string>>(new Set());
   const [metaAccountId, setMetaAccountId] = useState("");
+  const [slackInviteUrl, setSlackInviteUrl] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ slug: string; token: string } | null>(null);
@@ -67,6 +68,7 @@ export default function NyKundePage() {
       contactName: contactName.trim(),
       contactEmail: contactEmail.trim(),
       simplenessContact: simplenessKontakt,
+      slackInviteUrl: slackInviteUrl.trim() || null,
       metaAccountId: metaAccountId.trim() || null,
       performanceSlugs: Array.from(perfActive),
       prosjektSlugs: Array.from(projActive),
@@ -168,6 +170,12 @@ export default function NyKundePage() {
               </Chip>
             ))}
           </ChipGroup>
+        </Field>
+      </Card>
+
+      <Card title="Slack-kanal" hint="valgfritt — kan legges til senere">
+        <Field label="Invite-lenke til kundens kanal">
+          <Input value={slackInviteUrl} onChange={setSlackInviteUrl} placeholder="https://join.slack.com/share/..." mono />
         </Field>
       </Card>
 

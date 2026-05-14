@@ -32,6 +32,7 @@ export default async function OnboardPage({ params }: PageProps) {
       kundeNavn={kunde.name}
       contactName={kunde.contact_name ?? "deg"}
       simplenessKontakt={kunde.simpleness_contact ?? "Jonas"}
+      slackInviteUrl={kunde.slack_invite_url}
       session={session}
       access={access}
       insights={insights}

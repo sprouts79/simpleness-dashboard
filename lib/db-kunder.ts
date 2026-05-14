@@ -24,7 +24,7 @@ export * from "./types-kunder";
 export async function getKunder(): Promise<Kunde[]> {
   const { data, error } = await supabase
     .from("clients")
-    .select("id, name, slug, meta_account_id, contact_name, contact_email, simpleness_contact, lifecycle_stage, archived_at, created_at")
+    .select("id, name, slug, meta_account_id, contact_name, contact_email, simpleness_contact, slack_invite_url, lifecycle_stage, archived_at, created_at")
     .order("name", { ascending: true });
 
   if (error) throw new Error(`getKunder: ${error.message}`);
@@ -34,7 +34,7 @@ export async function getKunder(): Promise<Kunde[]> {
 export async function getKunde(slug: string): Promise<Kunde | null> {
   const { data, error } = await supabase
     .from("clients")
-    .select("id, name, slug, meta_account_id, contact_name, contact_email, simpleness_contact, lifecycle_stage, archived_at, created_at")
+    .select("id, name, slug, meta_account_id, contact_name, contact_email, simpleness_contact, slack_invite_url, lifecycle_stage, archived_at, created_at")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -64,6 +64,7 @@ export interface CreateKundeInput {
   contactName: string;
   contactEmail: string;
   simplenessContact: string;
+  slackInviteUrl?: string | null;
   metaAccountId?: string | null;
   performanceSlugs: string[];
   prosjektSlugs: string[];
@@ -80,10 +81,11 @@ export async function createKunde(input: CreateKundeInput): Promise<{ kunde: Kun
       contact_name: input.contactName?.trim() || null,
       contact_email: input.contactEmail?.trim() || null,
       simpleness_contact: input.simplenessContact,
+      slack_invite_url: input.slackInviteUrl?.trim() || null,
       lifecycle_stage: "onboarding_ikke_startet",
       status: "green",
     })
-    .select("id, name, slug, meta_account_id, contact_name, contact_email, simpleness_contact, lifecycle_stage, archived_at, created_at")
+    .select("id, name, slug, meta_account_id, contact_name, contact_email, simpleness_contact, slack_invite_url, lifecycle_stage, archived_at, created_at")
     .single();
 
   if (clientError) throw new Error(`createKunde: ${clientError.message}`);
@@ -105,6 +107,14 @@ export async function createKunde(input: CreateKundeInput): Promise<{ kunde: Kun
   }
 
   return { kunde: client as Kunde };
+}
+
+export async function updateKundeSlackInvite(slug: string, url: string | null): Promise<void> {
+  const { error } = await supabase
+    .from("clients")
+    .update({ slack_invite_url: url?.trim() || null })
+    .eq("slug", slug);
+  if (error) throw new Error(`updateKundeSlackInvite: ${error.message}`);
 }
 
 export async function updateKundeLifecycle(slug: string, stage: LifecycleStage): Promise<void> {

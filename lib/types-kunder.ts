@@ -25,6 +25,7 @@ export interface Kunde {
   contact_name: string | null;
   contact_email: string | null;
   simpleness_contact: string | null;
+  slack_invite_url: string | null;
   lifecycle_stage: LifecycleStage;
   archived_at: string | null;
   created_at: string;

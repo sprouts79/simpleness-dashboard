@@ -23,6 +23,7 @@ interface Props {
   kundeNavn: string;
   contactName: string;
   simplenessKontakt: string;
+  slackInviteUrl: string | null;
   session: OnboardingSession;
   access: OnboardingAccess[];
   insights: OnboardingInsights | null;
@@ -50,6 +51,7 @@ export default function Wizard(props: Props) {
       <Welcome
         kundeNavn={props.kundeNavn}
         simplenessKontakt={props.simplenessKontakt}
+        slackInviteUrl={props.slackInviteUrl}
         onStart={() => goTo(1)}
       />
     );
@@ -98,10 +100,12 @@ export default function Wizard(props: Props) {
 function Welcome({
   kundeNavn,
   simplenessKontakt,
+  slackInviteUrl,
   onStart,
 }: {
   kundeNavn: string;
   simplenessKontakt: string;
+  slackInviteUrl: string | null;
   onStart: () => void;
 }) {
   return (
@@ -114,6 +118,21 @@ function Welcome({
       <p className="text-[15px] text-neutral-600 mb-8 leading-relaxed">
         Vi trenger tilganger og litt bakgrunnsinformasjon for å forberede oss til oppstartsmøtet. Det tar ca. 15 minutter, og du kan stoppe og fortsette når det passer.
       </p>
+
+      {slackInviteUrl && (
+        <a
+          href={slackInviteUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center justify-between gap-4 mb-8 px-5 py-4 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 transition-colors"
+        >
+          <div>
+            <div className="text-[15px] font-medium text-neutral-900">Bli med i Slack-kanalen</div>
+            <div className="text-[13px] text-neutral-500 mt-0.5">Spørsmål underveis? Ta dem her — vi svarer raskt.</div>
+          </div>
+          <span className="text-[#515b12] text-sm font-medium whitespace-nowrap">Åpne Slack →</span>
+        </a>
+      )}
 
       <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden mb-8">
         <StepRow num="1" name="Tilganger"      time="~5 min"  />
