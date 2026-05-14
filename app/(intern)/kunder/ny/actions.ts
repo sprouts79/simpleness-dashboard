@@ -15,9 +15,6 @@ export async function opprettKundeAction(input: CreateKundeInput): Promise<NyKun
   if (!input.name?.trim() || !input.slug?.trim()) {
     return { ok: false, error: "Navn og slug er påkrevd" };
   }
-  if (!input.contactName?.trim() || !input.contactEmail?.trim()) {
-    return { ok: false, error: "Kontaktperson hos kunden er påkrevd" };
-  }
   if (!input.simplenessContact) {
     return { ok: false, error: "Velg Simpleness-kontakt" };
   }

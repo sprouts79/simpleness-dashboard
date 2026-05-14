@@ -86,7 +86,7 @@ export default function NyKundePage() {
         <div className="flex items-start gap-4 p-5 rounded-xl bg-[#dff7cc] border border-[#41bd0e]/25 mb-6">
           <span className="w-6 h-6 rounded-full bg-[#41bd0e] text-white inline-flex items-center justify-center text-xs font-bold flex-shrink-0">✓</span>
           <div className="text-sm text-neutral-900 flex-1">
-            <strong className="font-semibold">{name}</strong> er opprettet. Send onboarding-lenken til {contactName}:
+            <strong className="font-semibold">{name}</strong> er opprettet. {contactName ? `Send onboarding-lenken til ${contactName}:` : "Onboarding-lenke:"}
             <div className="flex items-center gap-2 mt-2 font-mono text-[13px] text-neutral-700">
               <code className="flex-1 truncate">{url}</code>
               <button
@@ -132,7 +132,7 @@ export default function NyKundePage() {
         </Field>
       </Card>
 
-      <Card title="Kontakt">
+      <Card title="Kontakt" hint="valgfritt — kan legges til senere">
         <Field label="Kontaktperson hos kunden">
           <Input value={contactName} onChange={setContactName} placeholder="Anna Bjørklund" />
         </Field>
