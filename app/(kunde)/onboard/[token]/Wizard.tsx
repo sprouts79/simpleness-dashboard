@@ -855,7 +855,7 @@ function NextStepsScreen({
       {completed && (
         <div className="flex items-center gap-3 p-4 mb-8 rounded-xl bg-[#dff7cc] border border-[#41bd0e]/25 text-sm text-neutral-900">
           <span className="w-5 h-5 rounded-full bg-[#41bd0e] text-white inline-flex items-center justify-center text-[10px] font-bold flex-shrink-0">✓</span>
-          <span>Takk! Vi har fått alt vi trenger og tar det videre nå.</span>
+          <span>Takk! Da har vi det vi trenger for å starte arbeidet.</span>
         </div>
       )}
 
@@ -864,11 +864,11 @@ function NextStepsScreen({
       </header>
 
       <ol className="border-l border-neutral-200 ml-1.5 pl-7 mb-12 space-y-6">
-        <TimelineItem when="I dag"          what="Onboarding fullført"     who="Tilganger og innsikt levert" status="done" />
-        <TimelineItem when="Dag 1–2"        what="Intern gjennomgang"      who="Teamet setter seg inn i kontoer og svar. Vi oppretter Slack-kanal med dere." status="current" />
-        <TimelineItem when="Dag 2"          what="Tilgangsbekreftelse"     who="Vi melder fra på Slack hvis noe mangler." />
-        <TimelineItem when="Innen uke 1"    what="Oppstartsmøte"           who="Plan for første 30 dager. Vi avtaler hvordan dere klargjør og deler asset-bank — bilder, video, tekst." />
-        <TimelineItem when="Uke 2–3"        what="Kampanjestart"           who="Første kampanjer i drift." />
+        <TimelineItem when="I dag"        what="Onboarding fullført"  who="Tilganger og innsikt levert" status="done" />
+        <TimelineItem when="Uke 1"        what="Tilstandsanalyse"     who="Vi setter oss inn i kontoer og tar en gjennomgang av sporing, signalstyrke og produktfeed." status="current" />
+        <TimelineItem when="Uke 2"        what="Oppstartsmøte"        who="Vi blir enige om mål og plan for de neste 3 månedene." />
+        <TimelineItem when="Uke 3–4"      what="Annonseproduksjon"    who="Vi produserer første runde med nye annonser." />
+        <TimelineItem when="Innen uke 5"  what="Kampanjestart"        who="Første kampanjer i drift." />
       </ol>
 
       <h3 className="text-lg font-semibold text-neutral-900 mb-4">Vanlige spørsmål</h3>
