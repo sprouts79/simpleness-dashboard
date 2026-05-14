@@ -36,8 +36,10 @@ interface Props {
 type StepKey = 0 | 1 | 2 | 3;
 
 export default function Wizard(props: Props) {
-  // initial step: completed → 3, else session's current_step
-  const initialStep: StepKey = (props.session.completed_at ? 3 : (props.session.current_step as StepKey)) ?? 0;
+  // initial step: completed → 0 (Welcome) so delte lenker lander på Velkomst,
+  // ellers fortsett der kunden slapp
+  const completed = Boolean(props.session.completed_at);
+  const initialStep: StepKey = completed ? 0 : ((props.session.current_step as StepKey) ?? 0);
   const [step, setStep] = useState<StepKey>(initialStep);
 
   function goTo(s: StepKey) {
@@ -55,7 +57,8 @@ export default function Wizard(props: Props) {
         kundeNavn={props.kundeNavn}
         simplenessKontakt={props.simplenessKontakt}
         slackInviteUrl={props.slackInviteUrl}
-        onStart={() => goTo(1)}
+        completed={completed}
+        onStart={() => goTo(completed ? 3 : 1)}
       />
     );
   }
@@ -104,11 +107,13 @@ function Welcome({
   kundeNavn,
   simplenessKontakt,
   slackInviteUrl,
+  completed,
   onStart,
 }: {
   kundeNavn: string;
   simplenessKontakt: string;
   slackInviteUrl: string | null;
+  completed: boolean;
   onStart: () => void;
 }) {
   return (
@@ -118,9 +123,15 @@ function Welcome({
         <p className="mt-2 text-neutral-500">Onboarding</p>
       </header>
 
-      <p className="text-[15px] text-neutral-600 mb-8 leading-relaxed">
-        Vi trenger tilganger og litt bakgrunnsinformasjon for å forberede oss til oppstartsmøtet. Det tar ca. 15 minutter, og du kan stoppe og fortsette når det passer.
-      </p>
+      {completed ? (
+        <p className="text-[15px] text-neutral-600 mb-8 leading-relaxed">
+          Du har sendt inn onboardingen. Se hva som skjer videre, eller bla tilbake i svarene dine.
+        </p>
+      ) : (
+        <p className="text-[15px] text-neutral-600 mb-8 leading-relaxed">
+          Vi trenger tilganger og litt bakgrunnsinformasjon for å forberede oss til oppstartsmøtet. Det tar ca. 15 minutter, og du kan stoppe og fortsette når det passer.
+        </p>
+      )}
 
       {slackInviteUrl && (
         <a
@@ -146,7 +157,7 @@ function Welcome({
 
       <div className="flex justify-end">
         <button onClick={onStart} className="px-4 py-2.5 rounded-lg bg-neutral-900 text-white text-sm font-medium hover:bg-black transition-colors">
-          Start →
+          {completed ? "Se Veien videre →" : "Start →"}
         </button>
       </div>
 
