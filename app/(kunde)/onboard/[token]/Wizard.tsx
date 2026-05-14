@@ -875,7 +875,7 @@ function NextStepsScreen({
       <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden mb-8">
         <FaqItem q="Hvem ser informasjonen jeg har sendt inn?" a="Lagres internt i Simpleness og brukes kun av teamet som jobber med kontoen din. Ingenting deles eksternt." defaultOpen />
         <FaqItem q="Hva om jeg ikke fikk gitt alle tilgangene?" a="Helt greit. Vi sender en bekreftelse etter at vi har gått gjennom det dere har levert, og ber om det som mangler. De obligatoriske tilgangene trenger vi før vi kan starte — de valgfrie kan ordnes underveis." />
-        <FaqItem q="Hva om noe er feil i svarene jeg ga?" a="Send en melding til kontaktpersonen din i Slack, eller ta det opp i oppstartsmøtet. Ingen drama." />
+        <FaqItem q="Hva om noe er feil i svarene jeg ga?" a="Send en melding til kontaktpersonen din i Slack, eller ta det opp i oppstartsmøtet." />
       </div>
 
       <div className="pt-6 border-t border-neutral-200">
