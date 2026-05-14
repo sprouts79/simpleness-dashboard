@@ -793,14 +793,14 @@ function InsightStep({
       </Card>
 
       <Card title="Produkt og salg">
-        <Field label="Fortell litt om produktsortimentet" hint="Hvor ofte har dere nyheter? Hva er bestselgere? Har dere nye kategorier eller produkter som er strategisk viktige?">
-          <Textarea value={data.prioriterte_produkter ?? ""} onChange={(v) => patch("prioriterte_produkter", v)} placeholder="" disabled={locked} />
+        <Field label="Fortell litt om produktsortimentet">
+          <Textarea value={data.prioriterte_produkter ?? ""} onChange={(v) => patch("prioriterte_produkter", v)} placeholder="Hvor ofte har dere nyheter? Hva er bestselgere? Har dere nye kategorier eller produkter som er strategisk viktige?" disabled={locked} />
         </Field>
-        <Field label="Sesongvariasjoner og største salgsperioder" hint="Hvordan spiller sesong inn for dere? I hvilke perioder har dere mest salg?">
-          <Textarea value={data.sesongvariasjoner ?? ""} onChange={(v) => patch("sesongvariasjoner", v)} placeholder="" disabled={locked} />
+        <Field label="Sesongvariasjoner og største salgsperioder">
+          <Textarea value={data.sesongvariasjoner ?? ""} onChange={(v) => patch("sesongvariasjoner", v)} placeholder="Hvordan spiller sesong inn for dere? I hvilke perioder har dere mest salg?" disabled={locked} />
         </Field>
-        <Field label="Salgsutløsende budskap" hint="Hva dere bruker eller kan bruke — medlemspriser, pakketilbud, sesongkampanjer etc.">
-          <Textarea value={data.rabatter_bundles ?? ""} onChange={(v) => patch("rabatter_bundles", v)} placeholder="" disabled={locked} />
+        <Field label="Salgsutløsende budskap">
+          <Textarea value={data.rabatter_bundles ?? ""} onChange={(v) => patch("rabatter_bundles", v)} placeholder="Hva dere bruker eller kan bruke — medlemspriser, pakketilbud, sesongkampanjer etc." disabled={locked} />
         </Field>
       </Card>
 
@@ -1078,15 +1078,13 @@ function NumberInput({
   );
 }
 
-function Field({ label, hint, optional, children }: { label: string; hint?: string; optional?: boolean; children: React.ReactNode }) {
+function Field({ label, optional, children }: { label: string; optional?: boolean; children: React.ReactNode }) {
   return (
     <div className="mb-6 last:mb-0">
-      <label className="block text-sm font-medium text-neutral-900 mb-1">
+      <label className="block text-sm font-medium text-neutral-900 mb-2">
         {label}
         {optional && <span className="ml-1.5 text-xs font-normal text-neutral-400">valgfritt</span>}
       </label>
-      {hint && <p className="text-[13px] text-neutral-500 mb-2 leading-snug">{hint}</p>}
-      {!hint && <div className="mb-1" />}
       {children}
     </div>
   );
