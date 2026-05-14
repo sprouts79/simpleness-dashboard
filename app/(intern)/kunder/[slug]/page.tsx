@@ -53,14 +53,6 @@ export default async function KundeDetailPage({ params }: PageProps) {
         <SlackInviteEditor slug={kunde.slug} initialUrl={kunde.slack_invite_url} />
       </Card>
 
-      <Card title="Tilstandsanalyse">
-        <div className="px-5 py-4">
-          <Link href={`/kunder/${kunde.slug}/tilstandsanalyse`} className="text-sm text-[#515b12] hover:underline">
-            Åpne tilstandsanalyse →
-          </Link>
-        </div>
-      </Card>
-
       {session && (
         <Card title="Onboarding">
           <Row label="Token" value={session.token} mono />
@@ -83,6 +75,14 @@ export default async function KundeDetailPage({ params }: PageProps) {
           </div>
         </Card>
       )}
+
+      <Card title="Tilstandsanalyse">
+        <div className="px-5 py-4">
+          <Link href={`/kunder/${kunde.slug}/tilstandsanalyse`} className="text-sm text-[#515b12] hover:underline">
+            Åpne tilstandsanalyse →
+          </Link>
+        </div>
+      </Card>
 
       <Card title="Aktive leveranser">
         {rotLeveranser.length === 0 ? (
