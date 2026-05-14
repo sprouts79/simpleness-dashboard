@@ -17,6 +17,8 @@ import {
   submitInsightsAction,
   unlockInsightsAction,
   uploadDocumentAction,
+  addLinkAction,
+  deleteDocumentAction,
 } from "./actions";
 
 interface Props {
@@ -520,7 +522,8 @@ function InsightStep({
     utfordringer: insights?.utfordringer ?? null,
     malgruppe: insights?.malgruppe ?? null,
     konkurrenter: insights?.konkurrenter ?? null,
-    forbilder_ambassadorer: insights?.forbilder_ambassadorer ?? null,
+    referanser_anti: insights?.referanser_anti ?? null,
+    ambassadorer_kreatorer: insights?.ambassadorer_kreatorer ?? null,
     prioriterte_produkter: insights?.prioriterte_produkter ?? null,
     snittordre_nok: insights?.snittordre_nok ?? null,
     sesongvariasjoner: insights?.sesongvariasjoner ?? null,
@@ -565,7 +568,8 @@ function InsightStep({
       utfordringer: data.utfordringer,
       malgruppe: data.malgruppe,
       konkurrenter: data.konkurrenter,
-      forbilder_ambassadorer: data.forbilder_ambassadorer,
+      referanser_anti: data.referanser_anti,
+      ambassadorer_kreatorer: data.ambassadorer_kreatorer,
       prioriterte_produkter: data.prioriterte_produkter,
       snittordre_nok: data.snittordre_nok,
       sesongvariasjoner: data.sesongvariasjoner,
@@ -621,8 +625,11 @@ function InsightStep({
         <Field label="Konkurrenter">
           <Textarea value={data.konkurrenter ?? ""} onChange={(v) => patch("konkurrenter", v)} placeholder="Hvem måler dere dere mot?" disabled={locked} />
         </Field>
-        <Field label="Forbilder, anti-forbilder og ambassadører" optional>
-          <Textarea value={data.forbilder_ambassadorer ?? ""} onChange={(v) => patch("forbilder_ambassadorer", v)} placeholder="Merker dere ser opp til, merker dere ikke vil ligne på, og talspersoner / innholdsskapere dere bruker eller vurderer." disabled={locked} />
+        <Field label="Referanser og anti-referanser" optional>
+          <Textarea value={data.referanser_anti ?? ""} onChange={(v) => patch("referanser_anti", v)} placeholder="Merker dere ser opp til, og merker dere ikke vil ligne på." disabled={locked} />
+        </Field>
+        <Field label="Ambassadører og kreatører" optional>
+          <Textarea value={data.ambassadorer_kreatorer ?? ""} onChange={(v) => patch("ambassadorer_kreatorer", v)} placeholder="Talspersoner og innholdsskapere dere bruker eller vurderer." disabled={locked} />
         </Field>
         <Field label="Strategi- og brand-materiell" optional>
           <Upload token={token} documents={documents} disabled={locked} />
@@ -648,9 +655,9 @@ function InsightStep({
         <Field label="Månedlig annonsebudsjett">
           <InputSuffix value={data.manedlig_annonsebudsjett_nok?.toString() ?? ""} suffix="NOK / mnd" onChange={(v) => patch("manedlig_annonsebudsjett_nok", v ? parseInt(v.replace(/\D/g, ""), 10) || null : null)} placeholder="50 000" disabled={locked} />
         </Field>
-        <Field label="KPI-er dere følger">
+        <Field label="Hvilke KPI-er styrer dere etter?">
           <ChipGroup>
-            {["ROAS", "CAC", "LTV", "CTR", "CPA", "Bidragsmargin", "Returrate"].map((kpi) => (
+            {["Topplinje", "Dekningsbidrag", "CAC", "LTV", "ROAS", "MER", "aMER"].map((kpi) => (
               <Chip key={kpi} active={(data.kpis ?? []).includes(kpi)} onClick={() => toggleKpi(kpi)} disabled={locked}>
                 {kpi}
               </Chip>
@@ -733,7 +740,6 @@ function NextStepsScreen({
       <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden mb-8">
         <FaqItem q="Hvem ser informasjonen jeg har sendt inn?" a="Lagres internt i Simpleness og brukes kun av teamet som jobber med kontoen din. Ingenting deles eksternt." defaultOpen />
         <FaqItem q="Hva om jeg ikke fikk gitt alle tilgangene?" a="Helt greit. Vi sender en bekreftelse etter at vi har gått gjennom det dere har levert, og ber om det som mangler. De obligatoriske tilgangene trenger vi før vi kan starte — de valgfrie kan ordnes underveis." />
-        <FaqItem q="Hvem er min kontaktperson?" a={`${simplenessKontakt} hos Simpleness. De leder oppstartsmøtet og er med i Slack-kanalen vi deler.`} />
         <FaqItem q="Hva om noe er feil i svarene jeg ga?" a="Send en melding til kontaktpersonen din i Slack, eller ta det opp i oppstartsmøtet. Ingen drama." />
       </div>
 
@@ -946,16 +952,21 @@ function Upload({
   disabled?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [, startTransition] = useTransition();
+  const [pending, startTransition] = useTransition();
+  const [uploadingNames, setUploadingNames] = useState<string[]>([]);
+  const [linkUrl, setLinkUrl] = useState("");
+  const [linkPending, startLinkTransition] = useTransition();
+  const [linkError, setLinkError] = useState<string | null>(null);
 
   function pick() {
-    if (disabled) return;
+    if (disabled || pending) return;
     inputRef.current?.click();
   }
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     if (files.length === 0) return;
+    setUploadingNames(files.map((f) => f.name));
     startTransition(async () => {
       for (const f of files) {
         const fd = new FormData();
@@ -966,32 +977,126 @@ function Upload({
           // swallow — visning oppdateres ved revalidate
         }
       }
+      setUploadingNames([]);
     });
     e.target.value = "";
+  }
+
+  function submitLink() {
+    if (disabled || linkPending) return;
+    const url = linkUrl.trim();
+    if (!url) return;
+    setLinkError(null);
+    try {
+      new URL(url);
+    } catch {
+      setLinkError("Ugyldig URL");
+      return;
+    }
+    startLinkTransition(async () => {
+      try {
+        await addLinkAction(token, url);
+        setLinkUrl("");
+      } catch (e) {
+        setLinkError(e instanceof Error ? e.message : "Kunne ikke lagre lenken");
+      }
+    });
+  }
+
+  function removeDoc(id: number) {
+    if (disabled) return;
+    startTransition(async () => {
+      try {
+        await deleteDocumentAction(token, id);
+      } catch {
+        // swallow
+      }
+    });
   }
 
   return (
     <div>
       <div
         onClick={pick}
-        className={`border border-dashed rounded-xl p-7 text-center bg-white cursor-pointer ${
-          disabled ? "opacity-50 cursor-not-allowed" : "border-neutral-300 hover:border-neutral-400 hover:bg-neutral-50"
+        className={`relative border border-dashed rounded-xl p-7 text-center bg-white ${
+          disabled || pending ? "opacity-60 cursor-not-allowed" : "border-neutral-300 cursor-pointer hover:border-neutral-400 hover:bg-neutral-50"
         }`}
       >
-        <div className="text-sm font-medium text-neutral-700 mb-1">Klikk for å laste opp</div>
-        <div className="text-xs text-neutral-500">Strategidokumenter, brand-guide, lenke til asset-bank · maks 25 MB per fil</div>
+        {pending ? (
+          <div className="flex items-center justify-center gap-2.5 text-sm text-neutral-700">
+            <Spinner /> Laster opp …
+          </div>
+        ) : (
+          <>
+            <div className="text-sm font-medium text-neutral-700 mb-1">Klikk for å laste opp filer</div>
+            <div className="text-xs text-neutral-500">Strategidokumenter, brand-guide · maks 25 MB per fil</div>
+          </>
+        )}
       </div>
       <input ref={inputRef} type="file" multiple className="hidden" onChange={onChange} />
-      {documents.length > 0 && (
-        <ul className="mt-3 space-y-1">
+
+      <div className="mt-3">
+        <label className="block text-xs text-neutral-500 mb-1.5">Eller lim inn en lenke (Google Doc, Sheet, Drive-mappe …)</label>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={linkUrl}
+            onChange={(e) => setLinkUrl(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submitLink(); } }}
+            placeholder="https://docs.google.com/..."
+            disabled={disabled || linkPending}
+            className="flex-1 min-w-0 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-mono bg-white focus:outline-none focus:border-neutral-400 disabled:bg-neutral-50"
+          />
+          <button
+            onClick={submitLink}
+            disabled={disabled || linkPending || !linkUrl.trim()}
+            className="px-3 py-2 rounded-lg bg-neutral-900 text-white text-[13px] font-medium hover:bg-black disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+          >
+            {linkPending ? "…" : "Legg til"}
+          </button>
+        </div>
+        {linkError && <div className="mt-1.5 text-xs text-red-700">{linkError}</div>}
+      </div>
+
+      {(documents.length > 0 || uploadingNames.length > 0) && (
+        <ul className="mt-4 space-y-1.5">
           {documents.map((d) => (
-            <li key={d.id} className="text-xs text-neutral-600 flex items-center gap-2">
-              <span className="w-1 h-1 rounded-full bg-green-500" /> {d.filename}
+            <li key={d.id} className="flex items-center gap-2 text-[13px] text-neutral-700 group">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
+              {d.link_url ? (
+                <a href={d.link_url} target="_blank" rel="noreferrer" className="text-[#515b12] hover:underline truncate">{d.filename}</a>
+              ) : (
+                <span className="truncate">{d.filename}</span>
+              )}
+              {!disabled && (
+                <button
+                  onClick={() => removeDoc(d.id)}
+                  className="ml-auto text-xs text-neutral-400 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Fjern"
+                >
+                  ✕
+                </button>
+              )}
+            </li>
+          ))}
+          {uploadingNames.map((name) => (
+            <li key={`pending-${name}`} className="flex items-center gap-2 text-[13px] text-neutral-400">
+              <Spinner small /> <span className="truncate">{name}</span>
             </li>
           ))}
         </ul>
       )}
     </div>
+  );
+}
+
+function Spinner({ small }: { small?: boolean }) {
+  const size = small ? "w-3 h-3" : "w-4 h-4";
+  return (
+    <svg className={`${size} animate-spin text-neutral-500`} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" strokeWidth="3" />
+      <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+    </svg>
   );
 }
 

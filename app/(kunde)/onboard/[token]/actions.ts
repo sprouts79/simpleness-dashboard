@@ -9,6 +9,8 @@ import {
   lockInsights,
   unlockInsights,
   uploadDocument,
+  addDocumentLink,
+  deleteDocument,
   lifecycleStageFor,
   type OnboardingPlatform,
   type OnboardingInsights,
@@ -83,5 +85,19 @@ export async function uploadDocumentAction(token: string, formData: FormData) {
 
   const buf = await file.arrayBuffer();
   await uploadDocument(session.id, file.name, buf, file.type || "application/octet-stream");
+  revalidatePath(`/onboard/${token}`);
+}
+
+export async function addLinkAction(token: string, url: string) {
+  const session = await sessionByToken(token);
+  if (session.insights_locked) throw new Error("Onboarding er låst");
+  await addDocumentLink(session.id, url);
+  revalidatePath(`/onboard/${token}`);
+}
+
+export async function deleteDocumentAction(token: string, docId: number) {
+  const session = await sessionByToken(token);
+  if (session.insights_locked) throw new Error("Onboarding er låst");
+  await deleteDocument(session.id, docId);
   revalidatePath(`/onboard/${token}`);
 }

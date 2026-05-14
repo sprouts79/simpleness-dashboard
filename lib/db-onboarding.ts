@@ -240,3 +240,69 @@ export async function uploadDocument(
   await bumpLastActive(sessionId);
   return { document: data as OnboardingDocument };
 }
+
+export async function addDocumentLink(
+  sessionId: string,
+  url: string,
+  label?: string | null,
+): Promise<{ document: OnboardingDocument }> {
+  const trimmed = url.trim();
+  if (!trimmed) throw new Error("Tom lenke");
+
+  // Best-effort filename: provided label, else hostname + path
+  let filename = label?.trim() || "";
+  if (!filename) {
+    try {
+      const u = new URL(trimmed);
+      filename = `${u.hostname}${u.pathname === "/" ? "" : u.pathname}`;
+    } catch {
+      filename = trimmed;
+    }
+  }
+
+  const { data, error } = await supabase
+    .from("onboarding_documents")
+    .insert({
+      session_id: sessionId,
+      filename,
+      link_url: trimmed,
+      storage_path: null,
+    })
+    .select("*")
+    .single();
+
+  if (error) throw new Error(`addDocumentLink: ${error.message}`);
+  await bumpLastActive(sessionId);
+  return { document: data as OnboardingDocument };
+}
+
+export async function deleteDocument(sessionId: string, docId: number): Promise<void> {
+  // First fetch to see if storage file needs cleanup
+  const { data: doc, error: fetchErr } = await supabase
+    .from("onboarding_documents")
+    .select("storage_path")
+    .eq("id", docId)
+    .eq("session_id", sessionId)
+    .single();
+  if (fetchErr) throw new Error(`deleteDocument fetch: ${fetchErr.message}`);
+
+  if (doc?.storage_path) {
+    await supabase.storage.from("onboarding-documents").remove([doc.storage_path]);
+  }
+
+  const { error } = await supabase
+    .from("onboarding_documents")
+    .delete()
+    .eq("id", docId)
+    .eq("session_id", sessionId);
+  if (error) throw new Error(`deleteDocument: ${error.message}`);
+  await bumpLastActive(sessionId);
+}
+
+export async function signedDocumentUrl(storagePath: string, expiresInSec = 60): Promise<string> {
+  const { data, error } = await supabase.storage
+    .from("onboarding-documents")
+    .createSignedUrl(storagePath, expiresInSec);
+  if (error || !data) throw new Error(`signedDocumentUrl: ${error?.message ?? "no data"}`);
+  return data.signedUrl;
+}

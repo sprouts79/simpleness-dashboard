@@ -79,7 +79,8 @@ export default async function KundeOnboardingPage({ params }: PageProps) {
             <Section title="Målgruppe og posisjonering">
               <Field label="Målgruppe og kundeinnsikt" value={insights.malgruppe} />
               <Field label="Konkurrenter" value={insights.konkurrenter} />
-              <Field label="Forbilder, anti-forbilder, ambassadører" value={insights.forbilder_ambassadorer} />
+              <Field label="Referanser og anti-referanser" value={insights.referanser_anti} />
+              <Field label="Ambassadører og kreatører" value={insights.ambassadorer_kreatorer} />
             </Section>
             <Section title="Produkt og pris">
               <Field label="Prioriterte produkter" value={insights.prioriterte_produkter} />
@@ -102,16 +103,30 @@ export default async function KundeOnboardingPage({ params }: PageProps) {
 
       <Card title={`Dokumenter${documents.length ? ` (${documents.length})` : ""}`}>
         {documents.length === 0 ? (
-          <div className="px-5 py-6 text-sm text-neutral-500">Ingen filer lastet opp</div>
+          <div className="px-5 py-6 text-sm text-neutral-500">Ingen dokumenter</div>
         ) : (
-          documents.map((d) => (
-            <div key={d.id} className="flex items-center justify-between px-5 py-3 border-t border-neutral-200 first:border-t-0 text-sm">
-              <span className="text-neutral-900 truncate">{d.filename}</span>
-              <span className="text-xs text-neutral-500 font-mono">
-                {d.size_bytes ? `${Math.round(d.size_bytes / 1024)} KB` : "—"}
-              </span>
-            </div>
-          ))
+          documents.map((d) => {
+            const isLink = Boolean(d.link_url);
+            const href = isLink ? d.link_url! : `/api/onboarding/document/${d.id}`;
+            return (
+              <div key={d.id} className="flex items-center justify-between gap-4 px-5 py-3 border-t border-neutral-200 first:border-t-0 text-sm">
+                <a
+                  href={href}
+                  target={isLink ? "_blank" : undefined}
+                  rel={isLink ? "noreferrer" : undefined}
+                  className="text-[#515b12] hover:underline truncate min-w-0 flex items-center gap-2"
+                >
+                  <span className="text-xs text-neutral-400 uppercase tracking-wider w-10 flex-shrink-0">
+                    {isLink ? "Lenke" : "Fil"}
+                  </span>
+                  <span className="truncate">{d.filename}</span>
+                </a>
+                <span className="text-xs text-neutral-500 font-mono whitespace-nowrap">
+                  {isLink ? "↗" : d.size_bytes ? `${Math.round(d.size_bytes / 1024)} KB ↓` : "↓"}
+                </span>
+              </div>
+            );
+          })
         )}
       </Card>
     </div>

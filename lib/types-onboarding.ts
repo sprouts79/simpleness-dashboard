@@ -45,7 +45,8 @@ export interface OnboardingInsights {
   utfordringer: string | null;
   malgruppe: string | null;
   konkurrenter: string | null;
-  forbilder_ambassadorer: string | null;
+  referanser_anti: string | null;
+  ambassadorer_kreatorer: string | null;
   prioriterte_produkter: string | null;
   snittordre_nok: number | null;
   sesongvariasjoner: string | null;
@@ -63,7 +64,8 @@ export interface OnboardingDocument {
   id: number;
   session_id: string;
   filename: string;
-  storage_path: string;
+  storage_path: string | null;
+  link_url: string | null;
   size_bytes: number | null;
   mime_type: string | null;
   uploaded_at: string;
