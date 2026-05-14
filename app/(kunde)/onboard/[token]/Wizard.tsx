@@ -129,7 +129,7 @@ function Welcome({
         </p>
       ) : (
         <p className="text-[15px] text-neutral-600 mb-8 leading-relaxed">
-          Vi trenger tilganger og litt bakgrunnsinformasjon for å forberede oss til oppstartsmøtet. Det tar ca. 15 minutter, og du kan stoppe og fortsette når det passer.
+          Vi trenger tilganger og litt bakgrunn før oppstartsmøtet. Ca. 15 minutter — du kan stoppe og fortsette.
         </p>
       )}
 
