@@ -54,11 +54,13 @@ export default function Wizard(props: Props) {
   if (step === 0) {
     return (
       <Welcome
+        token={props.token}
         kundeNavn={props.kundeNavn}
         simplenessKontakt={props.simplenessKontakt}
         slackInviteUrl={props.slackInviteUrl}
         completed={completed}
-        onStart={() => goTo(completed ? 3 : 1)}
+        onStart={() => goTo(1)}
+        onEditAfterCompletion={() => setStep(2)}
       />
     );
   }
@@ -104,18 +106,35 @@ export default function Wizard(props: Props) {
 // ════════════════════════════════════════════════════════════
 
 function Welcome({
+  token,
   kundeNavn,
   simplenessKontakt,
   slackInviteUrl,
   completed,
   onStart,
+  onEditAfterCompletion,
 }: {
+  token: string;
   kundeNavn: string;
   simplenessKontakt: string;
   slackInviteUrl: string | null;
   completed: boolean;
   onStart: () => void;
+  onEditAfterCompletion: () => void;
 }) {
+  const [unlocking, setUnlocking] = useState(false);
+
+  async function handleEdit() {
+    if (unlocking) return;
+    setUnlocking(true);
+    try {
+      await unlockInsightsAction(token);
+      onEditAfterCompletion();
+    } finally {
+      setUnlocking(false);
+    }
+  }
+
   return (
     <div className="max-w-[720px] mx-auto py-4">
       <header className="border-b border-neutral-200 pb-8 mb-8">
@@ -125,11 +144,20 @@ function Welcome({
 
       {completed ? (
         <p className="text-[15px] text-neutral-600 mb-8 leading-relaxed">
-          Du har sendt inn onboardingen. Se hva som skjer videre, eller bla tilbake i svarene dine.
+          Du har fullført onboardingen —{" "}
+          <button
+            type="button"
+            onClick={handleEdit}
+            disabled={unlocking}
+            className="text-[#515b12] hover:underline disabled:opacity-50"
+          >
+            {unlocking ? "låser opp …" : "klikk her for å redigere svarene dine"}
+          </button>
+          .
         </p>
       ) : (
         <p className="text-[15px] text-neutral-600 mb-8 leading-relaxed">
-          Vi trenger tilganger og litt bakgrunn før oppstartsmøtet. Ca. 15 minutter — du kan stoppe og fortsette.
+          Vi trenger tilganger og litt innsikt før oppstartsmøte. Alt lagres automatisk, så du kan stoppe og fortsette når du vil.
         </p>
       )}
 
@@ -149,17 +177,21 @@ function Welcome({
         </a>
       )}
 
-      <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden mb-8">
-        <StepRow num="1" name="Tilganger"      time="~5 min"  />
-        <StepRow num="2" name="Innsikt"        time="~10 min" />
-        <StepRow num="3" name="Veien videre"   time="~2 min"  />
-      </div>
+      {!completed && (
+        <>
+          <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden mb-8">
+            <StepRow num="1" name="Tilganger"      time="~5 min"  />
+            <StepRow num="2" name="Innsikt"        time="~10 min" />
+            <StepRow num="3" name="Veien videre"   time="~2 min"  />
+          </div>
 
-      <div className="flex justify-end">
-        <button onClick={onStart} className="px-4 py-2.5 rounded-lg bg-neutral-900 text-white text-sm font-medium hover:bg-black transition-colors">
-          {completed ? "Se Veien videre →" : "Start →"}
-        </button>
-      </div>
+          <div className="flex justify-end">
+            <button onClick={onStart} className="px-4 py-2.5 rounded-lg bg-neutral-900 text-white text-sm font-medium hover:bg-black transition-colors">
+              Start →
+            </button>
+          </div>
+        </>
+      )}
 
       <div className="mt-10 pt-6 border-t border-neutral-200">
         <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-400 mb-3">Kontaktperson</div>
