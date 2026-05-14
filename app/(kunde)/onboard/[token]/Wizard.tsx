@@ -533,6 +533,18 @@ function InsightStep({
     slack_medlemmer: insights?.slack_medlemmer ?? null,
     suksess_definisjon: insights?.suksess_definisjon ?? null,
     noe_mer: insights?.noe_mer ?? null,
+    salgsmal_fjoraret_nok: toNumOrNull(insights?.salgsmal_fjoraret_nok),
+    salgsmal_vekstmal_pct: toNumOrNull(insights?.salgsmal_vekstmal_pct),
+    salgsmal_iar_nok: toNumOrNull(insights?.salgsmal_iar_nok),
+    omsetning_forste_ordre_nok: toNumOrNull(insights?.omsetning_forste_ordre_nok),
+    omsetning_6mnd_nok: toNumOrNull(insights?.omsetning_6mnd_nok),
+    omsetning_12mnd_nok: toNumOrNull(insights?.omsetning_12mnd_nok),
+    andel_nye_kunder_pct: toNumOrNull(insights?.andel_nye_kunder_pct),
+    varekost_pct: toNumOrNull(insights?.varekost_pct),
+    frakt_pct: toNumOrNull(insights?.frakt_pct),
+    transaksjonsgebyr_pct: toNumOrNull(insights?.transaksjonsgebyr_pct),
+    mkt_spend_arlig_nok: toNumOrNull(insights?.mkt_spend_arlig_nok),
+    mkt_produksjon_arlig_nok: toNumOrNull(insights?.mkt_produksjon_arlig_nok),
     submitted_at: insights?.submitted_at ?? null,
     updated_at: insights?.updated_at ?? "",
   }));
@@ -579,6 +591,18 @@ function InsightStep({
       slack_medlemmer: data.slack_medlemmer,
       suksess_definisjon: data.suksess_definisjon,
       noe_mer: data.noe_mer,
+      salgsmal_fjoraret_nok: data.salgsmal_fjoraret_nok,
+      salgsmal_vekstmal_pct: data.salgsmal_vekstmal_pct,
+      salgsmal_iar_nok: data.salgsmal_iar_nok,
+      omsetning_forste_ordre_nok: data.omsetning_forste_ordre_nok,
+      omsetning_6mnd_nok: data.omsetning_6mnd_nok,
+      omsetning_12mnd_nok: data.omsetning_12mnd_nok,
+      andel_nye_kunder_pct: data.andel_nye_kunder_pct,
+      varekost_pct: data.varekost_pct,
+      frakt_pct: data.frakt_pct,
+      transaksjonsgebyr_pct: data.transaksjonsgebyr_pct,
+      mkt_spend_arlig_nok: data.mkt_spend_arlig_nok,
+      mkt_produksjon_arlig_nok: data.mkt_produksjon_arlig_nok,
     });
     await submitInsightsAction(token);
     setSubmitting(false);
@@ -596,6 +620,75 @@ function InsightStep({
       <header className="mb-6">
         <h2 className="text-2xl font-semibold text-neutral-900 tracking-tight">Innsikt</h2>
       </header>
+
+      <Card title="Salgsmål og enhetsøkonomi" hint="alle tall ekskl. mva — fyll inn det dere har og vil dele">
+        <SubSection title="Salgsmål">
+          <Row2>
+            <Field label="Fjoråret">
+              <NumberInput suffix="kr" value={data.salgsmal_fjoraret_nok} onChange={(v) => patch("salgsmal_fjoraret_nok", v)} placeholder="19 800 000" disabled={locked} />
+            </Field>
+            <Field label="Vekstmål">
+              <NumberInput suffix="%" decimals value={data.salgsmal_vekstmal_pct} onChange={(v) => patch("salgsmal_vekstmal_pct", v)} placeholder="40" disabled={locked} />
+            </Field>
+          </Row2>
+          <Field label="Salgsmål i år">
+            <div className="flex items-center gap-2 flex-wrap">
+              <NumberInput suffix="kr" value={data.salgsmal_iar_nok} onChange={(v) => patch("salgsmal_iar_nok", v)} placeholder="27 720 000" disabled={locked} />
+              {!locked && data.salgsmal_fjoraret_nok && data.salgsmal_vekstmal_pct != null && (
+                <button
+                  type="button"
+                  onClick={() => patch("salgsmal_iar_nok", Math.round((data.salgsmal_fjoraret_nok ?? 0) * (1 + (data.salgsmal_vekstmal_pct ?? 0) / 100)))}
+                  className="px-2.5 py-1.5 rounded-md border border-neutral-200 text-xs text-neutral-600 hover:bg-neutral-100 whitespace-nowrap"
+                >
+                  ← Beregn fra fjoråret × vekstmål
+                </button>
+              )}
+            </div>
+          </Field>
+        </SubSection>
+
+        <SubSection title="Omsetning per kunde" tooltip="Legg inn akkumulert snittomsetning per kunde ved første ordre, etter 6 og 12 måneder.">
+          <Row3>
+            <Field label="Første ordre">
+              <NumberInput suffix="kr" value={data.omsetning_forste_ordre_nok} onChange={(v) => patch("omsetning_forste_ordre_nok", v)} placeholder="1 290" disabled={locked} />
+            </Field>
+            <Field label="6 mndr">
+              <NumberInput suffix="kr" value={data.omsetning_6mnd_nok} onChange={(v) => patch("omsetning_6mnd_nok", v)} placeholder="1 290" disabled={locked} />
+            </Field>
+            <Field label="12 mndr">
+              <NumberInput suffix="kr" value={data.omsetning_12mnd_nok} onChange={(v) => patch("omsetning_12mnd_nok", v)} placeholder="1 290" disabled={locked} />
+            </Field>
+          </Row3>
+          <Field label="Andel nye kunder">
+            <NumberInput suffix="%" decimals value={data.andel_nye_kunder_pct} onChange={(v) => patch("andel_nye_kunder_pct", v)} placeholder="50" disabled={locked} />
+          </Field>
+        </SubSection>
+
+        <SubSection title="Variable salgskostnader per ordre">
+          <Row3>
+            <Field label="Varekost">
+              <NumberInput suffix="%" decimals value={data.varekost_pct} onChange={(v) => patch("varekost_pct", v)} placeholder="40" disabled={locked} />
+            </Field>
+            <Field label="Frakt (plukk + pakk + frakt + retur)">
+              <NumberInput suffix="%" decimals value={data.frakt_pct} onChange={(v) => patch("frakt_pct", v)} placeholder="10,1" disabled={locked} />
+            </Field>
+            <Field label="Transaksjonsgebyr">
+              <NumberInput suffix="%" decimals value={data.transaksjonsgebyr_pct} onChange={(v) => patch("transaksjonsgebyr_pct", v)} placeholder="3,0" disabled={locked} />
+            </Field>
+          </Row3>
+        </SubSection>
+
+        <SubSection title="Marketing">
+          <Row2>
+            <Field label="Mkt-spend årlig">
+              <NumberInput suffix="kr" value={data.mkt_spend_arlig_nok} onChange={(v) => patch("mkt_spend_arlig_nok", v)} placeholder="4 158 000" disabled={locked} />
+            </Field>
+            <Field label="Mkt-produksjon årlig">
+              <NumberInput suffix="kr" value={data.mkt_produksjon_arlig_nok} onChange={(v) => patch("mkt_produksjon_arlig_nok", v)} placeholder="0" disabled={locked} />
+            </Field>
+          </Row2>
+        </SubSection>
+      </Card>
 
       <Card title="Forretning og mål">
         <Field label="Forretnings- og markedsmål neste 12 måneder">
@@ -817,11 +910,108 @@ function FaqItem({ q, a, defaultOpen }: { q: string; a: string; defaultOpen?: bo
 // FORM BUILDING BLOCKS
 // ════════════════════════════════════════════════════════════
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Card({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
     <div className="rounded-xl border border-neutral-200 bg-white p-7 mb-4">
-      <h3 className="text-base font-semibold text-neutral-900 pb-3.5 mb-6 border-b border-neutral-200">{title}</h3>
+      <h3 className="text-base font-semibold text-neutral-900 pb-3.5 mb-6 border-b border-neutral-200">
+        {title}
+        {hint && <span className="ml-2 text-xs font-normal text-neutral-400">{hint}</span>}
+      </h3>
       {children}
+    </div>
+  );
+}
+
+function SubSection({ title, tooltip, children }: { title: string; tooltip?: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-7 last:mb-0">
+      <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-neutral-500 mb-3">
+        <span>{title}</span>
+        {tooltip && (
+          <span
+            tabIndex={0}
+            title={tooltip}
+            className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border border-neutral-300 text-neutral-400 text-[9px] leading-none cursor-help"
+          >
+            i
+          </span>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function Row2({ children }: { children: React.ReactNode }) {
+  return <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-0">{children}</div>;
+}
+
+function Row3({ children }: { children: React.ReactNode }) {
+  return <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-5 gap-y-0">{children}</div>;
+}
+
+function toNumOrNull(v: number | string | null | undefined): number | null {
+  if (v === null || v === undefined || v === "") return null;
+  const n = typeof v === "number" ? v : parseFloat(String(v).replace(",", "."));
+  return Number.isFinite(n) ? n : null;
+}
+
+function NumberInput({
+  value,
+  onChange,
+  suffix,
+  placeholder,
+  decimals,
+  disabled,
+}: {
+  value: number | null;
+  onChange: (v: number | null) => void;
+  suffix: "kr" | "%";
+  placeholder?: string;
+  decimals?: boolean;
+  disabled?: boolean;
+}) {
+  // Format display: kr → grouped thousands (1 290 000), % with decimals → as-is
+  function display(n: number | null): string {
+    if (n === null) return "";
+    if (suffix === "kr") return n.toLocaleString("nb-NO").replace(/,/g, " ");
+    return decimals ? String(n).replace(".", ",") : String(n);
+  }
+  const [raw, setRaw] = useState<string>(display(value));
+
+  // Sync from external changes (e.g. auto-calc button)
+  useEffect(() => { setRaw(display(value)); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [value]);
+
+  function handleChange(v: string) {
+    setRaw(v);
+    if (v.trim() === "") {
+      onChange(null);
+      return;
+    }
+    const cleaned = v.replace(/\s/g, "").replace(",", ".");
+    const allowed = decimals ? /^-?\d*(\.\d*)?$/ : /^-?\d*$/;
+    if (!allowed.test(cleaned)) return;
+    const n = parseFloat(cleaned);
+    if (Number.isFinite(n)) onChange(decimals ? n : Math.round(n));
+  }
+
+  function handleBlur() {
+    setRaw(display(value));
+  }
+
+  return (
+    <div className={`inline-flex items-center bg-white border border-neutral-200 rounded-lg overflow-hidden w-full ${disabled ? "opacity-60" : ""}`}>
+      <input
+        type="text"
+        inputMode={decimals ? "decimal" : "numeric"}
+        value={raw}
+        onChange={(e) => handleChange(e.target.value)}
+        onBlur={handleBlur}
+        placeholder={placeholder}
+        disabled={disabled}
+        className="flex-1 min-w-0 border-0 bg-transparent px-3 py-2 text-sm text-right font-mono focus:outline-none disabled:text-neutral-500"
+      />
+      <span className="px-3 py-2 bg-neutral-50 border-l border-neutral-200 font-mono text-[13px] text-neutral-500">{suffix}</span>
     </div>
   );
 }

@@ -70,6 +70,20 @@ export default async function KundeOnboardingPage({ params }: PageProps) {
           <div className="px-5 py-6 text-sm text-neutral-500">Ikke sendt inn ennå</div>
         ) : (
           <div className="px-5 py-5 space-y-5 text-sm">
+            <Section title="Salgsmål og enhetsøkonomi" hint="ekskl. mva">
+              <Field label="Fjoråret" value={fmtKr(insights.salgsmal_fjoraret_nok)} />
+              <Field label="Vekstmål" value={fmtPct(insights.salgsmal_vekstmal_pct)} />
+              <Field label="Salgsmål i år" value={fmtKr(insights.salgsmal_iar_nok)} />
+              <Field label="Omsetning per kunde · første ordre" value={fmtKr(insights.omsetning_forste_ordre_nok)} />
+              <Field label="Omsetning per kunde · 6 mndr" value={fmtKr(insights.omsetning_6mnd_nok)} />
+              <Field label="Omsetning per kunde · 12 mndr" value={fmtKr(insights.omsetning_12mnd_nok)} />
+              <Field label="Andel nye kunder" value={fmtPct(insights.andel_nye_kunder_pct)} />
+              <Field label="Varekost" value={fmtPct(insights.varekost_pct)} />
+              <Field label="Frakt" value={fmtPct(insights.frakt_pct)} />
+              <Field label="Transaksjonsgebyr" value={fmtPct(insights.transaksjonsgebyr_pct)} />
+              <Field label="Mkt-spend årlig" value={fmtKr(insights.mkt_spend_arlig_nok)} />
+              <Field label="Mkt-produksjon årlig" value={fmtKr(insights.mkt_produksjon_arlig_nok)} />
+            </Section>
             <Section title="Forretning og mål">
               <Field label="Forretnings- og markedsmål" value={insights.forretningsmal} />
               <Field label="Omsetningsmål" value={insights.omsetningsmal} />
@@ -144,13 +158,30 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
-      <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-2">{title}</h4>
+      <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-2">
+        {title}
+        {hint && <span className="ml-2 text-[10px] font-normal text-neutral-400 normal-case tracking-normal">{hint}</span>}
+      </h4>
       <div className="space-y-2">{children}</div>
     </div>
   );
+}
+
+function fmtKr(n: number | string | null | undefined): string | null {
+  if (n === null || n === undefined || n === "") return null;
+  const num = typeof n === "number" ? n : parseFloat(String(n));
+  if (!Number.isFinite(num)) return null;
+  return `${num.toLocaleString("nb-NO").replace(/,/g, " ")} kr`;
+}
+
+function fmtPct(n: number | string | null | undefined): string | null {
+  if (n === null || n === undefined || n === "") return null;
+  const num = typeof n === "number" ? n : parseFloat(String(n));
+  if (!Number.isFinite(num)) return null;
+  return `${String(num).replace(".", ",")} %`;
 }
 
 function Field({ label, value }: { label: string; value: string | number | null | undefined }) {

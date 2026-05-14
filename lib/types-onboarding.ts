@@ -56,6 +56,21 @@ export interface OnboardingInsights {
   slack_medlemmer: string | null;
   suksess_definisjon: string | null;
   noe_mer: string | null;
+
+  // Salgsmål og enhetsøkonomi (ekskl. mva)
+  salgsmal_fjoraret_nok: number | null;
+  salgsmal_vekstmal_pct: number | null;
+  salgsmal_iar_nok: number | null;
+  omsetning_forste_ordre_nok: number | null;
+  omsetning_6mnd_nok: number | null;
+  omsetning_12mnd_nok: number | null;
+  andel_nye_kunder_pct: number | null;
+  varekost_pct: number | null;
+  frakt_pct: number | null;
+  transaksjonsgebyr_pct: number | null;
+  mkt_spend_arlig_nok: number | null;
+  mkt_produksjon_arlig_nok: number | null;
+
   submitted_at: string | null;
   updated_at: string;
 }
