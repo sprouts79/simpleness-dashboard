@@ -9,6 +9,7 @@ import {
   type OnboardingDocument,
   type OnboardingPlatform,
 } from "@/lib/types-onboarding";
+import { teamMember, initials, type TeamMember } from "@/lib/team";
 import {
   setStepAction,
   togglePlatformAction,
@@ -124,9 +125,10 @@ function Welcome({
           href={slackInviteUrl}
           target="_blank"
           rel="noreferrer"
-          className="flex items-center justify-between gap-4 mb-8 px-5 py-4 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 transition-colors"
+          className="flex items-center gap-4 mb-8 px-5 py-4 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 transition-colors"
         >
-          <div>
+          <SlackIcon />
+          <div className="flex-1">
             <div className="text-[15px] font-medium text-neutral-900">Bli med i Slack-kanalen</div>
             <div className="text-[13px] text-neutral-500 mt-0.5">Spørsmål underveis? Ta dem her — vi svarer raskt.</div>
           </div>
@@ -146,10 +148,63 @@ function Welcome({
         </button>
       </div>
 
-      <div className="mt-10 pt-6 border-t border-neutral-200 text-[13px] text-neutral-500">
-        Kontaktperson: <strong className="font-medium text-neutral-700">{simplenessKontakt}</strong>
+      <div className="mt-10 pt-6 border-t border-neutral-200">
+        <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-400 mb-3">Kontaktperson</div>
+        <ContactCard kontaktNavn={simplenessKontakt} />
       </div>
     </div>
+  );
+}
+
+function ContactCard({ kontaktNavn }: { kontaktNavn: string }) {
+  const member = teamMember(kontaktNavn);
+  if (!member) {
+    return <div className="text-[13px] text-neutral-700">{kontaktNavn}</div>;
+  }
+  return (
+    <div className="flex items-center gap-3.5">
+      <Avatar member={member} />
+      <div className="min-w-0">
+        <div className="text-[14px] font-medium text-neutral-900 truncate">{member.name}</div>
+        <a href={`mailto:${member.email}`} className="text-[13px] text-[#515b12] hover:underline font-mono">{member.email}</a>
+      </div>
+    </div>
+  );
+}
+
+function Avatar({ member, size = 40 }: { member: TeamMember; size?: number }) {
+  const [errored, setErrored] = useState(false);
+  const showImage = member.photoUrl && !errored;
+  return (
+    <div
+      className="rounded-full bg-neutral-100 overflow-hidden flex items-center justify-center flex-shrink-0 text-neutral-700 text-[13px] font-medium"
+      style={{ width: size, height: size }}
+    >
+      {showImage ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={member.photoUrl}
+          alt={member.name}
+          width={size}
+          height={size}
+          className="object-cover w-full h-full"
+          onError={() => setErrored(true)}
+        />
+      ) : (
+        <span>{initials(member.name)}</span>
+      )}
+    </div>
+  );
+}
+
+function SlackIcon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 122.8 122.8" aria-hidden="true" className="flex-shrink-0">
+      <path d="M25.8 77.6c0 7.1-5.8 12.9-12.9 12.9S0 84.7 0 77.6s5.8-12.9 12.9-12.9h12.9v12.9zm6.5 0c0-7.1 5.8-12.9 12.9-12.9s12.9 5.8 12.9 12.9v32.3c0 7.1-5.8 12.9-12.9 12.9s-12.9-5.8-12.9-12.9V77.6z" fill="#E01E5A"/>
+      <path d="M45.2 25.8c-7.1 0-12.9-5.8-12.9-12.9S38.1 0 45.2 0s12.9 5.8 12.9 12.9v12.9H45.2zm0 6.5c7.1 0 12.9 5.8 12.9 12.9s-5.8 12.9-12.9 12.9H12.9C5.8 58.1 0 52.3 0 45.2s5.8-12.9 12.9-12.9h32.3z" fill="#36C5F0"/>
+      <path d="M97 45.2c0-7.1 5.8-12.9 12.9-12.9s12.9 5.8 12.9 12.9-5.8 12.9-12.9 12.9H97V45.2zm-6.5 0c0 7.1-5.8 12.9-12.9 12.9s-12.9-5.8-12.9-12.9V12.9C64.7 5.8 70.5 0 77.6 0s12.9 5.8 12.9 12.9v32.3z" fill="#2EB67D"/>
+      <path d="M77.6 97c7.1 0 12.9 5.8 12.9 12.9s-5.8 12.9-12.9 12.9-12.9-5.8-12.9-12.9V97h12.9zm0-6.5c-7.1 0-12.9-5.8-12.9-12.9s5.8-12.9 12.9-12.9h32.3c7.1 0 12.9 5.8 12.9 12.9s-5.8 12.9-12.9 12.9H77.6z" fill="#ECB22E"/>
+    </svg>
   );
 }
 
@@ -682,8 +737,9 @@ function NextStepsScreen({
         <FaqItem q="Hva om noe er feil i svarene jeg ga?" a="Send en melding til kontaktpersonen din i Slack, eller ta det opp i oppstartsmøtet. Ingen drama." />
       </div>
 
-      <div className="pt-6 border-t border-neutral-200 text-[13px] text-neutral-500">
-        Kontaktperson: <strong className="font-medium text-neutral-700">{simplenessKontakt}</strong>
+      <div className="pt-6 border-t border-neutral-200">
+        <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-400 mb-3">Kontaktperson</div>
+        <ContactCard kontaktNavn={simplenessKontakt} />
       </div>
 
       <div className="flex items-center justify-between mt-8 pt-6 border-t border-neutral-200">
