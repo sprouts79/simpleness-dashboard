@@ -19,16 +19,12 @@ const STATUS_LABEL: Record<NewsjackingStatus, string> = {
   foreslatt: "Foreslått",
   godkjent: "Godkjent",
   avvist: "Avvist",
-  passert: "Passert",
-  levert: "Levert",
 };
 
 const STATUS_CLASS: Record<NewsjackingStatus, string> = {
   foreslatt: "bg-yellow-50 text-yellow-900",
   godkjent: "bg-green-50 text-green-700",
   avvist: "bg-red-50 text-red-700",
-  passert: "bg-neutral-100 text-neutral-500",
-  levert: "bg-purple-50 text-purple-700",
 };
 
 export default async function NewsjackingPage({ params }: PageProps) {
@@ -64,7 +60,7 @@ export default async function NewsjackingPage({ params }: PageProps) {
       <div className="grid grid-cols-3 gap-2 mb-12">
         <PipelineCard label="Foreslått" value={counts.foreslatt} />
         <PipelineCard label="Godkjent" value={counts.godkjent} />
-        <PipelineCard label="Levert" value={counts.levert} />
+        <PipelineCard label="Avvist" value={counts.avvist} />
       </div>
 
       <section className="mb-12">

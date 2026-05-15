@@ -5,12 +5,7 @@
 import "server-only";
 import { supabase } from "./supabase";
 
-export type NewsjackingStatus =
-  | "foreslatt"
-  | "godkjent"
-  | "avvist"
-  | "passert"
-  | "levert";
+export type NewsjackingStatus = "foreslatt" | "godkjent" | "avvist";
 
 export interface NewsjackingSource {
   navn: string;
@@ -96,13 +91,7 @@ export async function setDropStatus(
 }
 
 export function statusCounts(drops: NewsjackingDrop[]) {
-  const counts = {
-    foreslatt: 0,
-    godkjent: 0,
-    avvist: 0,
-    passert: 0,
-    levert: 0,
-  };
+  const counts = { foreslatt: 0, godkjent: 0, avvist: 0 };
   for (const d of drops) counts[d.status]++;
   return counts;
 }
