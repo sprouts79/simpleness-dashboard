@@ -12,7 +12,10 @@ import StatusPill from "@/components/kunde/StatusPill";
 
 const LEVERANSE_RUTE: Record<string, string> = {
   tilstandsanalyse: "tilstandsanalyse",
+  newsjacking: "newsjacking",
 };
+
+const STANDARD_PROSJEKT_SLUGS = new Set(PROSJEKT_LEVERANSER.map((p) => p.slug));
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -52,10 +55,18 @@ export default async function KundeOmradePage({ params }: PageProps) {
         kundeSlug={slug}
         tittel="Prosjekter"
         beskrivelse="Enkeltstående leveranser ved siden av Performance."
-        leveranser={PROSJEKT_LEVERANSER.map((mal) => ({
-          mal,
-          aktiv: prosjektMap.get(mal.slug) ?? null,
-        }))}
+        leveranser={[
+          ...PROSJEKT_LEVERANSER.map((mal) => ({
+            mal,
+            aktiv: prosjektMap.get(mal.slug) ?? null,
+          })),
+          ...kunde.prosjekter
+            .filter((p) => !STANDARD_PROSJEKT_SLUGS.has(p.slug))
+            .map((p) => ({
+              mal: { slug: p.slug, navn: p.navn },
+              aktiv: p,
+            })),
+        ]}
       />
 
       <footer className="border-t border-neutral-200 pt-6 text-xs text-neutral-400">

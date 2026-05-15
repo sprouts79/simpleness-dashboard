@@ -149,6 +149,20 @@ const KUNDEOMRADER: KundeOmrade[] = [
     ],
     prosjekter: [],
   },
+  {
+    slug: "grandiosa",
+    navn: "Grandiosa",
+    performance: [],
+    prosjekter: [
+      {
+        slug: "newsjacking",
+        navn: "Newsjacking",
+        kategori: "prosjekter",
+        status: "under_utvikling",
+        kort_beskrivelse: "Pilot 4 uker — 11. mai til 7. juni 2026",
+      },
+    ],
+  },
 ];
 
 // ───────────────────────────────────────────────────────────────
