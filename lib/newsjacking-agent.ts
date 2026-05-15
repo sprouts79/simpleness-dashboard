@@ -150,13 +150,14 @@ export async function runDailyScan(
     model: "claude-opus-4-7",
     max_tokens: 8000,
     system: SYSTEM_PROMPT,
+    // web_search er server-side tool i Anthropic API; SDK 0.39 har ikke type-definisjon ennå
     tools: [
       {
         type: "web_search_20250305",
         name: "web_search",
         max_uses: 25,
-      } as Anthropic.Messages.Tool,
-    ],
+      },
+    ] as unknown as Anthropic.Messages.Tool[],
     messages: [{ role: "user", content: userPrompt }],
   });
 
