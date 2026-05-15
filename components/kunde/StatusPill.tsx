@@ -1,39 +1,27 @@
-import type { LeveranseStatus } from "@/lib/clients-leveranser";
-import { statusLabel } from "@/lib/clients-leveranser";
+import type { LeveranseStatus } from "@/lib/types-kunder";
+import { statusLabel } from "@/lib/types-kunder";
 
 interface StatusPillProps {
   status: LeveranseStatus;
   disabled?: boolean;
 }
 
-const STYLES: Record<LeveranseStatus, { bg: string; dot: string; text: string }> = {
-  godkjent: {
-    bg: "bg-green-50",
-    dot: "bg-green-500",
-    text: "text-green-900",
-  },
-  til_avsjekk: {
-    bg: "bg-yellow-50",
-    dot: "bg-yellow-500",
-    text: "text-yellow-900",
-  },
-  under_utvikling: {
-    bg: "bg-neutral-100",
-    dot: "bg-neutral-400",
-    text: "text-neutral-700",
-  },
+const STYLES: Record<LeveranseStatus, string> = {
+  godkjent: "bg-green-50 text-green-700 border-green-200",
+  til_avsjekk: "bg-yellow-50 text-yellow-900 border-yellow-200",
+  under_utvikling: "bg-neutral-50 text-neutral-500 border-neutral-200",
 };
 
-export default function StatusPill({ status, disabled = false }: StatusPillProps) {
-  const style = STYLES[status];
-  const opacity = disabled ? "opacity-40" : "";
-
+export default function StatusPill({ status, disabled }: StatusPillProps) {
+  const label = statusLabel(status);
+  const style = disabled
+    ? "bg-neutral-50 text-neutral-300 border-neutral-200"
+    : STYLES[status];
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${style.bg} ${style.text} ${opacity}`}
+      className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full whitespace-nowrap border ${style}`}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
-      {statusLabel(status)}
+      {disabled ? "Ikke aktivert" : label}
     </span>
   );
 }

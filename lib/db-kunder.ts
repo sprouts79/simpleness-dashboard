@@ -42,6 +42,27 @@ export async function getKunde(slug: string): Promise<Kunde | null> {
   return data as Kunde | null;
 }
 
+export interface KundeOmradeDB {
+  slug: string;
+  navn: string;
+  performance: ClientLeveranse[];
+  prosjekter: ClientLeveranse[];
+}
+
+export async function hentKundeomradeDB(slug: string): Promise<KundeOmradeDB | null> {
+  const kunde = await getKunde(slug);
+  if (!kunde) return null;
+  const lev = await getClientLeveranser(kunde.id);
+  // Kun top-level leveranser i hovedlisten. Barn (parent_id != null) vises på detalj-sider.
+  const top = lev.filter((l) => l.parent_id === null && l.aktiv);
+  return {
+    slug: kunde.slug,
+    navn: kunde.name,
+    performance: top.filter((l) => l.kategori === "performance"),
+    prosjekter: top.filter((l) => l.kategori === "prosjekter"),
+  };
+}
+
 export async function getClientLeveranser(clientId: string): Promise<ClientLeveranse[]> {
   const { data, error } = await supabase
     .from("client_leveranser")

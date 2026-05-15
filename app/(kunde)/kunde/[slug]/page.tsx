@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { hentKundeomradeDB, getKunde } from "@/lib/db-kunder";
 import {
-  hentKundeomrade,
-  arveStatus,
   PERFORMANCE_LEVERANSER,
   PROSJEKT_LEVERANSER,
-  type Leveranse,
+  arveStatus,
+  type ClientLeveranse,
   type LeveranseStatus,
-} from "@/lib/clients-leveranser";
+} from "@/lib/types-kunder";
+import { getClientLeveranser } from "@/lib/db-kunder";
 import StatusPill from "@/components/kunde/StatusPill";
 
 const LEVERANSE_RUTE: Record<string, string> = {
@@ -25,20 +26,20 @@ interface PageProps {
 
 export default async function KundeOmradePage({ params }: PageProps) {
   const { slug } = await params;
-  const kunde = hentKundeomrade(slug);
+  const omrade = await hentKundeomradeDB(slug);
+  if (!omrade) notFound();
 
-  if (!kunde) {
-    notFound();
-  }
+  const kunde = await getKunde(slug);
+  const alleLev = kunde ? await getClientLeveranser(kunde.id) : [];
 
-  const performanceMap = new Map(kunde.performance.map((l) => [l.slug, l]));
-  const prosjektMap = new Map(kunde.prosjekter.map((l) => [l.slug, l]));
+  const performanceMap = new Map(omrade.performance.map((l) => [l.slug, l]));
+  const prosjektMap = new Map(omrade.prosjekter.map((l) => [l.slug, l]));
 
   return (
     <div className="space-y-12">
       <header className="border-b border-neutral-200 pb-8">
         <h1 className="text-4xl font-bold tracking-tight text-neutral-900">
-          {kunde.navn}
+          {omrade.navn}
         </h1>
         <p className="mt-2 text-neutral-500">Kundeområde</p>
       </header>
@@ -51,6 +52,7 @@ export default async function KundeOmradePage({ params }: PageProps) {
           mal,
           aktiv: performanceMap.get(mal.slug) ?? null,
         }))}
+        alleLev={alleLev}
       />
 
       <LeveransListe
@@ -62,13 +64,14 @@ export default async function KundeOmradePage({ params }: PageProps) {
             mal,
             aktiv: prosjektMap.get(mal.slug) ?? null,
           })),
-          ...kunde.prosjekter
+          ...omrade.prosjekter
             .filter((p) => !STANDARD_PROSJEKT_SLUGS.has(p.slug))
             .map((p) => ({
               mal: { slug: p.slug, navn: p.navn },
               aktiv: p,
             })),
         ]}
+        alleLev={alleLev}
       />
 
       <footer className="border-t border-neutral-200 pt-6 text-xs text-neutral-400">
@@ -84,11 +87,12 @@ interface LeveransListeProps {
   beskrivelse: string;
   leveranser: Array<{
     mal: { readonly slug: string; readonly navn: string };
-    aktiv: Leveranse | null;
+    aktiv: ClientLeveranse | null;
   }>;
+  alleLev: ClientLeveranse[];
 }
 
-function LeveransListe({ kundeSlug, tittel, beskrivelse, leveranser }: LeveransListeProps) {
+function LeveransListe({ kundeSlug, tittel, beskrivelse, leveranser, alleLev }: LeveransListeProps) {
   return (
     <section>
       <div className="mb-5">
@@ -104,6 +108,7 @@ function LeveransListe({ kundeSlug, tittel, beskrivelse, leveranser }: LeveransL
             slug={mal.slug}
             navn={mal.navn}
             leveranse={aktiv}
+            alleLev={alleLev}
             erFørste={idx === 0}
           />
         ))}
@@ -116,13 +121,14 @@ interface LeveransRadProps {
   kundeSlug: string;
   slug: string;
   navn: string;
-  leveranse: Leveranse | null;
+  leveranse: ClientLeveranse | null;
+  alleLev: ClientLeveranse[];
   erFørste: boolean;
 }
 
-function LeveransRad({ kundeSlug, slug, navn, leveranse, erFørste }: LeveransRadProps) {
+function LeveransRad({ kundeSlug, slug, navn, leveranse, alleLev, erFørste }: LeveransRadProps) {
   const aktiv = leveranse !== null;
-  const status: LeveranseStatus = aktiv ? arveStatus(leveranse) : "under_utvikling";
+  const status: LeveranseStatus = aktiv ? arveStatus(leveranse, alleLev) : "under_utvikling";
   const børderTopp = erFørste ? "" : "border-t border-neutral-200";
   const subRoute = aktiv ? LEVERANSE_RUTE[slug] : undefined;
   const href = subRoute ? `/kunde/${kundeSlug}/${subRoute}` : null;
@@ -165,8 +171,8 @@ function LeveransRad({ kundeSlug, slug, navn, leveranse, erFørste }: LeveransRa
 
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
-  const kunde = hentKundeomrade(slug);
+  const omrade = await hentKundeomradeDB(slug);
   return {
-    title: kunde ? `${kunde.navn} · Simpleness OS` : "Kundeområde · Simpleness OS",
+    title: omrade ? `${omrade.navn} · Simpleness OS` : "Kundeområde · Simpleness OS",
   };
 }

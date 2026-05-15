@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { hentKundeomrade } from "@/lib/clients-leveranser";
+import { getKunde } from "@/lib/db-kunder";
 import {
   getDropsForKunde,
   statusCounts,
@@ -27,7 +27,7 @@ const STATUS_CLASS: Record<NewsjackingStatus, string> = {
 
 export default async function NewsjackingPage({ params }: PageProps) {
   const { slug } = await params;
-  const kunde = hentKundeomrade(slug);
+  const kunde = await getKunde(slug);
   if (!kunde) notFound();
 
   const drops = await getDropsForKunde(slug);
@@ -54,7 +54,7 @@ export default async function NewsjackingPage({ params }: PageProps) {
         href={`/kunde/${slug}`}
         className="text-xs text-[#515b12] hover:underline mb-3 inline-block"
       >
-        ← {kunde.navn}
+        ← {kunde.name}
       </Link>
 
       <header className="border-b border-neutral-200 pb-8 mb-10">
@@ -171,8 +171,8 @@ const MND = ["jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt
 
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
-  const kunde = hentKundeomrade(slug);
+  const kunde = await getKunde(slug);
   return {
-    title: kunde ? `Newsjacking · ${kunde.navn}` : "Newsjacking",
+    title: kunde ? `Newsjacking · ${kunde.name}` : "Newsjacking",
   };
 }
