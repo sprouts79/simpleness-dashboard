@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Simpleness OS",
-  description: "Simpleness OS — internt dashboard og kundefasade",
+  description: "Simpleness OS",
 };
 
 export default function RootLayout({
