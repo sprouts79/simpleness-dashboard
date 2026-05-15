@@ -1,9 +1,11 @@
 /**
- * Simpleness-team — registry mapping simpleness_contact-navn til
- * full kontaktinfo (e-post, profilbilde).
+ * Simpleness-team — slår opp full kontaktinfo (e-post, profilbilde) basert på
+ * verdien i clients.simpleness_contact (fullt navn).
  *
- * Brukes av kunde-flater for å vise hvem som er kundens kontaktperson.
+ * Rådgiver-listen lever i lib/radgivere.ts. team.ts legger på profilbilder.
  */
+
+import { radgiverByNavn } from "./radgivere";
 
 export interface TeamMember {
   name: string;
@@ -11,22 +13,21 @@ export interface TeamMember {
   photoUrl?: string;
 }
 
-export const TEAM: Record<string, TeamMember> = {
-  Jonas: {
-    name: "Jonas Brusselmans",
-    email: "jonas@simpleness.no",
-    photoUrl: "/team/jonas.jpg",
-  },
-  Halvard: {
-    name: "Halvard Simonsen",
-    email: "halvard@simpleness.no",
-    photoUrl: "/team/halvard.jpg",
-  },
+// Filnavn må eksistere under public/team/ for at bildet skal vises.
+// Fallback er initialer hvis ingen mapping eller hvis filen mangler.
+const PHOTO_BY_NAVN: Record<string, string> = {
+  "Halvard Simonsen": "/team/halvard.jpg",
+  "Jonas Brusselmans": "/team/jonas.jpg",
 };
 
 export function teamMember(key: string | null | undefined): TeamMember | null {
-  if (!key) return null;
-  return TEAM[key] ?? null;
+  const r = radgiverByNavn(key ?? null);
+  if (!r) return null;
+  return {
+    name: r.navn,
+    email: r.email,
+    photoUrl: PHOTO_BY_NAVN[r.navn],
+  };
 }
 
 export function initials(name: string): string {
