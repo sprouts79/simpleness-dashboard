@@ -32,12 +32,21 @@ export default async function NewsjackingPage({ params }: PageProps) {
 
   const drops = await getDropsForKunde(slug);
   const counts = statusCounts(drops);
-  // drops kommer allerede sortert: dato desc, created_at asc.
-  // Reverser created_at innen samme dato slik at nyeste innenfor dagen kommer øverst.
+  // Sortér: nyeste dato først, så nyeste idé innen dagen først.
   const sorted = [...drops].sort((a, b) => {
     if (a.dato !== b.dato) return a.dato < b.dato ? 1 : -1;
     return a.created_at < b.created_at ? 1 : -1;
   });
+  // Grupper per dato for visuelt skille
+  const grupper = sorted.reduce<{ dato: string; drops: NewsjackingDrop[] }[]>(
+    (acc, drop) => {
+      const sist = acc[acc.length - 1];
+      if (sist && sist.dato === drop.dato) sist.drops.push(drop);
+      else acc.push({ dato: drop.dato, drops: [drop] });
+      return acc;
+    },
+    [],
+  );
 
   return (
     <div>
@@ -60,19 +69,35 @@ export default async function NewsjackingPage({ params }: PageProps) {
         <PipelineCard label="Avvist" value={counts.avvist} />
       </div>
 
-      {sorted.length === 0 ? (
+      {grupper.length === 0 ? (
         <div className="rounded-xl border border-neutral-200 bg-white px-6 py-12 text-center text-sm text-neutral-500">
           Ingen ideer ennå.
         </div>
       ) : (
-        <div className="space-y-2">
-          {sorted.map((drop) => (
-            <DropCard key={drop.id} drop={drop} kundeSlug={slug} />
+        <div className="space-y-8">
+          {grupper.map((gruppe) => (
+            <div key={gruppe.dato}>
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-3 pb-2 border-b border-neutral-200">
+                {dagOverskrift(gruppe.dato)}
+              </h2>
+              <div className="space-y-2">
+                {gruppe.drops.map((drop) => (
+                  <DropCard key={drop.id} drop={drop} kundeSlug={slug} />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}
     </div>
   );
+}
+
+function dagOverskrift(iso: string): string {
+  const d = new Date(iso + "T12:00:00");
+  const ukedag = ["Søndag", "Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag", "Lørdag"][d.getDay()];
+  const [, m, dd] = iso.split("-");
+  return `${ukedag} ${parseInt(dd, 10)}. ${MND[parseInt(m, 10) - 1]}`;
 }
 
 function PipelineCard({ label, value }: { label: string; value: number }) {
@@ -88,22 +113,6 @@ function PipelineCard({ label, value }: { label: string; value: number }) {
   );
 }
 
-function SectionHeader({ title }: { title: string }) {
-  return (
-    <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-4 pb-2 border-b border-neutral-200">
-      {title}
-    </h2>
-  );
-}
-
-function EmptyDag() {
-  return (
-    <div className="rounded-xl border border-neutral-200 bg-white px-6 py-10 text-center text-sm text-neutral-500">
-      Ingen ideer over terskel i dag.
-    </div>
-  );
-}
-
 function DropCard({
   drop,
   kundeSlug,
@@ -114,14 +123,9 @@ function DropCard({
   return (
     <article className="rounded-xl border border-neutral-200 bg-white p-6">
       <div className="flex items-start justify-between gap-6 mb-4">
-        <div className="min-w-0 flex-1">
-          <div className="text-xs text-neutral-500 font-mono mb-1">
-            {dropDatoLabel(drop.dato)}
-          </div>
-          <h3 className="text-base font-semibold text-neutral-900 leading-snug">
-            {drop.tittel}
-          </h3>
-        </div>
+        <h3 className="text-base font-semibold text-neutral-900 leading-snug min-w-0 flex-1">
+          {drop.tittel}
+        </h3>
         <span
           className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full whitespace-nowrap ${STATUS_CLASS[drop.status]}`}
         >
@@ -161,13 +165,6 @@ function DropCard({
       </div>
     </article>
   );
-}
-
-function dropDatoLabel(iso: string): string {
-  const d = new Date(iso + "T12:00:00");
-  const ukedag = ["søn", "man", "tir", "ons", "tor", "fre", "lør"][d.getDay()];
-  const [, m, dd] = iso.split("-");
-  return `${ukedag} ${parseInt(dd, 10)}. ${MND[parseInt(m, 10) - 1]}`;
 }
 
 const MND = ["jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "des"];
