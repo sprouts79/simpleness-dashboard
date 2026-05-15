@@ -3,9 +3,7 @@ import { notFound } from "next/navigation";
 import { hentKundeomrade } from "@/lib/clients-leveranser";
 import {
   getDropsForKunde,
-  getScansForKunde,
   statusCounts,
-  todayInOslo,
   type NewsjackingDrop,
   type NewsjackingStatus,
 } from "@/lib/db-newsjacking";
@@ -32,15 +30,14 @@ export default async function NewsjackingPage({ params }: PageProps) {
   const kunde = hentKundeomrade(slug);
   if (!kunde) notFound();
 
-  const [drops, scans] = await Promise.all([
-    getDropsForKunde(slug),
-    getScansForKunde(slug),
-  ]);
-
+  const drops = await getDropsForKunde(slug);
   const counts = statusCounts(drops);
-  const today = todayInOslo();
-  const todayDrops = drops.filter((d) => d.dato === today);
-  const earlierScans = scans.filter((s) => s.dato !== today);
+  // drops kommer allerede sortert: dato desc, created_at asc.
+  // Reverser created_at innen samme dato slik at nyeste innenfor dagen kommer øverst.
+  const sorted = [...drops].sort((a, b) => {
+    if (a.dato !== b.dato) return a.dato < b.dato ? 1 : -1;
+    return a.created_at < b.created_at ? 1 : -1;
+  });
 
   return (
     <div>
@@ -63,37 +60,16 @@ export default async function NewsjackingPage({ params }: PageProps) {
         <PipelineCard label="Avvist" value={counts.avvist} />
       </div>
 
-      <section className="mb-12">
-        <SectionHeader title={dagLabel(today)} />
-        {todayDrops.length === 0 ? (
-          <EmptyDag />
-        ) : (
-          <div className="space-y-2">
-            {todayDrops.map((drop) => (
-              <DropCard key={drop.id} drop={drop} kundeSlug={slug} />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {earlierScans.length > 0 && (
-        <section>
-          <SectionHeader title="Tidligere" />
-          <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
-            {earlierScans.map((scan) => {
-              const dagDrops = drops.filter((d) => d.dato === scan.dato);
-              return (
-                <DagRad
-                  key={scan.id}
-                  dato={scan.dato}
-                  ukedag={scan.ukedag}
-                  ideerPostet={scan.ideer_postet}
-                  drops={dagDrops}
-                />
-              );
-            })}
-          </div>
-        </section>
+      {sorted.length === 0 ? (
+        <div className="rounded-xl border border-neutral-200 bg-white px-6 py-12 text-center text-sm text-neutral-500">
+          Ingen ideer ennå.
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {sorted.map((drop) => (
+            <DropCard key={drop.id} drop={drop} kundeSlug={slug} />
+          ))}
+        </div>
       )}
     </div>
   );
@@ -138,9 +114,14 @@ function DropCard({
   return (
     <article className="rounded-xl border border-neutral-200 bg-white p-6">
       <div className="flex items-start justify-between gap-6 mb-4">
-        <h3 className="text-base font-semibold text-neutral-900 leading-snug">
-          {drop.tittel}
-        </h3>
+        <div className="min-w-0 flex-1">
+          <div className="text-xs text-neutral-500 font-mono mb-1">
+            {dropDatoLabel(drop.dato)}
+          </div>
+          <h3 className="text-base font-semibold text-neutral-900 leading-snug">
+            {drop.tittel}
+          </h3>
+        </div>
         <span
           className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full whitespace-nowrap ${STATUS_CLASS[drop.status]}`}
         >
@@ -182,55 +163,11 @@ function DropCard({
   );
 }
 
-function DagRad({
-  dato,
-  ukedag,
-  ideerPostet,
-  drops,
-}: {
-  dato: string;
-  ukedag: string;
-  ideerPostet: number;
-  drops: NewsjackingDrop[];
-}) {
-  const counts = drops.reduce(
-    (acc, d) => {
-      acc[d.status] = (acc[d.status] || 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>,
-  );
-
-  const oppsummering =
-    ideerPostet === 0
-      ? "—"
-      : Object.entries(STATUS_LABEL)
-          .filter(([k]) => counts[k])
-          .map(([k, label]) => `${counts[k]} ${label.toLowerCase()}`)
-          .join(" · ");
-
-  return (
-    <div className="grid grid-cols-[140px_1fr_80px] gap-4 px-6 py-3 border-t border-neutral-100 first:border-t-0 text-sm items-center">
-      <span className="font-mono text-xs text-neutral-600">
-        {ukedag} {formatDato(dato)}
-      </span>
-      <span className="text-neutral-600">{oppsummering}</span>
-      <span className="font-mono text-xs text-neutral-500 text-right">
-        {ideerPostet} idé{ideerPostet === 1 ? "" : "er"}
-      </span>
-    </div>
-  );
-}
-
-function formatDato(iso: string): string {
-  const [, m, d] = iso.split("-");
-  return `${parseInt(d, 10)}. ${MND[parseInt(m, 10) - 1]}`;
-}
-
-function dagLabel(iso: string): string {
+function dropDatoLabel(iso: string): string {
   const d = new Date(iso + "T12:00:00");
-  const ukedag = ["Søndag", "Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag", "Lørdag"][d.getDay()];
-  return `${ukedag} ${formatDato(iso)}`;
+  const ukedag = ["søn", "man", "tir", "ons", "tor", "fre", "lør"][d.getDay()];
+  const [, m, dd] = iso.split("-");
+  return `${ukedag} ${parseInt(dd, 10)}. ${MND[parseInt(m, 10) - 1]}`;
 }
 
 const MND = ["jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "des"];
