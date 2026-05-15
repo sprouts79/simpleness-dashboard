@@ -15,7 +15,9 @@ const LEVERANSE_RUTE: Record<string, string> = {
   newsjacking: "newsjacking",
 };
 
-const STANDARD_PROSJEKT_SLUGS = new Set(PROSJEKT_LEVERANSER.map((p) => p.slug));
+const STANDARD_PROSJEKT_SLUGS: Set<string> = new Set(
+  PROSJEKT_LEVERANSER.map((p) => p.slug),
+);
 
 interface PageProps {
   params: Promise<{ slug: string }>;
