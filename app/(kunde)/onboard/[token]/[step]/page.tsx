@@ -6,14 +6,23 @@ import {
   getInsights,
   getDocuments,
 } from "@/lib/db-onboarding";
-import Wizard from "./Wizard";
+import Wizard from "../Wizard";
+
+const STEP_FROM_SLUG: Record<string, 1 | 2 | 3> = {
+  tilganger: 1,
+  innsikt: 2,
+  "veien-videre": 3,
+};
 
 interface PageProps {
-  params: Promise<{ token: string }>;
+  params: Promise<{ token: string; step: string }>;
 }
 
-export default async function OnboardPage({ params }: PageProps) {
-  const { token } = await params;
+export default async function OnboardStepPage({ params }: PageProps) {
+  const { token, step: stepSlug } = await params;
+  const initialStep = STEP_FROM_SLUG[stepSlug];
+  if (!initialStep) notFound();
+
   const session = await getSessionByToken(token);
   if (!session) notFound();
 
@@ -37,7 +46,7 @@ export default async function OnboardPage({ params }: PageProps) {
       access={access}
       insights={insights}
       documents={documents}
-      initialStep={0}
+      initialStep={initialStep}
     />
   );
 }

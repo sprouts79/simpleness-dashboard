@@ -31,15 +31,27 @@ interface Props {
   access: OnboardingAccess[];
   insights: OnboardingInsights | null;
   documents: OnboardingDocument[];
+  initialStep?: 0 | 1 | 2 | 3;
 }
 
 type StepKey = 0 | 1 | 2 | 3;
 
+const STEP_SLUGS: Record<StepKey, string | null> = {
+  0: null,            // base URL = Velkomst
+  1: "tilganger",
+  2: "innsikt",
+  3: "veien-videre",
+};
+
+function urlForStep(token: string, s: StepKey): string {
+  const slug = STEP_SLUGS[s];
+  return slug ? `/onboard/${token}/${slug}` : `/onboard/${token}`;
+}
+
 export default function Wizard(props: Props) {
-  // initial step: completed → 0 (Welcome) so delte lenker lander på Velkomst,
-  // ellers fortsett der kunden slapp
+  // initialStep kommer fra URL (via page.tsx). Default 0 = Velkomst.
   const completed = Boolean(props.session.completed_at);
-  const initialStep: StepKey = completed ? 0 : ((props.session.current_step as StepKey) ?? 0);
+  const initialStep: StepKey = props.initialStep ?? 0;
   const [step, setStep] = useState<StepKey>(initialStep);
 
   function goTo(s: StepKey) {
@@ -48,7 +60,11 @@ export default function Wizard(props: Props) {
     if (s > props.session.current_step && !props.session.completed_at) {
       setStepAction(props.token, s);
     }
-    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+    // oppdater URL stille — ingen re-render, men deling/refresh fungerer
+    if (typeof window !== "undefined") {
+      window.history.replaceState(null, "", urlForStep(props.token, s));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   }
 
   if (step === 0) {
@@ -60,7 +76,7 @@ export default function Wizard(props: Props) {
         slackInviteUrl={props.slackInviteUrl}
         completed={completed}
         onStart={() => goTo(1)}
-        onEditAfterCompletion={() => setStep(2)}
+        onEditAfterCompletion={() => goTo(2)}
       />
     );
   }
@@ -941,11 +957,11 @@ function NextStepsScreen({
       </header>
 
       <ol className="border-l border-neutral-200 ml-1.5 pl-7 mb-12 space-y-6">
-        <TimelineItem when="I dag"        what="Onboarding fullført"  who="Tilganger og innsikt levert" status="done" />
-        <TimelineItem when="Uke 1"        what="Tilstandsanalyse"     who="Vi setter oss inn i kontoer og tar en gjennomgang av sporing, signalstyrke og produktfeed." status="current" />
-        <TimelineItem when="Uke 2"        what="Oppstartsmøte"        who="Vi blir enige om mål og plan for de neste 3 månedene." />
-        <TimelineItem when="Uke 3–4"      what="Annonseproduksjon"    who="Vi produserer første runde med nye annonser." />
-        <TimelineItem when="Innen uke 5"  what="Kampanjestart"        who="Første kampanjer i drift." />
+        <TimelineItem what="Onboarding fullført"  who="Tilganger og innsikt levert" status="done" />
+        <TimelineItem what="Tilstandsanalyse"     who="Vi setter oss inn i kontoer og tar en gjennomgang av sporing, signalstyrke og produktfeed." status="current" />
+        <TimelineItem what="Oppstartsmøte"        who="Vi blir enige om mål og plan for de neste 3 månedene." />
+        <TimelineItem what="Annonseproduksjon"    who="Vi produserer første runde med nye annonser." />
+        <TimelineItem what="Kampanjestart"        who="Første kampanjer i drift." />
       </ol>
 
       <h3 className="text-lg font-semibold text-neutral-900 mb-4">Vanlige spørsmål</h3>
@@ -988,7 +1004,7 @@ function TimelineItem({
   who,
   status,
 }: {
-  when: string;
+  when?: string;
   what: string;
   who: string;
   status?: "done" | "current";
@@ -1000,7 +1016,7 @@ function TimelineItem({
           status === "done" ? "bg-green-500" : status === "current" ? "bg-neutral-900" : "bg-neutral-300"
         }`}
       />
-      <div className="text-[11px] font-mono uppercase tracking-wider text-neutral-500 mb-1">{when}</div>
+      {when && <div className="text-[11px] font-mono uppercase tracking-wider text-neutral-500 mb-1">{when}</div>}
       <div className="text-[15px] font-medium text-neutral-900">{what}</div>
       <div className="text-[13px] text-neutral-500 mt-0.5">{who}</div>
     </li>
