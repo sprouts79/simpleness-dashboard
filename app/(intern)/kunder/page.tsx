@@ -64,7 +64,7 @@ export default async function KunderPage({
           <div>Kunde</div>
           <div>Stage</div>
           <div>Sist aktiv</div>
-          <div>Kontakt</div>
+          <div>Rådgiver</div>
           <div></div>
         </div>
 

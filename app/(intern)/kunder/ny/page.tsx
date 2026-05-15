@@ -8,9 +8,8 @@ import {
   PROSJEKT_LEVERANSER,
   toSlug,
 } from "@/lib/types-kunder";
+import { RADGIVER_NAVN } from "@/lib/radgivere";
 import { opprettKundeAction } from "./actions";
-
-const SIMPLENESS_KONTAKTER = ["Jonas", "Halvard"];
 
 export default function NyKundePage() {
   const router = useRouter();
@@ -19,7 +18,7 @@ export default function NyKundePage() {
   const [slugEdited, setSlugEdited] = useState(false);
   const [contactName, setContactName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
-  const [simplenessKontakt, setSimplenessKontakt] = useState<string>("Jonas");
+  const [radgiver, setRadgiver] = useState<string>(RADGIVER_NAVN[0]);
   const [perfActive, setPerfActive] = useState<Set<string>>(
     new Set(PERFORMANCE_LEVERANSER.map((p) => p.slug)),
   );
@@ -67,7 +66,7 @@ export default function NyKundePage() {
       slug: slug.trim(),
       contactName: contactName.trim(),
       contactEmail: contactEmail.trim(),
-      simplenessContact: simplenessKontakt,
+      simplenessContact: radgiver,
       slackInviteUrl: slackInviteUrl.trim() || null,
       metaAccountId: metaAccountId.trim() || null,
       performanceSlugs: Array.from(perfActive),
@@ -141,11 +140,11 @@ export default function NyKundePage() {
         <Field label="E-post">
           <Input value={contactEmail} onChange={setContactEmail} placeholder="anna@bjorklund.no" />
         </Field>
-        <Field label="Simpleness-kontakt">
+        <Field label="Rådgiver">
           <ChipGroup>
-            {SIMPLENESS_KONTAKTER.map((k) => (
-              <Chip key={k} active={simplenessKontakt === k} onClick={() => setSimplenessKontakt(k)}>
-                {k}
+            {RADGIVER_NAVN.map((navn) => (
+              <Chip key={navn} active={radgiver === navn} onClick={() => setRadgiver(navn)}>
+                {navn}
               </Chip>
             ))}
           </ChipGroup>

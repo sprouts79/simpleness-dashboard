@@ -109,6 +109,14 @@ export async function createKunde(input: CreateKundeInput): Promise<{ kunde: Kun
   return { kunde: client as Kunde };
 }
 
+export async function updateKundeRadgiver(slug: string, navn: string): Promise<void> {
+  const { error } = await supabase
+    .from("clients")
+    .update({ simpleness_contact: navn })
+    .eq("slug", slug);
+  if (error) throw new Error(`updateKundeRadgiver: ${error.message}`);
+}
+
 export async function updateKundeSlackInvite(slug: string, url: string | null): Promise<void> {
   const { error } = await supabase
     .from("clients")

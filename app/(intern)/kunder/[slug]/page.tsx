@@ -11,6 +11,7 @@ import {
 } from "@/lib/db-kunder";
 import { getSessionByClientId } from "@/lib/db-onboarding";
 import SlackInviteEditor from "./SlackInviteEditor";
+import RadgiverEditor from "./RadgiverEditor";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -45,8 +46,11 @@ export default async function KundeDetailPage({ params }: PageProps) {
       <Card title="Kontakt">
         <Row label="Kontaktperson" value={kunde.contact_name ?? "—"} />
         <Row label="E-post" value={kunde.contact_email ?? "—"} mono />
-        <Row label="Simpleness-kontakt" value={kunde.simpleness_contact ?? "—"} />
         <Row label="Meta Ad Account" value={kunde.meta_account_id ?? "—"} mono />
+      </Card>
+
+      <Card title="Rådgiver">
+        <RadgiverEditor slug={kunde.slug} initial={kunde.simpleness_contact} />
       </Card>
 
       <Card title="Slack-kanal">
