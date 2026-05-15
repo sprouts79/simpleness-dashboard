@@ -161,3 +161,31 @@ export async function updateLeveranseStatus(id: number, status: LeveranseStatus)
     .eq("id", id);
   if (error) throw new Error(`updateLeveranseStatus: ${error.message}`);
 }
+
+export async function aktiverLeveranse(
+  clientId: string,
+  slug: string,
+  navn: string,
+  kategori: "performance" | "prosjekter",
+): Promise<void> {
+  const { data: existing, error: selErr } = await supabase
+    .from("client_leveranser")
+    .select("id")
+    .eq("client_id", clientId)
+    .eq("slug", slug)
+    .maybeSingle();
+  if (selErr) throw new Error(`aktiverLeveranse select: ${selErr.message}`);
+
+  if (existing) {
+    const { error } = await supabase
+      .from("client_leveranser")
+      .update({ aktiv: true })
+      .eq("id", existing.id);
+    if (error) throw new Error(`aktiverLeveranse update: ${error.message}`);
+  } else {
+    const { error } = await supabase
+      .from("client_leveranser")
+      .insert({ client_id: clientId, slug, navn, kategori, aktiv: true, status: "under_utvikling" });
+    if (error) throw new Error(`aktiverLeveranse insert: ${error.message}`);
+  }
+}

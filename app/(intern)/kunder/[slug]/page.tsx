@@ -7,11 +7,21 @@ import {
   lifecycleStagePillClass,
   statusLabel,
   arveStatus,
+  PERFORMANCE_LEVERANSER,
+  PROSJEKT_LEVERANSER,
   type ClientLeveranse,
+  type LeveranseStatus,
 } from "@/lib/db-kunder";
 import { getSessionByClientId } from "@/lib/db-onboarding";
 import SlackInviteEditor from "./SlackInviteEditor";
 import RadgiverEditor from "./RadgiverEditor";
+import AktiverLeveranseButton from "./AktiverLeveranseButton";
+
+// Leveranser som har egen admin-rute under /kunder/[slug]/[rute]
+const LEVERANSE_ADMIN_RUTE: Record<string, string> = {
+  onboarding: "onboarding",
+  tilstandsanalyse: "tilstandsanalyse",
+};
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -30,8 +40,33 @@ export default async function KundeDetailPage({ params }: PageProps) {
   const stagePill = lifecycleStagePillClass(kunde.lifecycle_stage);
   const stageText = lifecycleStageLabel(kunde.lifecycle_stage);
 
-  // Children-leveranser fjernes fra rotvisning (de vises ikke separat)
-  const rotLeveranser = leveranser.filter((l) => !l.parent_id);
+  const aktivBySlug = new Map(leveranser.filter((l) => l.aktiv).map((l) => [l.slug, l]));
+
+  const performanceRows = PERFORMANCE_LEVERANSER.map((mal) => ({
+    slug: mal.slug,
+    navn: mal.navn,
+    aktiv: aktivBySlug.get(mal.slug) ?? null,
+    kategori: "performance" as const,
+  }));
+
+  const standardProsjektSlugs = new Set<string>(PROSJEKT_LEVERANSER.map((p) => p.slug));
+  const customProsjekter = leveranser.filter(
+    (l) => l.aktiv && l.kategori === "prosjekter" && !standardProsjektSlugs.has(l.slug),
+  );
+  const prosjektRows = [
+    ...PROSJEKT_LEVERANSER.map((mal) => ({
+      slug: mal.slug,
+      navn: mal.navn,
+      aktiv: aktivBySlug.get(mal.slug) ?? null,
+      kategori: "prosjekter" as const,
+    })),
+    ...customProsjekter.map((l) => ({
+      slug: l.slug,
+      navn: l.navn,
+      aktiv: l,
+      kategori: "prosjekter" as const,
+    })),
+  ];
 
   return (
     <div className="max-w-3xl">
@@ -39,7 +74,12 @@ export default async function KundeDetailPage({ params }: PageProps) {
         <Link href="/kunder" className="text-xs text-[#515b12] hover:underline mb-3 inline-block">← Kunder</Link>
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-3xl font-bold tracking-tight text-neutral-900">{kunde.name}</h1>
-          <Pill kind={stagePill}>{stageText}</Pill>
+          <div className="flex items-center gap-3">
+            <Link href={`/kunde/${kunde.slug}`} className="text-sm text-[#515b12] hover:underline">
+              Se kundeområdet →
+            </Link>
+            <Pill kind={stagePill}>{stageText}</Pill>
+          </div>
         </div>
       </header>
 
@@ -58,7 +98,7 @@ export default async function KundeDetailPage({ params }: PageProps) {
       </Card>
 
       {session && (
-        <Card title="Onboarding">
+        <Card title="Onboarding-session">
           <Row label="Token" value={session.token} mono />
           <Row label="Lenke til kunde" value={`/onboard/${session.token}`} mono link={`/onboard/${session.token}`} />
           <Row label="Status" value={`Steg ${session.current_step} av 3`} />
@@ -69,62 +109,89 @@ export default async function KundeDetailPage({ params }: PageProps) {
           {session.completed_at && (
             <Row label="Fullført" value={new Date(session.completed_at).toLocaleString("nb-NO")} />
           )}
-          <div className="px-5 py-3 border-t border-neutral-200">
-            <Link
-              href={`/kunder/${kunde.slug}/onboarding`}
-              className="text-sm text-[#515b12] hover:underline"
-            >
-              Se kundens svar →
-            </Link>
-          </div>
         </Card>
       )}
 
-      <Card title="Tilstandsanalyse">
-        <div className="px-5 py-4">
-          <Link href={`/kunder/${kunde.slug}/tilstandsanalyse`} className="text-sm text-[#515b12] hover:underline">
-            Åpne tilstandsanalyse →
-          </Link>
-        </div>
+      <Card title="Performance">
+        {performanceRows.map((row, i) => (
+          <LeveranseRad
+            key={row.slug}
+            kundeSlug={kunde.slug}
+            leveranseSlug={row.slug}
+            navn={row.navn}
+            aktiv={row.aktiv}
+            kategori={row.kategori}
+            alle={leveranser}
+            erFørste={i === 0}
+          />
+        ))}
       </Card>
 
-      <Card title="Aktive leveranser">
-        {rotLeveranser.length === 0 ? (
-          <div className="px-5 py-6 text-sm text-neutral-500">Ingen leveranser aktivert</div>
-        ) : (
-          rotLeveranser.map((l) => (
-            <LeveranseRow
-              key={l.id}
-              leveranse={l}
-              alle={leveranser}
-            />
-          ))
-        )}
+      <Card title="Prosjekter">
+        {prosjektRows.map((row, i) => (
+          <LeveranseRad
+            key={row.slug}
+            kundeSlug={kunde.slug}
+            leveranseSlug={row.slug}
+            navn={row.navn}
+            aktiv={row.aktiv}
+            kategori={row.kategori}
+            alle={leveranser}
+            erFørste={i === 0}
+          />
+        ))}
       </Card>
     </div>
   );
 }
 
-function LeveranseRow({ leveranse, alle }: { leveranse: ClientLeveranse; alle: ClientLeveranse[] }) {
-  const status = arveStatus(leveranse, alle);
-  const pillKind = status === "godkjent" ? "done" : status === "til_avsjekk" ? "review" : "idle";
-  return (
-    <div className="flex items-center justify-between px-5 py-3.5 border-t border-neutral-200 first:border-t-0 text-sm">
-      <div className="min-w-0 flex-1">
-        <div className="font-medium text-neutral-900">{leveranse.navn}</div>
-        {leveranse.kort_beskrivelse && (
-          <div className="text-xs text-neutral-500 mt-0.5">{leveranse.kort_beskrivelse}</div>
-        )}
+interface LeveranseRadProps {
+  kundeSlug: string;
+  leveranseSlug: string;
+  navn: string;
+  aktiv: ClientLeveranse | null;
+  kategori: "performance" | "prosjekter";
+  alle: ClientLeveranse[];
+  erFørste: boolean;
+}
+
+function LeveranseRad({ kundeSlug, leveranseSlug, navn, aktiv, kategori, alle, erFørste }: LeveranseRadProps) {
+  const adminRute = LEVERANSE_ADMIN_RUTE[leveranseSlug];
+  const href = aktiv && adminRute ? `/kunder/${kundeSlug}/${adminRute}` : null;
+  const børderTopp = erFørste ? "" : "border-t border-neutral-200";
+
+  const inner = (
+    <div className={`flex items-center justify-between gap-4 px-5 py-3.5 ${børderTopp} ${aktiv ? "" : "bg-neutral-50"} ${href ? "hover:bg-neutral-50 transition-colors" : ""} text-sm`}>
+      <div className={`min-w-0 flex-1 font-medium ${aktiv ? "text-neutral-900" : "text-neutral-400"}`}>
+        {navn}
       </div>
-      <Pill kind={pillKind}>{statusLabel(status)}</Pill>
+      {aktiv ? (
+        <LeveransePill status={arveStatus(aktiv, alle)} />
+      ) : (
+        <AktiverLeveranseButton kundeSlug={kundeSlug} leveranseSlug={leveranseSlug} leveranseNavn={navn} kategori={kategori} />
+      )}
     </div>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="block">
+        {inner}
+      </Link>
+    );
+  }
+  return inner;
+}
+
+function LeveransePill({ status }: { status: LeveranseStatus }) {
+  const kind = status === "godkjent" ? "done" : status === "til_avsjekk" ? "review" : "idle";
+  return <Pill kind={kind}>{statusLabel(status)}</Pill>;
 }
 
 const PILL_STYLES = {
-  done:     { bg: "bg-green-50",    fg: "text-green-900",   dot: "bg-green-500" },
-  review:   { bg: "bg-yellow-50",   fg: "text-yellow-900",  dot: "bg-yellow-500" },
-  idle:     { bg: "bg-neutral-100", fg: "text-neutral-700", dot: "bg-neutral-400" },
+  done: { bg: "bg-green-50", fg: "text-green-900", dot: "bg-green-500" },
+  review: { bg: "bg-yellow-50", fg: "text-yellow-900", dot: "bg-yellow-500" },
+  idle: { bg: "bg-neutral-100", fg: "text-neutral-700", dot: "bg-neutral-400" },
   archived: { bg: "bg-neutral-100", fg: "text-neutral-500", dot: "bg-neutral-300", opacity: "opacity-70" },
 };
 

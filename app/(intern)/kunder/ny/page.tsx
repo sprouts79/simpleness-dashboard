@@ -20,7 +20,7 @@ export default function NyKundePage() {
   const [contactEmail, setContactEmail] = useState("");
   const [radgiver, setRadgiver] = useState<string>(RADGIVER_NAVN[0]);
   const [perfActive, setPerfActive] = useState<Set<string>>(
-    new Set(PERFORMANCE_LEVERANSER.map((p) => p.slug)),
+    new Set(["onboarding"]),
   );
   const [projActive, setProjActive] = useState<Set<string>>(new Set());
   const [metaAccountId, setMetaAccountId] = useState("");
