@@ -74,6 +74,8 @@ export default function Wizard(props: Props) {
         <AccessStep
           token={props.token}
           access={props.access}
+          simplenessKontakt={props.simplenessKontakt}
+          slackInviteUrl={props.slackInviteUrl}
           onBack={() => goTo(0)}
           onNext={() => goTo(2)}
         />
@@ -324,15 +326,20 @@ function Progress({ step, onJump }: { step: number; onJump: (s: StepKey) => void
 function AccessStep({
   token,
   access,
+  simplenessKontakt,
+  slackInviteUrl,
   onBack,
   onNext,
 }: {
   token: string;
   access: OnboardingAccess[];
+  simplenessKontakt: string;
+  slackInviteUrl: string | null;
   onBack: () => void;
   onNext: () => void;
 }) {
   const completedCount = access.filter((a) => a.completed).length;
+  const member = teamMember(simplenessKontakt);
 
   return (
     <div>
@@ -347,6 +354,33 @@ function AccessStep({
         {access.map((a) => (
           <PlatformItem key={a.id} token={token} access={a} />
         ))}
+      </div>
+
+      <div className="mt-6 rounded-xl border border-neutral-200 bg-white p-5">
+        <h3 className="text-[15px] font-semibold text-neutral-900 mb-1.5">Andre tilganger</h3>
+        <p className="text-[14px] text-neutral-600 leading-relaxed mb-4">
+          Har dere en bildebank, video-arkiv eller andre delte ressurser vi bør ha tilgang til? Del lenker eller invitasjoner med oss her:
+        </p>
+        <div className="flex gap-2 flex-wrap">
+          {slackInviteUrl && (
+            <a
+              href={slackInviteUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-neutral-200 text-[13px] text-neutral-700 hover:bg-neutral-50"
+            >
+              Del i Slack →
+            </a>
+          )}
+          {member?.email && (
+            <a
+              href={`mailto:${member.email}`}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-neutral-200 text-[13px] text-neutral-700 hover:bg-neutral-50"
+            >
+              Send til {member.email} →
+            </a>
+          )}
+        </div>
       </div>
 
       <BottomNav backLabel="← Velkomst" nextLabel="Neste: Innsikt →" onBack={onBack} onNext={onNext} />
