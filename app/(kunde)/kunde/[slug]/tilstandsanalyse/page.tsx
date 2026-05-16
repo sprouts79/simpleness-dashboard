@@ -66,7 +66,7 @@ export default async function KundeTilstandsanalyseKundeView({ params, searchPar
   const totalAssessed = items.filter((i) => i.state !== null).length;
   const totalItems = ITEMS.length;
 
-  const activeTab: TabKey = sp.tab === "oversikt" ? "oversikt" : "tiltak";
+  const activeTab: TabKey = sp.tab === "tiltak" ? "tiltak" : "oversikt";
 
   return (
     <div>
@@ -83,15 +83,15 @@ export default async function KundeTilstandsanalyseKundeView({ params, searchPar
 
       {/* Tabs */}
       <div className="flex gap-1 mb-6 border-b border-neutral-200">
+        <TabLink slug={slug} tab="oversikt" active={activeTab === "oversikt"}>
+          Oversikt
+          <span className="ml-1.5 font-mono text-xs text-neutral-400">{totalItems}</span>
+        </TabLink>
         <TabLink slug={slug} tab="tiltak" active={activeTab === "tiltak"}>
           Tiltaksliste
           {tiltak.length > 0 && (
             <span className="ml-1.5 font-mono text-xs text-neutral-400">{tiltak.length}</span>
           )}
-        </TabLink>
-        <TabLink slug={slug} tab="oversikt" active={activeTab === "oversikt"}>
-          Oversikt
-          <span className="ml-1.5 font-mono text-xs text-neutral-400">{totalItems}</span>
         </TabLink>
       </div>
 
@@ -121,7 +121,7 @@ function TabLink({
   active: boolean;
   children: React.ReactNode;
 }) {
-  const href = tab === "tiltak" ? `/kunde/${slug}/tilstandsanalyse` : `/kunde/${slug}/tilstandsanalyse?tab=oversikt`;
+  const href = tab === "oversikt" ? `/kunde/${slug}/tilstandsanalyse` : `/kunde/${slug}/tilstandsanalyse?tab=tiltak`;
   return (
     <Link
       href={href}
