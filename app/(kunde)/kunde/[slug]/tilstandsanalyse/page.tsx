@@ -17,10 +17,14 @@ import MarkFullfortButton from "./MarkFullfortButton";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }
 
-export default async function KundeTilstandsanalyseKundeView({ params }: PageProps) {
+type TabKey = "tiltak" | "oversikt";
+
+export default async function KundeTilstandsanalyseKundeView({ params, searchParams }: PageProps) {
   const { slug } = await params;
+  const sp = await searchParams;
   const kunde = await getKunde(slug);
   if (!kunde) notFound();
 
@@ -51,18 +55,24 @@ export default async function KundeTilstandsanalyseKundeView({ params }: PagePro
     .filter((x): x is { row: AuditItemRow; item: Item } => Boolean(x.item))
     .sort((a, b) => stateSortRank(a.row.state) - stateSortRank(b.row.state));
 
-  // Stats
+  // Pending "Hos dere" — alt assignee=kunde som ikke er ok eller allerede sendt til avsjekk
+  const kundePending = items.filter(
+    (i) => i.assignee === "kunde" && i.state !== "ok" && i.state !== "avsjekk",
+  ).length;
+
+  // Stats for oversikt
   const counts: Record<string, number> = {};
   for (const i of items) counts[stateKey(i.state)] = (counts[stateKey(i.state)] ?? 0) + 1;
   const totalAssessed = items.filter((i) => i.state !== null).length;
   const totalItems = ITEMS.length;
-  const kundeCount = items.filter((i) => i.assignee === "kunde").length;
+
+  const activeTab: TabKey = sp.tab === "oversikt" ? "oversikt" : "tiltak";
 
   return (
     <div>
       <Link href={`/kunde/${slug}`} className="text-xs text-[#515b12] hover:underline mb-3 inline-block">← {kunde.name}</Link>
 
-      <header className="border-b border-neutral-200 pb-8 mb-10">
+      <header className="border-b border-neutral-200 pb-8 mb-8">
         <h1 className="text-4xl font-bold tracking-tight text-neutral-900">Tilstandsanalyse</h1>
         <p className="mt-2 text-neutral-500">
           {godkjent.kvartal} · Sist oppdatert{" "}
@@ -71,8 +81,121 @@ export default async function KundeTilstandsanalyseKundeView({ params }: PagePro
         </p>
       </header>
 
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6 border-b border-neutral-200">
+        <TabLink slug={slug} tab="tiltak" active={activeTab === "tiltak"}>
+          Tiltaksliste
+          {tiltak.length > 0 && (
+            <span className="ml-1.5 font-mono text-xs text-neutral-400">{tiltak.length}</span>
+          )}
+        </TabLink>
+        <TabLink slug={slug} tab="oversikt" active={activeTab === "oversikt"}>
+          Oversikt
+          <span className="ml-1.5 font-mono text-xs text-neutral-400">{totalItems}</span>
+        </TabLink>
+      </div>
+
+      {activeTab === "tiltak" && (
+        <TiltakTab tiltak={tiltak} slug={slug} kundePending={kundePending} />
+      )}
+
+      {activeTab === "oversikt" && (
+        <OversiktTab counts={counts} totalAssessed={totalAssessed} totalItems={totalItems} itemsById={itemsById} slug={slug} />
+      )}
+
+      <footer className="mt-12 pt-6 border-t border-neutral-200 text-xs text-neutral-400 font-mono">
+        Simpleness OS · Tilstandsanalyse {godkjent.kvartal}
+      </footer>
+    </div>
+  );
+}
+
+function TabLink({
+  slug,
+  tab,
+  active,
+  children,
+}: {
+  slug: string;
+  tab: TabKey;
+  active: boolean;
+  children: React.ReactNode;
+}) {
+  const href = tab === "tiltak" ? `/kunde/${slug}/tilstandsanalyse` : `/kunde/${slug}/tilstandsanalyse?tab=oversikt`;
+  return (
+    <Link
+      href={href}
+      className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+        active
+          ? "border-neutral-900 text-neutral-900"
+          : "border-transparent text-neutral-500 hover:text-neutral-900"
+      }`}
+    >
+      {children}
+    </Link>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
+// Tab: Tiltaksliste
+// ────────────────────────────────────────────────────────────
+
+function TiltakTab({
+  tiltak,
+  slug,
+  kundePending,
+}: {
+  tiltak: { row: AuditItemRow; item: Item }[];
+  slug: string;
+  kundePending: number;
+}) {
+  if (tiltak.length === 0) {
+    return (
+      <div className="rounded-xl border border-neutral-200 bg-white px-6 py-12 text-center">
+        <div className="text-base font-medium text-neutral-900 mb-1">Alt på plass</div>
+        <div className="text-sm text-neutral-500">Ingen åpne tiltak akkurat nå.</div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {kundePending > 0 && (
+        <div className="rounded-lg border border-[#515b12]/20 bg-[#515b12]/5 px-4 py-3 text-sm text-[#515b12] mb-6">
+          <strong className="font-semibold">{kundePending} {kundePending === 1 ? "punkt" : "punkter"}</strong> ligger hos dere å handle på. Marker fullført når dere har gjort det.
+        </div>
+      )}
+
+      <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
+        {tiltak.map(({ row, item }) => (
+          <ItemDisplay key={row.item_id} item={item} row={row} slug={slug} compact />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
+// Tab: Oversikt
+// ────────────────────────────────────────────────────────────
+
+function OversiktTab({
+  counts,
+  totalAssessed,
+  totalItems,
+  itemsById,
+  slug,
+}: {
+  counts: Record<string, number>;
+  totalAssessed: number;
+  totalItems: number;
+  itemsById: Record<string, AuditItemRow>;
+  slug: string;
+}) {
+  return (
+    <div>
       {/* Sammendrag */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-px overflow-hidden rounded-xl border border-neutral-200 bg-neutral-200 mb-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-px overflow-hidden rounded-xl border border-neutral-200 bg-neutral-200 mb-10">
         {(["ok", "avsjekk", "p2", "p1", "wip", "na", "open"] as const).map((k) => (
           <div key={k} className="bg-white p-4">
             <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-neutral-500 font-medium">
@@ -86,24 +209,6 @@ export default async function KundeTilstandsanalyseKundeView({ params }: PagePro
           </div>
         ))}
       </div>
-
-      {kundeCount > 0 && (
-        <div className="rounded-lg border border-[#515b12]/20 bg-[#515b12]/5 px-4 py-3 text-sm text-[#515b12] mb-10">
-          <strong className="font-semibold">{kundeCount} punkter</strong> ligger hos dere å handle på. Markert i listen under.
-        </div>
-      )}
-
-      {/* Tiltaksliste */}
-      {tiltak.length > 0 && (
-        <section className="mb-12">
-          <h2 className="text-lg font-semibold text-neutral-900 mb-4">Tiltaksliste</h2>
-          <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
-            {tiltak.map(({ row, item }) => (
-              <ItemDisplay key={row.item_id} item={item} row={row} slug={slug} compact />
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* Full liste per fane */}
       {TABS.map((tab) => {
@@ -131,13 +236,13 @@ export default async function KundeTilstandsanalyseKundeView({ params }: PagePro
           </section>
         );
       })}
-
-      <footer className="mt-12 pt-6 border-t border-neutral-200 text-xs text-neutral-400 font-mono">
-        Simpleness OS · Tilstandsanalyse {godkjent.kvartal}
-      </footer>
     </div>
   );
 }
+
+// ────────────────────────────────────────────────────────────
+// Item display
+// ────────────────────────────────────────────────────────────
 
 function ItemDisplay({
   item,
