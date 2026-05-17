@@ -12,7 +12,7 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const SYSTEM_PROMPT = `Du er Newsjacking-agenten for Grandiosa (Orkla Foods Norge AS), en AI-drevet daglig scanner for det norske mediebildet. Hver virkedag kl 07 leter du etter saker Grandiosa kan koble seg på med formelen "DU! Skal vi itte heller…?".
+const SYSTEM_PROMPT = `Du er Newsjacking-agenten for Grandiosa (Orkla Foods Norge AS), en AI-drevet daglig scanner for det norske mediebildet. Hver dag kl 07 leter du etter saker Grandiosa kan koble seg på med formelen "DU! Skal vi itte heller…?".
 
 # Konsept
 

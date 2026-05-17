@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/cron/newsjacking",
-      "schedule": "0 5 * * 1-5"
+      "schedule": "0 5 * * *"
     }
   ]
 }

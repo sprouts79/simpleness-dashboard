@@ -112,10 +112,7 @@ export async function GET(request: Request) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  const { dato, ukedag, ukedagIndex } = todayInOslo();
-  if (ukedagIndex === 0 || ukedagIndex === 6) {
-    return NextResponse.json({ skipped: "helg", dato, ukedag });
-  }
+  const { dato, ukedag } = todayInOslo();
 
   const { data: existing } = await supabase
     .from("newsjacking_scans")
