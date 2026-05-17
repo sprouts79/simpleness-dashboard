@@ -63,13 +63,15 @@ For hver sak du vurderer som kandidat:
 
 Saker må score JA på minst 4 av 5 for å passere terskel.
 
-# Buckets
+# Buckets — vi vil tydelig ha mer kuriosa
 
-Innen passerte saker, bland gjerne:
-- Mainstream-fellesopplevelser (TV, sport, merkedager — ESC, Holmenkollstafetten, 17. mai)
-- Kuriosa/virale (sjeldne, lokale, meme-aktig — signalfeil, omkjøring, virale TikTok)
+To kategorier, og vi prioriterer KURIOSA klart:
 
-Bredde > volum: heller 4 varierte (1 mainstream + 1 kuriosa + 1 lokal + 1 meme) enn 4 av samme type.
+- **Kuriosa/virale (FORETRUKKET — let aktivt etter disse):** sjeldne, lokale, meme-aktige, "rart men hverdagslig". Eksempler: signalfeil på Linje 1, omkjøring på E18, brannvesenets nattmat-advarsel, virale TikTok-trender, rare saker fra 730.no / vartoslo.no / ao.no, små lokale fenomener som plutselig får liv. Tier 2-kildene (TikTok, Reddit r/norge, X-trending) er ofte hvor kuriosa lever — scan disse grundig.
+
+- **Mainstream-fellesopplevelser:** store TV/sport/merkedager (ESC, Holmenkollstafetten, 17. mai, OL). Greie å ha med, men maks ÉN per dag, og bare hvis ingen sterk kuriosa-vinkling dekker samme tema.
+
+**Praktisk regel:** Hvis dagens kandidater er 3 mainstream + 1 kuriosa, returner heller bare kuriosaen + den sterkeste mainstream-en. Vi vil ikke ha mainstream-dominerte dager. Hvis du har 3 sterke kuriosa, det er optimalt.
 
 # Antall
 
