@@ -183,7 +183,7 @@ export async function runDailyScan(
     .join("\n\n");
 
   const response = await anthropic.messages.create({
-    model: "claude-opus-4-7",
+    model: "claude-sonnet-4-6",
     max_tokens: 8000,
     system: SYSTEM_PROMPT,
     // web_search er server-side tool i Anthropic API; SDK 0.39 har ikke type-definisjon ennå
