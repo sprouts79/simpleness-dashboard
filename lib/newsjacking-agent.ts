@@ -130,6 +130,42 @@ export interface ScanResult {
   drops: ScannedDrop[];
 }
 
+/**
+ * Escape rå kontrolltegn (newline/tab/CR) inni JSON-string-literaler.
+ * LLM-output har av og til "beskrivelse": "line1\nline2" som faktisk newline,
+ * og det er ikke gyldig JSON. Denne walker bytene og rømmer dem hvis de står inne i en string.
+ */
+function repairJsonControlChars(s: string): string {
+  let out = "";
+  let inString = false;
+  let escape = false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (escape) {
+      out += c;
+      escape = false;
+      continue;
+    }
+    if (c === "\\") {
+      escape = true;
+      out += c;
+      continue;
+    }
+    if (c === '"') {
+      inString = !inString;
+      out += c;
+      continue;
+    }
+    if (inString) {
+      if (c === "\n") { out += "\\n"; continue; }
+      if (c === "\r") { out += "\\r"; continue; }
+      if (c === "\t") { out += "\\t"; continue; }
+    }
+    out += c;
+  }
+  return out;
+}
+
 export async function runDailyScan(
   dato: string,
   ukedag: string,
@@ -173,7 +209,7 @@ export async function runDailyScan(
 
   let parsed: ScanResult;
   try {
-    parsed = JSON.parse(jsonMatch[0]);
+    parsed = JSON.parse(repairJsonControlChars(jsonMatch[0]));
   } catch (e) {
     throw new Error(`runDailyScan: JSON parse feilet: ${e instanceof Error ? e.message : e}`);
   }
