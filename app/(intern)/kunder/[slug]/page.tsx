@@ -17,10 +17,12 @@ import SlackInviteEditor from "./SlackInviteEditor";
 import RadgiverEditor from "./RadgiverEditor";
 import AktiverLeveranseButton from "./AktiverLeveranseButton";
 
-// Leveranser som har egen admin-rute under /kunder/[slug]/[rute]
-const LEVERANSE_ADMIN_RUTE: Record<string, string> = {
-  onboarding: "onboarding",
-  tilstandsanalyse: "tilstandsanalyse",
+// Leveranser med egen rute. Returnerer full path fra slug.
+// Tilstandsanalyse lever på kunde-siden (samme view for begge), de andre
+// har sine egne admin-views under /kunder/[slug]/.
+const LEVERANSE_RUTE: Record<string, (kundeSlug: string) => string> = {
+  onboarding: (s) => `/kunder/${s}/onboarding`,
+  tilstandsanalyse: (s) => `/kunde/${s}/tilstandsanalyse`,
 };
 
 interface PageProps {
@@ -156,8 +158,8 @@ interface LeveranseRadProps {
 }
 
 function LeveranseRad({ kundeSlug, leveranseSlug, navn, aktiv, kategori, alle, erFørste }: LeveranseRadProps) {
-  const adminRute = LEVERANSE_ADMIN_RUTE[leveranseSlug];
-  const href = aktiv && adminRute ? `/kunder/${kundeSlug}/${adminRute}` : null;
+  const ruteFn = LEVERANSE_RUTE[leveranseSlug];
+  const href = aktiv && ruteFn ? ruteFn(kundeSlug) : null;
   const børderTopp = erFørste ? "" : "border-t border-neutral-200";
 
   const inner = (

@@ -1,43 +1,48 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { supabase } from "@/lib/supabase";
-import { getGodkjent } from "@/lib/db-tilstandsanalyse";
+import { getKunde } from "@/lib/db-kunder";
+import {
+  setResponse,
+  upsertConfig,
+  type TilstandsanalyseConfig,
+} from "@/lib/db-tilstandsanalyse";
+import type { TrackingMode } from "@/lib/checklist-data";
 
-/**
- * Kunde markerer at en "Hos dere"-oppgave er fullført.
- * Setter status til 'avsjekk' — venter på verifisering fra Simpleness.
- *
- * Sikkerhet: tar `slug` fra URL, oppdaterer kun items som tilhører den
- * godkjente versjonen for den kunden, og kun items hvor assignee='kunde'.
- */
-export async function markFullfortAction(slug: string, itemId: string) {
-  const godkjent = await getGodkjent(slug);
-  if (!godkjent) throw new Error("Ingen godkjent versjon");
+async function resolveClientId(slug: string): Promise<string> {
+  const kunde = await getKunde(slug);
+  if (!kunde) throw new Error(`Kunde ikke funnet: ${slug}`);
+  return kunde.id;
+}
 
-  const { data: existing, error: readErr } = await supabase
-    .from("audit_items")
-    .select("id, assignee, state")
-    .eq("state_id", godkjent.id)
-    .eq("item_id", itemId)
-    .maybeSingle();
-  if (readErr) throw new Error(`markFullfortAction read: ${readErr.message}`);
-  if (!existing) throw new Error("Sjekkpunkt ikke funnet");
-
-  // Kunden får kun markere fullført på egne oppgaver
-  if (existing.assignee !== "kunde") {
-    throw new Error("Dette punktet kan ikke markeres fra kunde-siden");
-  }
-
-  // Ingen poeng i å markere noe som allerede er OK
-  if (existing.state === "ok") return;
-
-  const { error } = await supabase
-    .from("audit_items")
-    .update({ state: "avsjekk" })
-    .eq("id", existing.id);
-  if (error) throw new Error(`markFullfortAction: ${error.message}`);
-
+export async function setItemCheckedAction(
+  slug: string,
+  quarter: string,
+  itemId: string,
+  checked: boolean,
+): Promise<void> {
+  const clientId = await resolveClientId(slug);
+  await setResponse(clientId, quarter, itemId, checked);
   revalidatePath(`/kunde/${slug}/tilstandsanalyse`);
-  revalidatePath(`/kunder/${slug}/tilstandsanalyse`);
+}
+
+export async function setTrackingModeAction(slug: string, mode: TrackingMode): Promise<void> {
+  const clientId = await resolveClientId(slug);
+  await upsertConfig(clientId, { tracking_mode: mode });
+  revalidatePath(`/kunde/${slug}/tilstandsanalyse`);
+}
+
+export async function setSnapActiveAction(slug: string, active: boolean): Promise<void> {
+  const clientId = await resolveClientId(slug);
+  await upsertConfig(clientId, { snap_active: active });
+  revalidatePath(`/kunde/${slug}/tilstandsanalyse`);
+}
+
+export async function setPlatformAction(
+  slug: string,
+  patch: Partial<Pick<TilstandsanalyseConfig, "platform">>,
+): Promise<void> {
+  const clientId = await resolveClientId(slug);
+  await upsertConfig(clientId, patch);
+  revalidatePath(`/kunde/${slug}/tilstandsanalyse`);
 }
