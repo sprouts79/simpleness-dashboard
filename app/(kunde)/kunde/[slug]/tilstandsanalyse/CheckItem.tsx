@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useOptimistic, useRef, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import type { CheckItem as CheckItemData, Priority } from "@/lib/checklist-data";
 import { PRIORITY_LABEL } from "@/lib/checklist-data";
 import type { ItemResponse, ItemState } from "@/lib/db-tilstandsanalyse";
@@ -61,15 +62,43 @@ export default function CheckItem({ slug, quarter, item, initial, disabled }: Pr
 
   const [openStatus, setOpenStatus] = useState(false);
   const [openNote, setOpenNote] = useState(false);
-  const statusRef = useRef<HTMLDivElement | null>(null);
+  const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const popoverRef = useRef<HTMLDivElement | null>(null);
+
+  function toggleStatusDropdown() {
+    if (disabled) return;
+    if (openStatus) {
+      setOpenStatus(false);
+      return;
+    }
+    if (buttonRef.current) {
+      const r = buttonRef.current.getBoundingClientRect();
+      setCoords({ top: r.bottom + 4, left: r.left });
+    }
+    setOpenStatus(true);
+  }
 
   useEffect(() => {
+    if (!openStatus) return;
     function onClickOutside(e: MouseEvent) {
-      if (statusRef.current && !statusRef.current.contains(e.target as Node)) setOpenStatus(false);
+      const t = e.target as Node;
+      if (buttonRef.current?.contains(t)) return;
+      if (popoverRef.current?.contains(t)) return;
+      setOpenStatus(false);
+    }
+    function onScroll() {
+      setOpenStatus(false);
     }
     document.addEventListener("click", onClickOutside);
-    return () => document.removeEventListener("click", onClickOutside);
-  }, []);
+    window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      document.removeEventListener("click", onClickOutside);
+      window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [openStatus]);
 
   function changeState(next: ItemState | null) {
     setOpenStatus(false);
@@ -105,30 +134,36 @@ export default function CheckItem({ slug, quarter, item, initial, disabled }: Pr
   return (
     <div className={`border-t border-neutral-200 first:border-t-0 transition-colors ${style.bg} ${isKunde ? "border-l-2 border-l-[#515b12]" : ""}`}>
       <div className="grid grid-cols-[28px_1fr_auto] gap-3 px-5 py-3.5 items-start">
-        <div className="relative" ref={statusRef}>
+        <div>
           <button
+            ref={buttonRef}
             type="button"
-            onClick={(e) => { e.stopPropagation(); if (!disabled) setOpenStatus((v) => !v); }}
+            onClick={(e) => { e.stopPropagation(); toggleStatusDropdown(); }}
             disabled={disabled}
             className={`w-7 h-7 rounded-md border-1.5 flex items-center justify-center text-[12px] font-bold leading-none ${style.cb} ${style.cbBorder} ${disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer hover:opacity-80"} ${style.cbIcon}`}
             aria-label={`Status: ${STATE_OPTIONS.find((o) => o.key === key)!.label}`}
           >
             {stateIcon(key)}
           </button>
-          {openStatus && (
-            <div className="absolute top-9 left-0 z-30 min-w-[170px] bg-white border border-neutral-200 rounded-lg shadow-md p-1">
+          {openStatus && coords && typeof document !== "undefined" && createPortal(
+            <div
+              ref={popoverRef}
+              style={{ position: "fixed", top: coords.top, left: coords.left, zIndex: 1000 }}
+              className="min-w-[170px] bg-white border border-neutral-200 rounded-lg shadow-lg p-1"
+            >
               {STATE_OPTIONS.map((opt) => (
                 <button
                   key={opt.key}
                   type="button"
-                  onClick={(e) => { e.stopPropagation(); changeState(opt.value); }}
+                  onClick={() => changeState(opt.value)}
                   className="w-full flex items-center gap-2.5 px-2.5 py-1.5 text-sm rounded-md text-left hover:bg-neutral-100"
                 >
                   <span className={`inline-block w-2.5 h-2.5 rounded-full ${opt.dot}`} />
                   {opt.label}
                 </button>
               ))}
-            </div>
+            </div>,
+            document.body,
           )}
         </div>
 
