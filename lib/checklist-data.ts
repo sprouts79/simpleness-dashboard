@@ -1,18 +1,17 @@
 // checklist-data.ts
 // Alle seksjoner og sjekkpunkter for Tilstandsanalyse.
 // Dette er datakilden — komponenten leser herfra.
-// Rediger denne filen for å legge til, fjerne eller endre punkter.
 
-export type Priority = "p1" | "p2" | "hygiene" | "viktig";
+export type Priority = "must" | "recommended" | "optional";
 
 export type TrackingMode = "gtm" | "shopify" | "begge";
 
 export interface CheckItem {
   id: string;
   label: string;
-  note?: string; // kort kursiv forklaring — kun der det er kritisk
+  note?: string;
   priority?: Priority;
-  trackingMode?: "gtm" | "shopify"; // vises kun i denne modusen
+  trackingMode?: "gtm" | "shopify";
   defaultChecked?: boolean;
 }
 
@@ -25,11 +24,17 @@ export interface SubSection {
 export interface Section {
   id: string;
   num: string;
-  icon: string; // Tabler icon name, f.eks. 'ti-shield-check'
+  icon: string;
   title: string;
   subsections: SubSection[];
-  channelKey?: "snap"; // brukes for å grå ut hele seksjonen per kunde
+  channelKey?: "snap";
 }
+
+export const PRIORITY_LABEL: Record<Priority, string> = {
+  must: "Må ha",
+  recommended: "Anbefales",
+  optional: "Valgfritt",
+};
 
 export const CHECKLIST: Section[] = [
   {
@@ -42,11 +47,11 @@ export const CHECKLIST: Section[] = [
         id: "gdpr-main",
         label: "",
         items: [
-          { id: "gdpr-01", label: "CMP aktiv — ingen scripts fyrer før samtykke er gitt", priority: "p1" },
-          { id: "gdpr-02", label: "Consent Mode v2 aktivert", priority: "p1" },
-          { id: "gdpr-03", label: "CAPI sender kun for brukere som har samtykket til markedsføring", priority: "p1" },
-          { id: "gdpr-04", label: "Data Processing Terms akseptert hos Meta og Google", priority: "p1" },
-          { id: "gdpr-05", label: "Personvernerklæring nevner Meta, Google og Snap ved navn", priority: "p1" },
+          { id: "gdpr-01", label: "CMP aktiv — ingen scripts fyrer før samtykke er gitt", priority: "must" },
+          { id: "gdpr-02", label: "Consent Mode v2 aktivert", priority: "must" },
+          { id: "gdpr-03", label: "CAPI sender kun for brukere som har samtykket til markedsføring", priority: "must" },
+          { id: "gdpr-04", label: "Data Processing Terms akseptert hos Meta og Google", priority: "must" },
+          { id: "gdpr-05", label: "Personvernerklæring nevner Meta, Google og Snap ved navn", priority: "must" },
         ],
       },
     ],
@@ -62,17 +67,17 @@ export const CHECKLIST: Section[] = [
         id: "sporing-gtm",
         label: "GTM",
         items: [
-          { id: "sporing-01", label: "Installert på alle sider — inkludert ekstern kasse", trackingMode: "gtm" },
-          { id: "sporing-02", label: "Ingen duplikate tags, utdaterte triggers eller gammel byrå-kode", priority: "hygiene", trackingMode: "gtm" },
+          { id: "sporing-01", label: "Installert på alle sider — inkludert ekstern kasse", priority: "recommended", trackingMode: "gtm" },
+          { id: "sporing-02", label: "Ingen duplikate tags, utdaterte triggers eller gammel byrå-kode", priority: "optional", trackingMode: "gtm" },
         ],
       },
       {
         id: "sporing-shopify",
         label: "Shopify integrasjon",
         items: [
-          { id: "sporing-03", label: "Meta-appen koblet til riktig pixel-ID", trackingMode: "shopify" },
-          { id: "sporing-04", label: "Google & YouTube-appen koblet til GA4 og Google Ads", trackingMode: "shopify" },
-          { id: "sporing-05", label: "Ingen duplikat pixel — ikke både app og hardkodet tag for samme kanal", priority: "p1", trackingMode: "shopify" },
+          { id: "sporing-03", label: "Meta-appen koblet til riktig pixel-ID", priority: "recommended", trackingMode: "shopify" },
+          { id: "sporing-04", label: "Google & YouTube-appen koblet til GA4 og Google Ads", priority: "recommended", trackingMode: "shopify" },
+          { id: "sporing-05", label: "Ingen duplikat pixel — ikke både app og hardkodet tag for samme kanal", priority: "must", trackingMode: "shopify" },
         ],
       },
     ],
@@ -88,16 +93,16 @@ export const CHECKLIST: Section[] = [
         id: "datalag-main",
         label: "",
         items: [
-          { id: "datalag-01", label: "Kun Google standard events — ingen kanal-spesifikke events i koden", priority: "p1" },
+          { id: "datalag-01", label: "Kun Google standard events — ingen kanal-spesifikke events i koden", priority: "must" },
           {
             id: "datalag-02",
             label: "item_id sender variant-ID — ikke produkt-ID eller SKU",
             note: "variant_id i Shopify = feed `id` = content_ids i Meta",
-            priority: "p1",
+            priority: "must",
           },
-          { id: "datalag-03", label: "Alle events fyrer: view_item, add_to_cart, begin_checkout, purchase" },
-          { id: "datalag-04", label: "Purchase: én gang per ordre, riktig verdi og valuta" },
-          { id: "datalag-05", label: "Manuell reconciliering: 3–5 kjøp verifisert mot Events Manager", priority: "p1" },
+          { id: "datalag-03", label: "Alle events fyrer: view_item, add_to_cart, begin_checkout, purchase", priority: "recommended" },
+          { id: "datalag-04", label: "Purchase: én gang per ordre, riktig verdi og valuta", priority: "recommended" },
+          { id: "datalag-05", label: "Manuell reconciliering: 3–5 kjøp verifisert mot Events Manager", priority: "must" },
         ],
       },
     ],
@@ -113,43 +118,43 @@ export const CHECKLIST: Section[] = [
         id: "feed-struktur",
         label: "ID og struktur",
         items: [
-          { id: "feed-01", label: "feed `id` = variant-ID — konsistent på tvers av alle kanaler", priority: "p1" },
-          { id: "feed-02", label: "`link` peker til riktig domene", priority: "p1" },
-          { id: "feed-03", label: "Én rad per variant — `id` unik, `item_group_id` felles per produkt" },
+          { id: "feed-01", label: "feed `id` = variant-ID — konsistent på tvers av alle kanaler", priority: "must" },
+          { id: "feed-02", label: "`link` peker til riktig domene", priority: "must" },
+          { id: "feed-03", label: "Én rad per variant — `id` unik, `item_group_id` felles per produkt", priority: "recommended" },
         ],
       },
       {
         id: "feed-varianter",
         label: "Varianter & bilder",
         items: [
-          { id: "feed-04", label: "`color` og `size` som egne felt per variant — ikke bare i tittel", priority: "p2" },
-          { id: "feed-05", label: "`image_link` variant-spesifikk — riktig farge per variant, min. 1024×1024px" },
-          { id: "feed-06", label: "`additional_image_link`: min. 4 per produkt — ulike vinkler og livsstil", priority: "p2" },
+          { id: "feed-04", label: "`color` og `size` som egne felt per variant — ikke bare i tittel", priority: "recommended" },
+          { id: "feed-05", label: "`image_link` variant-spesifikk — riktig farge per variant, min. 1024×1024px", priority: "recommended" },
+          { id: "feed-06", label: "`additional_image_link`: min. 4 per produkt — ulike vinkler og livsstil", priority: "recommended" },
         ],
       },
       {
         id: "feed-felt",
         label: "Felt",
         items: [
-          { id: "feed-07", label: "`title`: merke + produktnavn + type + farge", priority: "p2" },
-          { id: "feed-08", label: "`description`: ren tekst — ingen HTML", priority: "p1" },
-          { id: "feed-09", label: "`gtin`/EAN satt på alle produkter", priority: "p1" },
-          { id: "feed-10", label: "`gender` differensiert — ikke unisex på alt", priority: "p2" },
+          { id: "feed-07", label: "`title`: merke + produktnavn + type + farge", priority: "recommended" },
+          { id: "feed-08", label: "`description`: ren tekst — ingen HTML", priority: "must" },
+          { id: "feed-09", label: "`gtin`/EAN satt på alle produkter", priority: "must" },
+          { id: "feed-10", label: "`gender` differensiert — ikke unisex på alt", priority: "recommended" },
         ],
       },
       {
         id: "feed-video",
         label: "Video",
         items: [
-          { id: "feed-11", label: "`video[0].url` satt på topp-produkter — start med 20+ SKUs", priority: "viktig" },
-          { id: "feed-12", label: "Dynamic Media aktivert i Meta Commerce Manager", priority: "viktig" },
+          { id: "feed-11", label: "`video[0].url` satt på topp-produkter — start med 20+ SKUs", priority: "recommended" },
+          { id: "feed-12", label: "Dynamic Media aktivert i Meta Commerce Manager", priority: "recommended" },
         ],
       },
       {
         id: "feed-teknisk",
         label: "Teknisk",
         items: [
-          { id: "feed-13", label: "Feed oppdateres minimum daglig" },
+          { id: "feed-13", label: "Feed oppdateres minimum daglig", priority: "recommended" },
         ],
       },
     ],
@@ -165,17 +170,17 @@ export const CHECKLIST: Section[] = [
         id: "google-sporing",
         label: "Sporing",
         items: [
-          { id: "google-01", label: "GA4 purchase: riktig verdi og unik ordre-ID" },
-          { id: "google-02", label: "Enhanced Conversions aktivert med hashet brukerdata", priority: "p1" },
-          { id: "google-03", label: "Kun én konverteringskilde — ikke dobbelt (GA4-import og direkte tag)", priority: "p2" },
+          { id: "google-01", label: "GA4 purchase: riktig verdi og unik ordre-ID", priority: "recommended" },
+          { id: "google-02", label: "Enhanced Conversions aktivert med hashet brukerdata", priority: "must" },
+          { id: "google-03", label: "Kun én konverteringskilde — ikke dobbelt (GA4-import og direkte tag)", priority: "recommended" },
         ],
       },
       {
         id: "google-mc",
         label: "Merchant Center",
         items: [
-          { id: "google-04", label: "Ingen aktive avvisninger" },
-          { id: "google-05", label: "Feed `id` matcher `item_id` i GA4-eventet", priority: "p1" },
+          { id: "google-04", label: "Ingen aktive avvisninger", priority: "recommended" },
+          { id: "google-05", label: "Feed `id` matcher `item_id` i GA4-eventet", priority: "must" },
         ],
       },
     ],
@@ -191,29 +196,29 @@ export const CHECKLIST: Section[] = [
         id: "meta-sporing",
         label: "Sporing",
         items: [
-          { id: "meta-01", label: "Pixel: ViewContent, AddToCart, Purchase med variant-ID og value" },
-          { id: "meta-02", label: "CAPI satt opp og aktivt", priority: "p1" },
-          { id: "meta-03", label: "Deduplication: identisk event_id i pixel og CAPI" },
-          { id: "meta-04", label: "EMQ sjekket i Events Manager — 5–7 normalt i NO/EU, under 5 undersøk", priority: "p2" },
+          { id: "meta-01", label: "Pixel: ViewContent, AddToCart, Purchase med variant-ID og value", priority: "recommended" },
+          { id: "meta-02", label: "CAPI satt opp og aktivt", priority: "must" },
+          { id: "meta-03", label: "Deduplication: identisk event_id i pixel og CAPI", priority: "recommended" },
+          { id: "meta-04", label: "EMQ sjekket i Events Manager — 5–7 normalt i NO/EU, under 5 undersøk", priority: "recommended" },
         ],
       },
       {
         id: "meta-katalog",
         label: "Katalog",
         items: [
-          { id: "meta-05", label: "Kun én aktiv katalog koblet til annonsekontoen", priority: "hygiene" },
-          { id: "meta-06", label: "Katalog oppdateres automatisk — ingen eller få avviste produkter" },
-          { id: "meta-07", label: "content_ids matcher katalog `id` — verifiser med farge+størrelse-variant", priority: "p1" },
-          { id: "meta-08", label: "Product sets ryddige — slett ubrukte sets", priority: "hygiene" },
+          { id: "meta-05", label: "Kun én aktiv katalog koblet til annonsekontoen", priority: "optional" },
+          { id: "meta-06", label: "Katalog oppdateres automatisk — ingen eller få avviste produkter", priority: "recommended" },
+          { id: "meta-07", label: "content_ids matcher katalog `id` — verifiser med farge+størrelse-variant", priority: "must" },
+          { id: "meta-08", label: "Product sets ryddige — slett ubrukte sets", priority: "optional" },
         ],
       },
       {
         id: "meta-hygiene",
         label: "Hygiene",
         items: [
-          { id: "meta-09", label: "Kun én aktiv pixel — ingen gamle hardkodede eller byråpixler", priority: "p1" },
-          { id: "meta-10", label: "Tilganger og domeneverifisering sjekket", priority: "hygiene" },
-          { id: "meta-11", label: "Kampanjer pauset 60+ dager er arkivert", priority: "hygiene" },
+          { id: "meta-09", label: "Kun én aktiv pixel — ingen gamle hardkodede eller byråpixler", priority: "must" },
+          { id: "meta-10", label: "Tilganger og domeneverifisering sjekket", priority: "recommended" },
+          { id: "meta-11", label: "Kampanjer pauset 60+ dager er arkivert", priority: "optional" },
         ],
       },
     ],
@@ -230,29 +235,27 @@ export const CHECKLIST: Section[] = [
         id: "snap-sporing",
         label: "Sporing",
         items: [
-          { id: "snap-01", label: "Pixel installert + CAPI med client_dedup_id" },
+          { id: "snap-01", label: "Pixel installert + CAPI med client_dedup_id", priority: "recommended" },
         ],
       },
       {
         id: "snap-katalog",
         label: "Katalog",
         items: [
-          { id: "snap-02", label: "Katalog koblet og godkjent — ingen avviste produkter" },
-          { id: "snap-03", label: "item_ids matcher feed `id`" },
+          { id: "snap-02", label: "Katalog koblet og godkjent — ingen avviste produkter", priority: "recommended" },
+          { id: "snap-03", label: "item_ids matcher feed `id`", priority: "recommended" },
         ],
       },
     ],
   },
 ];
 
-// Hjelpefunksjon: hent alle item-IDer flatt
 export function getAllItemIds(): string[] {
   return CHECKLIST.flatMap((section) =>
     section.subsections.flatMap((sub) => sub.items.map((item) => item.id)),
   );
 }
 
-// Hjelpefunksjon: filtrer aktive items basert på tracking-modus og kanal-config
 export function getActiveItemIds(
   trackingMode: TrackingMode,
   snapActive: boolean,
