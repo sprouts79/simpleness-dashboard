@@ -2,14 +2,17 @@
 
 import { useState } from "react";
 import type { Section as SectionData, TrackingMode } from "@/lib/checklist-data";
+import type { ItemResponse } from "@/lib/db-tilstandsanalyse";
 import CheckItem from "./CheckItem";
 import { setSnapActiveAction } from "./actions";
+
+const EMPTY: ItemResponse = { state: null, note: null, assignee: null };
 
 interface Props {
   slug: string;
   quarter: string;
   section: SectionData;
-  responses: Record<string, boolean>;
+  responses: Record<string, ItemResponse>;
   trackingMode: TrackingMode;
   snapActive: boolean;
 }
@@ -56,7 +59,7 @@ export default function Section({ slug, quarter, section, responses, trackingMod
                 slug={slug}
                 quarter={quarter}
                 item={item}
-                initialChecked={responses[item.id] ?? false}
+                initial={responses[item.id] ?? EMPTY}
                 disabled={disabled}
               />
             ))}

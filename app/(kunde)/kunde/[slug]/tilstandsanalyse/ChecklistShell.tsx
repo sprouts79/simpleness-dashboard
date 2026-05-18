@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { CHECKLIST, getActiveItemIds, type TrackingMode } from "@/lib/checklist-data";
+import type { ItemResponse } from "@/lib/db-tilstandsanalyse";
 import Section from "./Section";
 import TrackingToggle from "./TrackingToggle";
 
@@ -10,13 +11,13 @@ interface Props {
   quarter: string;
   trackingMode: TrackingMode;
   snapActive: boolean;
-  responses: Record<string, boolean>;
+  responses: Record<string, ItemResponse>;
 }
 
 export default function ChecklistShell({ slug, quarter, trackingMode, snapActive, responses }: Props) {
   const activeIds = useMemo(() => getActiveItemIds(trackingMode, snapActive), [trackingMode, snapActive]);
   const total = activeIds.length;
-  const done = activeIds.filter((id) => responses[id]).length;
+  const done = activeIds.filter((id) => responses[id]?.state === "ok").length;
   const pct = total === 0 ? 0 : Math.round((done / total) * 100);
 
   return (

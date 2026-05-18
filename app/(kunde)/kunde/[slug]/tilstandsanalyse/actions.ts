@@ -3,8 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { getKunde } from "@/lib/db-kunder";
 import {
-  setResponse,
   upsertConfig,
+  upsertResponse,
+  type ItemState,
+  type Assignee,
   type TilstandsanalyseConfig,
 } from "@/lib/db-tilstandsanalyse";
 import type { TrackingMode } from "@/lib/checklist-data";
@@ -15,14 +17,36 @@ async function resolveClientId(slug: string): Promise<string> {
   return kunde.id;
 }
 
-export async function setItemCheckedAction(
+export async function setItemStateAction(
   slug: string,
   quarter: string,
   itemId: string,
-  checked: boolean,
+  state: ItemState | null,
 ): Promise<void> {
   const clientId = await resolveClientId(slug);
-  await setResponse(clientId, quarter, itemId, checked);
+  await upsertResponse(clientId, quarter, itemId, { state });
+  revalidatePath(`/kunde/${slug}/tilstandsanalyse`);
+}
+
+export async function setItemNoteAction(
+  slug: string,
+  quarter: string,
+  itemId: string,
+  note: string | null,
+): Promise<void> {
+  const clientId = await resolveClientId(slug);
+  await upsertResponse(clientId, quarter, itemId, { note });
+  revalidatePath(`/kunde/${slug}/tilstandsanalyse`);
+}
+
+export async function setItemAssigneeAction(
+  slug: string,
+  quarter: string,
+  itemId: string,
+  assignee: Assignee | null,
+): Promise<void> {
+  const clientId = await resolveClientId(slug);
+  await upsertResponse(clientId, quarter, itemId, { assignee });
   revalidatePath(`/kunde/${slug}/tilstandsanalyse`);
 }
 
