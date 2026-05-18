@@ -162,6 +162,19 @@ export async function updateLeveranseStatus(id: number, status: LeveranseStatus)
   if (error) throw new Error(`updateLeveranseStatus: ${error.message}`);
 }
 
+export async function updateLeveranseStatusBySlug(
+  clientId: string,
+  slug: string,
+  status: LeveranseStatus,
+): Promise<void> {
+  const { error } = await supabase
+    .from("client_leveranser")
+    .update({ status })
+    .eq("client_id", clientId)
+    .eq("slug", slug);
+  if (error) throw new Error(`updateLeveranseStatusBySlug: ${error.message}`);
+}
+
 export async function aktiverLeveranse(
   clientId: string,
   slug: string,

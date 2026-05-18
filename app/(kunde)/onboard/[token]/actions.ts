@@ -15,7 +15,13 @@ import {
   type OnboardingPlatform,
   type OnboardingInsights,
 } from "@/lib/db-onboarding";
-import { updateKundeLifecycle, type LifecycleStage } from "@/lib/db-kunder";
+import { updateKundeLifecycle, updateLeveranseStatusBySlug, type LifecycleStage } from "@/lib/db-kunder";
+
+async function revalidateKundeViews(slug: string, token: string) {
+  revalidatePath(`/onboard/${token}`);
+  revalidatePath(`/kunde/${slug}`);
+  revalidatePath(`/kunder/${slug}`);
+}
 
 async function sessionByToken(token: string) {
   const session = await getSessionByToken(token);
@@ -58,10 +64,11 @@ export async function submitInsightsAction(token: string) {
   const session = await sessionByToken(token);
   await lockInsights(session.id);
 
-  // Advance lifecycle to fullført
+  // Advance lifecycle to fullført + marker onboarding-leveransen som godkjent
   await updateKundeLifecycle(session.client_id, "onboarding_fullfort");
+  await updateLeveranseStatusBySlug(session.client_id, "onboarding", "godkjent");
 
-  revalidatePath(`/onboard/${token}`);
+  await revalidateKundeViews(session.client_id, token);
 }
 
 /**
@@ -73,7 +80,8 @@ export async function unlockInsightsAction(token: string) {
   const session = await sessionByToken(token);
   await unlockInsights(session.id);
   await updateKundeLifecycle(session.client_id, "onboarding_steg_2");
-  revalidatePath(`/onboard/${token}`);
+  await updateLeveranseStatusBySlug(session.client_id, "onboarding", "under_utvikling");
+  await revalidateKundeViews(session.client_id, token);
 }
 
 export async function uploadDocumentAction(
