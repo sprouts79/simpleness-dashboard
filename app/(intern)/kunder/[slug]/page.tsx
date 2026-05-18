@@ -5,7 +5,7 @@ import {
   getClientLeveranser,
   lifecycleStageLabel,
   lifecycleStagePillClass,
-  statusLabel,
+  statusLabelFor,
   arveStatus,
   PERFORMANCE_LEVERANSER,
   PROSJEKT_LEVERANSER,
@@ -168,7 +168,7 @@ function LeveranseRad({ kundeSlug, leveranseSlug, navn, aktiv, kategori, alle, e
         {navn}
       </div>
       {aktiv ? (
-        <LeveransePill status={arveStatus(aktiv, alle)} />
+        <LeveransePill slug={leveranseSlug} status={arveStatus(aktiv, alle)} />
       ) : (
         <AktiverLeveranseButton kundeSlug={kundeSlug} leveranseSlug={leveranseSlug} leveranseNavn={navn} kategori={kategori} />
       )}
@@ -185,9 +185,9 @@ function LeveranseRad({ kundeSlug, leveranseSlug, navn, aktiv, kategori, alle, e
   return inner;
 }
 
-function LeveransePill({ status }: { status: LeveranseStatus }) {
+function LeveransePill({ slug, status }: { slug: string; status: LeveranseStatus }) {
   const kind = status === "godkjent" ? "done" : status === "til_avsjekk" ? "review" : "idle";
-  return <Pill kind={kind}>{statusLabel(status)}</Pill>;
+  return <Pill kind={kind}>{statusLabelFor(slug, status)}</Pill>;
 }
 
 const PILL_STYLES = {

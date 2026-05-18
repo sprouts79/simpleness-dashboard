@@ -93,6 +93,15 @@ export function statusLabel(status: LeveranseStatus): string {
   }
 }
 
+/**
+ * Per-leveranse-overstyring av statuslabel. Onboarding skal vises som
+ * 'Fullført' når den er godkjent — det er kundens språk for at de er ferdige.
+ */
+export function statusLabelFor(slug: string, status: LeveranseStatus): string {
+  if (slug === "onboarding" && status === "godkjent") return "Fullført";
+  return statusLabel(status);
+}
+
 export function arveStatus(leveranse: ClientLeveranse, alle: ClientLeveranse[]): LeveranseStatus {
   const barn = alle.filter((l) => l.parent_id === leveranse.id);
   if (barn.length === 0) return leveranse.status;

@@ -152,7 +152,7 @@ function LeveransRad({ kundeSlug, slug, navn, leveranse, alleLev, erFørste }: L
       </div>
 
       {aktiv ? (
-        <StatusPill status={status} />
+        <StatusPill status={status} slug={slug} />
       ) : (
         <StatusPill status="under_utvikling" disabled />
       )}
