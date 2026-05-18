@@ -16,7 +16,6 @@ type StateKey = "open" | ItemState;
 const STATE_OPTIONS: Array<{ key: StateKey; value: ItemState | null; label: string; dot: string }> = [
   { key: "open", value: null, label: "Åpen", dot: "bg-neutral-300" },
   { key: "feil", value: "feil", label: "Feil", dot: "bg-red-500" },
-  { key: "mangler", value: "mangler", label: "Mangler", dot: "bg-red-500" },
   { key: "wip", value: "wip", label: "Jobbes med", dot: "bg-blue-500" },
   { key: "ok", value: "ok", label: "OK", dot: "bg-[#41bd0e]" },
   { key: "na", value: "na", label: "Mangler tilgang", dot: "bg-neutral-400" },
@@ -25,7 +24,6 @@ const STATE_OPTIONS: Array<{ key: StateKey; value: ItemState | null; label: stri
 const STATE_STYLE: Record<StateKey, { bg: string; cb: string; cbBorder: string; cbIcon: string }> = {
   open: { bg: "bg-white", cb: "bg-white", cbBorder: "border-neutral-300", cbIcon: "text-neutral-400" },
   feil: { bg: "bg-red-50/60", cb: "bg-red-500", cbBorder: "border-red-500", cbIcon: "text-white" },
-  mangler: { bg: "bg-red-50/60", cb: "bg-red-500", cbBorder: "border-red-500", cbIcon: "text-white" },
   wip: { bg: "bg-blue-50/60", cb: "bg-blue-500", cbBorder: "border-blue-500", cbIcon: "text-white" },
   ok: { bg: "bg-green-50/60", cb: "bg-[#41bd0e]", cbBorder: "border-[#41bd0e]", cbIcon: "text-white" },
   na: { bg: "bg-neutral-50", cb: "bg-neutral-200", cbBorder: "border-neutral-400", cbIcon: "text-neutral-700" },
@@ -47,7 +45,6 @@ function stateIcon(key: StateKey): string {
     case "wip": return "⏳";
     case "na": return "–";
     case "feil": return "✕";
-    case "mangler": return "!";
     case "open": return "○";
   }
 }
