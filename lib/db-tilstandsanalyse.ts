@@ -7,7 +7,7 @@ import "server-only";
 import { supabase } from "./supabase";
 import type { TrackingMode } from "./checklist-data";
 
-export type ItemState = "na" | "wip" | "ok";
+export type ItemState = "feil" | "mangler" | "na" | "wip" | "ok";
 export type Assignee = "kunde";
 
 export interface TilstandsanalyseConfig {
