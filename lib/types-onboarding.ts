@@ -5,11 +5,12 @@
  * Hold dette fri for Node-spesifikke importer (crypto, supabase, fs).
  */
 
-export type OnboardingPlatform = "meta" | "ga4" | "google_ads" | "shopify" | "snapchat";
+export type OnboardingPlatform = "meta" | "ga4" | "gtm" | "google_ads" | "shopify" | "snapchat";
 
 export const PLATFORMS: { id: OnboardingPlatform; navn: string; required: boolean }[] = [
   { id: "meta",       navn: "Meta Business Manager", required: true  },
   { id: "ga4",        navn: "Google Analytics 4",    required: true  },
+  { id: "gtm",        navn: "Google Tag Manager",    required: true  },
   { id: "google_ads", navn: "Google Ads",            required: true  },
   { id: "shopify",    navn: "Shopify",               required: true  },
   { id: "snapchat",   navn: "Snapchat Ads Manager",  required: false },

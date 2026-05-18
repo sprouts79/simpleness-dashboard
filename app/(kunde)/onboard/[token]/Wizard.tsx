@@ -487,6 +487,22 @@ function PlatformGuide({ platform }: { platform: OnboardingPlatform }) {
       />
     );
   }
+  if (platform === "gtm") {
+    return (
+      <Guide
+        steps={[
+          "Gå til tagmanager.google.com",
+          "Velg riktig container",
+          "Admin → User Management",
+          "Add user → e-post: performance@simpleness.no",
+          "Container Permissions: Publish",
+          "Send container-ID (GTM-XXXXXXX) til kontaktpersonen din i Slack",
+        ]}
+        copyValue="performance@simpleness.no"
+        copyLabel="Simpleness e-post"
+      />
+    );
+  }
   if (platform === "google_ads") {
     return (
       <Guide
